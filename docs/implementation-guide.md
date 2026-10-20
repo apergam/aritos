@@ -9,7 +9,7 @@ This is an execution plan for evolving the accepted POC into the specified game.
 3. [POC report](POC_REPORT.md) and [README](../README.md).
 4. [Task board](tasks/README.md), then the assigned card.
 
-Requirements define product behavior. This guide defines work boundaries and order. Task cards refine implementation scope without changing the requirements. A conflict or new product choice must be recorded and resolved, rather than silently changing the accepted behavior.
+The user’s October 19 update in requirements section 15 replaces the former T06 development gate with free, parallel validation. Requirements define product behavior. This guide defines work boundaries and order. Task cards refine implementation scope without changing the requirements. A conflict or new product choice must be recorded and resolved, rather than silently changing the accepted behavior.
 
 Documentation and task cards are in English. Player-facing UI, help, status messages, and errors remain in Spanish (RF-39). Keep the existing RF, RT, CA, and BL identifiers for traceability.
 
@@ -38,15 +38,14 @@ Preserve both rule modes when evolving the accepted POC. The collect behavior in
 | --- | --- | --- |
 | 1 | T01 | Establish boundaries and contracts while preserving the POC. |
 | 2 | T02, T03, T04, T05 | May run in parallel after T01 is merged; each owns a different module. |
-| 3 | T06 | Validate physics and inputs on registered real mobile devices. Human/device access is required. |
-| 4 | T07, T08, T09 | May run in parallel after their dependencies and the T06 gate pass. |
-| 5 | T10 | Build celebration against the integrated theme and session contracts. |
-| 6 | T11 | One integration owner wires the production app and asset loading. |
-| 7 | T12 | Verify the assembled release, including real devices and offline-after-load behavior. |
+| 3 | T06 alongside T07, T08, T09 | Run free validation in parallel; UI/themes/audio start after their code dependencies. No T06 completion dependency. |
+| 4 | T10 | Build celebration against the integrated theme and session contracts. |
+| 5 | T11 | One integration owner wires the production app and asset loading. |
+| 6 | T12 | Verify the assembled release, including real devices and offline-after-load behavior. |
 
-Do not start themes, audio, or mascots before the mobile gate passes; this preserves `AGENTS.md`. Module extraction, controls, rules, model definitions, and preferences may proceed before that gate. If devices are unavailable, record the missing evidence and leave T06 unfinished rather than treating automated tests as a substitute.
+T06 does not block UI, themes, audio, celebration or integration. Use existing automated checks, browser viewport/touch/sensor emulation and practical local emulators; optional physical checks use free quota or borrowed/user-owned devices. No paid subscription, billing activation or overage is authorized. T06 completion requires evidence for its free baseline, with unavailable physical checks explicitly not run. This does not waive mobile product criteria or equate emulation with real-device acceptance.
 
-T05 is independent of the T06 prerequisite chain and can finish while device validation is being arranged. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
+T01–T05 are integrated. T07, T08 and T09 are ready for assignment in the next session; T06 can run alongside them. No new agents or implementation are started by this documentation update. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
 
 ## Module boundaries and shared contracts
 
@@ -102,9 +101,9 @@ Do not start another task, publish, or push unless separately authorized.
 
 ## Shared files and integration
 
-T01 owns the initial extraction, source entry point, exported contracts, and necessary test/build configuration changes. T02–T05 implement against the extracted seams without changing composition or each other's modules. T06 may make the minimal composition changes required to exercise their integrated mobile baseline; it is the sole composition owner during that wave and must preserve the laboratory.
+T01 owns the initial extraction, source entry point, exported contracts, and necessary test/build configuration changes. T02–T05 implement against the extracted seams without changing composition or each other's modules. The parent integrated their lab composition in `c346c1b`. T06 now owns validation evidence/fixtures only; it must coordinate fixes through module owners and never compete for shared composition with T07–T11.
 
-After T06, T07 owns UI files, T08 owns theme/rendering files, T09 owns audio files, and T10 owns celebration files. Each supplies an integration description rather than editing the shared app entry point. T11 is the sole owner of production composition, build wiring, shared HTML/CSS entry points, and cross-module asset startup in that phase.
+Independently of T06 completion, T07 owns UI files, T08 owns theme/rendering files, T09 owns audio files, and T10 owns celebration files. Each supplies an integration description rather than editing the shared app entry point. T11 is the sole owner of production composition, build wiring, shared HTML/CSS entry points, and cross-module asset startup in that phase.
 
 Changes to `package.json`, the lockfile, build configuration, or contracts require coordination with the active integration owner. Keep pinned versions; do not add libraries just to split work. No task may include unrelated files or erase another agent's uncommitted work.
 
@@ -133,7 +132,7 @@ BL-02 is already implemented in the POC and must be preserved. BL-01 and BL-03�
 
 Use Node.js 22+ and pnpm 11.25.0. After dependency setup, run `pnpm typecheck`, `pnpm test`, and `pnpm build` for code changes as required by `AGENTS.md`. Use `pnpm serve` for local checks. Add tests for meaningful state transitions and integration failures, not tests that merely copy implementation details. Documentation-only changes need link, requirement-ID, and consistency checks rather than rerunning the physics soak test.
 
-An implementation task is done when its behavior and acceptance items are verified, relevant checks pass, resources are cleaned up correctly, and its integrated state and evidence are recorded on the board. A blocked dependency or unavailable device is not completion. User acceptance of the POC remains valid; new mobile or release claims require new evidence.
+An implementation task is done when its behavior and acceptance items are verified, relevant checks pass, resources are cleaned up correctly, and its integrated state and evidence are recorded on the board. A blocked code dependency or an unexecuted free baseline is not completion. Unavailable physical devices leave specific acceptance criteria not run; they do not block unrelated implementation or completion of a readiness report. User acceptance of the POC remains valid; new mobile or release claims require new evidence.
 
 For real-device records, include model, OS/version, browser/version, orientation, control mode, graphics settings, build/commit, steps, actual result, and attached/exported diagnostics. Use a user-authorized HTTPS test origin; do not replace or publish the original hosted site as an incidental test step.
 

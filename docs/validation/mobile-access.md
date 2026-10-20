@@ -1,21 +1,24 @@
-# Mobile validation access — investigation, not test results
+# Free mobile validation access — options, not test results
 
-Prepared during orchestration on October 19, 2026. The user currently has no reference devices or HTTPS test origin available. T06 has not run and its real-device gate has not passed.
+Updated October 19, 2026 following the user's instruction. T06 now runs in parallel and does not block other implementation. Paid cloud-device access was declined; no subscription, billing activation or paid overage is authorized. See [requirements section 15](../requirements.md#15-free-parallel-validation-decision--october-19-2026).
 
-## Practical option
+## Free baseline available without a phone
 
-[BrowserStack Live](https://www.browserstack.com/docs/live) provides interactive website testing on real mobile devices. [BrowserStack Local](https://www.browserstack.com/docs/live/local-testing) can connect a locally served app to those sessions, using a provider account/access key and a local tunnel process. It is a candidate for Safari/Chrome, layout, input, and game-side performance measurements.
+- [Chrome Device Mode](https://developer.chrome.com/docs/devtools/device-mode) covers viewport/layout, portrait/landscape, touch emulation and CPU/network throttling. It approximates a mobile experience on desktop hardware; it cannot establish physical-phone performance.
+- [Chrome Sensors](https://developer.chrome.com/docs/devtools/sensors) can emulate orientation and touch. Pair it with deterministic fixtures for denied/error/no-data paths, cancellation and simultaneous commands. Distinguish emulated input from physical fingers/sensors.
+- [Android Emulator](https://developer.android.com/studio/run/emulator) and [Apple's iOS/iPadOS simulators](https://developer.apple.com/documentation/safari-developer-tools/inspecting-ios) can add OS/browser compatibility coverage when already available or practical to set up. Installation is not a new prerequisite; emulator speed is not physical-device FPS.
+- Existing engine/session/input checks remain useful supporting evidence. Reuse [T01–T05 integration evidence](integration-t01-t05.md), with its exact build/date, rather than relabeling it a new mobile run.
 
-[Sauce Labs Live Cross Browser](https://docs.saucelabs.com/web-apps/live-testing/live-cross-browser-testing/) is another real-device option. Its [localhost instructions](https://docs.saucelabs.com/secure-connections/sauce-connect-5/guides/localhost-proxying/) require extra hostname setup for real mobile devices. [TestingBot](https://testingbot.com/support/web-automate/mobile) also documents real iOS Safari and Android Chrome browser sessions.
+## Optional real-device checks without a subscription
 
-The user reviewed the available subscription and declined paid cloud-device access for this experiment. No account, subscription, tunnel, cloud session, or deployment has been created. Do not acquire paid access as part of the current iteration. Device-dependent checks stay pending until a suitable no-cost or user-owned device path is available; no prices or account entitlements are assumed by this document.
+[Android Device Streaming](https://developer.android.com/studio/run/android-device-streaming) provides remote physical Android devices. [Firebase pricing](https://firebase.google.com/pricing) documents 30 no-cost minutes per project per month, including the Spark plan. Check current eligibility and remaining quota before a run; keep within the free allowance and do not upgrade billing. This is an optional access path, not a required account or a complete iOS/sensor solution. Do not assume a remote rotation button proves calibrated physical tilt or independent simultaneous contacts.
 
-## Evidence still required
+A borrowed/user-owned phone can open an authorized temporary HTTPS link through [Cloudflare Quick Tunnels](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/), documented as free testing tunnels without a Cloudflare account/domain. Creating a public tunnel is a separate explicit action: anyone with its URL can access the served app while it runs. No tunnel is created by this planning update.
 
-- Select explicitly real/physical devices; emulation and resized desktop viewports are not equivalent.
-- Provider portrait/landscape controls do not demonstrate physical tilt, calibrated gravity, or full inversion. No documented physical-tilt capability was established by this investigation.
-- Verify whether independent simultaneous touches on both pump buttons are available in the chosen session; a documented pinch gesture alone is insufficient evidence.
-- Use the game's timing/diagnostics for FPS, not the apparent frame rate of the remote video stream.
-- Test actual sensor permission, calibration, and inversion on an appropriate secure origin and real device. These remain unverified even if the remote layout tests pass.
+For nearby hardware, [Chrome USB port forwarding](https://developer.chrome.com/docs/devtools/remote-debugging/local-server) can expose the local server to Android; [Safari Web Inspector](https://developer.apple.com/documentation/safari-developer-tools/inspecting-ios) supports inspecting Safari pages on connected iOS/iPadOS devices. Sensor testing must use an appropriate secure context.
 
-Once access is available, record exact device, OS/browser versions, build, graphics settings, steps, pass/fail/not-run results, and diagnostics in T06's evidence. The later complete-release validation remains a separate task.
+## Reporting limits
+
+Record exact tool/browser/OS/build, dimensions, input source and graphics settings. Classify runs as automated, desktop emulation, OS emulator or physical device, with pass/fail/not-run outcomes. Measure FPS inside the game, not from a remote video stream. Physical calibration, full inversion, independent fingers, permission behavior and sustained mobile performance remain pending wherever the access path cannot exercise them.
+
+No new account, tool installation, subscription, tunnel, cloud session or deployment has been created. T06's free baseline may be completed with an evidence report and explicit remaining device checks; unavailable hardware does not block T07–T11 or completion of T12's readiness report. Full mobile acceptance still requires corresponding physical evidence.

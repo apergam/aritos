@@ -10,7 +10,7 @@ Las 16 pruebas originales preservan el setup aceptado. La integración T01–T05
 
 ## Implementation planning
 
-The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T05 are integrated; T06 awaits real-device access, and the user declined paid cloud access for this experiment. Later tasks remain behind their documented gate. Player-facing text remains in Spanish.
+The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T05 are integrated. By the user’s October 19 decision, T06 uses free validation paths and runs in parallel without blocking later implementation. Real-device checks remain explicitly pending where access is unavailable; no paid subscription or billing activation is allowed. See requirements section 15. Player-facing text remains in Spanish.
 
 ## Ejecutar y construir
 

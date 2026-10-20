@@ -1,8 +1,8 @@
 # T08 — Implement complete themes
 
-Dependencies: T06.
+Dependencies: T01, T04. T06 supplies parallel validation feedback and is not a prerequisite.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules. The real-device gate must pass before visual theme work starts.
+Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules. The user removed the T06 development gate; visual theme work may proceed while unavailable device checks remain documented.
 
 ## Outcome and ownership
 

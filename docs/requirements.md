@@ -274,3 +274,14 @@ This iteration originally still required user playtesting to accept its feel and
 ## 14. POC completion — October 19, 2026
 
 The user accepts the POC with pump strength **75**, water resistance **0.50**, and collect-at-the-base as the initial mode. Classic mode remains defined in this document and available in the laboratory. Completion validates the prototype experience with the user; it does not accept the entire full release or compatibility/performance criteria requiring real mobile devices. The scope of the next implementation iteration will be agreed separately.
+
+
+## 15. Free parallel validation decision — October 19, 2026
+
+The user authorized replacing the T06 real-device development gate with a no-cost validation task that runs alongside the remaining implementation. T06 completion is not a prerequisite for the player interface, themes, audio, celebration or production integration. Their code dependencies still apply.
+
+Use automated tests, desktop viewport/touch/sensor emulation and practical local emulators as the baseline. Free physical-device quotas or borrowed/user-owned phones may add evidence when available; no paid subscription, billing activation or paid overage is authorized. Missing hardware must not become a new blanket development blocker.
+
+Record each result as automated, desktop/emulator or actual-device evidence, with pass/fail/not-run outcomes. Physical calibration/inversion, independent simultaneous touches, real browser permissions and sustained mobile FPS remain unaccepted until tested on suitable actual hardware. The RF/RT/CA criteria remain intact; this changes execution order and access policy, not what has been proved. T12 may produce a readiness report with explicit not-run criteria, without claiming full mobile acceptance.
+
+This documentation update starts no new workers or implementation; work resumes when the user returns in the next session.

@@ -1,8 +1,8 @@
 # T09 — Implement sound effects
 
-Dependencies: T03, T05, T06.
+Dependencies: T03, T05. T06 supplies parallel validation feedback and is not a prerequisite.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules. Do not start before the mobile gate passes.
+Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules. Audio implementation may proceed alongside T06; mobile audio acceptance must still be based on actual device evidence.
 
 ## Outcome and ownership
 

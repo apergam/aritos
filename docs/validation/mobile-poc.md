@@ -1,10 +1,25 @@
 # T06 — Mobile POC validation record
 
-Status: **not run — access needed**. Prepared October 19, 2026. T02–T04 are being implemented; this document is a protocol, not acceptance evidence. The user has no reference phones/tablets or authorized HTTPS test origin available and declined paid cloud-device access for this experiment. No paid service will be used in this iteration. See [cloud-device access research](mobile-access.md).
+Status: **planned — free baseline ready for the next session**. Updated October 19, 2026. T02–T04 are integrated; see [T01–T05 evidence](integration-t01-t05.md). This document is a protocol, not new acceptance evidence. T06 no longer blocks other implementation. No new tests or workers are started by this planning update.
 
 ## Access and registration
 
-An interactive real-device service such as BrowserStack Live can cover part of this protocol after an account and local tunnel or authorized HTTPS origin are available. Do not use desktop emulation as real-device evidence. Record unsupported sensor or multitouch actions as not run.
+Use [free browser/automated/emulator paths](mobile-access.md) first. Actual-device access via free quota or a borrowed phone is optional; missing access stays not run without blocking the free baseline. No paid subscription, billing activation or overage is authorized.
+
+## Free baseline checklist
+
+These rows are planned, not completed. Previous desktop/automated evidence may be referenced with its original build and date; new runs require their own records.
+
+| Work | Evidence to record | Current status |
+| --- | --- | --- |
+| Input/session/physics regressions, active-time comparison and twelve-ring classic soak | Actual commands/build, results, body integrity and engine timing | planned; prior supporting evidence linked above |
+| Phone/tablet viewport portrait/landscape, both models/rules, accessible controls | Browser/version, dimensions, screenshots and observed behavior | planned |
+| Emulated tilt/inversion/remapping and synthetic permission/no-data transitions | Tool or fixture, steps, expected/actual state; label emulated | planned |
+| Pump edges, focus/cancel, simultaneous commands and manual tilt plus pumping | Browser/fixture evidence; label synthetic contacts | planned |
+| Available local OS emulator checks | Emulator/OS/browser/build or reason not run | optional |
+| Findings and follow-up manifest | Pass/fail/not-run, defects assigned to owners, remaining physical checks | planned |
+
+## Run registration
 
 Before each run, fill in:
 
@@ -12,7 +27,7 @@ Before each run, fill in:
 | --- | --- |
 | Run ID / UTC timestamp | Pending |
 | Operator / service | Pending |
-| Physical device model | Pending |
+| Evidence class / device or emulator model | Pending |
 | OS / browser and exact versions | Pending |
 | Build badge / integrated commit | Pending |
 | HTTPS origin or authorized local tunnel | Pending |
@@ -21,9 +36,9 @@ Before each run, fill in:
 | Model / rule mode / scene | Pending |
 | Diagnostic JSON / screenshot or recording paths | Pending |
 
-## Acceptance matrix
+## Physical-device acceptance matrix
 
-All rows currently have status **not run** on Android and iOS. Automated and desktop integration evidence is recorded separately in the task board.
+All rows currently have status **not run** on physical Android and iOS devices. Use the steps for applicable emulated baseline coverage too, clearly recording its evidence class. Automated/desktop results do not close the corresponding physical-device criteria.
 
 | Coverage | Steps | Expected evidence |
 | --- | --- | --- |
@@ -46,6 +61,6 @@ No device artifacts have been collected. Add one row per actual run; link its ex
 
 | Run ID | Device / browser | Build | Result | Diagnostics / proof | Limitations / defects |
 | --- | --- | --- | --- | --- | --- |
-| — | — | — | not run | — | Account/device access and secure test origin unavailable |
+| — | — | — | not run | — | Physical checks await free access; baseline can proceed independently |
 
-T06 remains incomplete until the required real-device checks have evidence. Themes, audio and celebration work remains behind this gate. A cloud service may leave sensor calibration, physical inversion, or independent simultaneous-touch checks requiring another real-device path.
+T06 can finish after its required free baseline is executed and reported with explicit pending/not-run physical checks. It is not a prerequisite for UI, themes, audio, celebration or integration. A prepared protocol alone does not complete T06. Full mobile acceptance still requires actual evidence for physical calibration/inversion, independent fingers, permissions and sustained device FPS; unavailable hardware does not prevent further development or a qualified T12 readiness report.

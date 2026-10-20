@@ -10,7 +10,7 @@ El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 202
 - Bombeo de un impulso por pulsación, botones simultáneos e inclinación 3D completa con inversión.
 - Celulares y tablets, horizontal y vertical; sensores con calibración y alternativa manual.
 - La configuración de botones pertenece al modelo del juguete. Los temas se separan de la mecánica.
-- No desarrollar temas, audio o mascotas antes de validar la física y la experiencia móvil.
+- Conservar la física aceptada. Por decisión del usuario del 19 de octubre de 2026, T06 usa herramientas gratuitas y se ejecuta en paralelo: no bloquea interfaz, temas, audio, mascotas ni integración. Mantener explícitas las comprobaciones móviles reales pendientes.
 
 ## Setup aceptado
 - Fuerza de bombeo 75 y resistencia del agua 0.50 como valores iniciales.
@@ -24,13 +24,13 @@ El informe conserva las seis pruebas históricas del 18 de octubre y las iteraci
 No afirmar que se validaron sensores, controles táctiles, FPS o apariencia sin probarlos en navegador/dispositivo real.
 
 ## Pendientes prioritarios
-T01–T05 están integradas y verificadas. T06 sigue pendiente por falta de dispositivos; el usuario descartó pagar un servicio móvil para este experimento. No contratar acceso ni dar por superada la validación. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
+T01–T05 están integradas y verificadas. T06 queda planificada como validación gratuita sin bloqueo de otras tareas. Usar pruebas automatizadas, DevTools y emuladores disponibles; acceso físico gratuito o prestado es opcional. No contratar servicios ni activar facturación. La falta de dispositivos deja evidencia pendiente, sin impedir el desarrollo ni el informe de pruebas; no declarar superada la aceptación móvil real. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
 
 Esta es una copia portátil del fuente. No contiene credenciales ni la identidad del alojamiento original. No publicar ni reemplazar el sitio alojado como parte de la validación local.
 
 
 ## Implementation planning
 
-The English product specification is `docs/requirements.md`; player-facing copy remains Spanish. For future implementation assignments, read `docs/implementation-guide.md` and exactly the assigned card under `docs/tasks/`. Track ownership and status in `docs/tasks/README.md`. Preserve the accepted POC and follow the dependency/mobile-validation gates. A prepared plan is not authorization to start tasks or agents, and completing one assigned card does not authorize taking another.
+The English product specification is `docs/requirements.md`; player-facing copy remains Spanish. For future implementation assignments, read `docs/implementation-guide.md` and exactly the assigned card under `docs/tasks/`. Track ownership and status in `docs/tasks/README.md`. Preserve the accepted POC and follow the updated dependencies. T06 is a parallel, no-cost validation task, not a prerequisite for other implementation tasks; see requirements section 15. A prepared plan is not authorization to start tasks or agents, and completing one assigned card does not authorize taking another.
 
 User-selected worker configuration: `gpt-6-luna`, reasoning effort `high`. Use it for assigned subagents; do not substitute models silently.

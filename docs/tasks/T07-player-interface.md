@@ -1,6 +1,6 @@
 # T07 — Build the Spanish player interface
 
-Dependencies: T02, T03, T04, T05, T06.
+Dependencies: T02, T03, T04, T05. T06 supplies parallel validation feedback and is not a prerequisite.
 
 Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules.
 

@@ -140,7 +140,7 @@ Pointer down and non-repeating keyboard press each issue one pulse; Space issues
 
 The versioned payload is `{ version: 1, preferences: { model, theme, sound, control } }`. Missing, malformed, unsupported and partially invalid data falls back safely. Storage is resolved lazily and both getter/method failures are caught. `save` rebuilds an allowlist, so snapshots and progress cannot be persisted.
 
-The laboratory loads the saved model before constructing a fresh collect round and saves explicit model/control choices. Reload restores no body, progress, rule mode or pause. A saved motion preference does not request sensor access automatically. Theme and sound choices can be stored for later UI; no theme/audio subsystem starts before the mobile gate.
+The laboratory loads the saved model before constructing a fresh collect round and saves explicit model/control choices. Reload restores no body, progress, rule mode or pause. A saved motion preference does not request sensor access automatically. Theme and sound choices can be stored for later UI; theme/audio implementation may proceed alongside free T06 validation under requirements section 15.
 
 ```ts
 const store = createPreferenceStore();
@@ -156,4 +156,4 @@ store.save({ ...prefs, model: 'single-button' });
 
 `src/main.ts` composes these modules into the existing lab, using session pause state, registry model mappings and safe preferences. It clears frame accumulation on round/pause/visibility transitions, bounds catch-up to twelve ticks, and owns teardown of subscriptions, animation, window/DOM listeners and pending visual feedback. Hidden return does not replay a backlog.
 
-T07–T11 will build and wire production UI/appearance/audio against these contracts after T06 passes. The four laboratory scenes, camera tools, diagnostics and accepted tuning remain available. Automated and desktop checks are recorded in the task board and integration report; they do not establish Android/iOS sensors, independent touch contacts or mobile FPS.
+T07–T11 will build and wire production UI/appearance/audio against these contracts after their code dependencies, independently of T06 completion. T06 runs free validation in parallel and coordinates defects through each module owner. The four laboratory scenes, camera tools, diagnostics and accepted tuning remain available. Automated and desktop checks are recorded in the task board and integration report; they do not establish Android/iOS sensors, independent touch contacts or mobile FPS.

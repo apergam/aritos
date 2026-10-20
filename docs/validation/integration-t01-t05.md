@@ -45,8 +45,8 @@ Codex in-app desktop browser, user agent reports Chrome 155 / Macintosh, viewpor
 
 The final lab is left in two-button free play, collect mode, original camera, strength 75 and drag 0.50. Proof: [full-page screenshot](evidence/desktop-f930b866.png), [exported diagnostic](evidence/desktop-f930b866.json). The diagnostic contains a point-in-time 60 FPS desktop readout; it does not prove sustained performance on reference mobiles.
 
-## Remaining gate
+## Remaining validation and subsequent planning decision
 
-T06 is blocked on real-device/secure-origin access. The user has no devices available and declined paid cloud-device access for this experiment. No account, tunnel, subscription or deployment was created. See the [mobile access investigation](mobile-access.md) and [not-run mobile matrix](mobile-poc.md).
+At completion of this wave, real-device/secure-origin access was unavailable and the user declined paid cloud-device access. No account, tunnel, subscription or deployment was created. No Android/iOS sensors, physical calibration/inversion, independent simultaneous contacts, orientation compatibility or sustained mobile FPS were claimed passed.
 
-No Android/iOS sensors, physical calibration/inversion, independent simultaneous contacts, orientation compatibility, or sustained mobile FPS are claimed passed. Themes, audio, celebration and later production tasks remain behind the documented gate. Browser/device emulation does not replace this evidence.
+Later on October 19, the user explicitly replaced the development gate: T06 now uses free validation paths in parallel, without blocking UI, themes, audio, celebration or integration. The original execution gate is superseded by [requirements section 15](../requirements.md#15-free-parallel-validation-decision--october-19-2026). This does not change the evidence above or convert emulation into real-device acceptance. See [free access options](mobile-access.md) and the [updated validation matrix](mobile-poc.md).

@@ -6,7 +6,7 @@ Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guid
 
 ## Outcome and access needed
 
-Produce a release acceptance decision for the assembled game, not another POC claim. Real registered Android and iPhone/iPad devices and a user-authorized HTTPS origin are required. Missing access remains a recorded blocker; viewport emulation cannot close it.
+Produce a release acceptance decision for the assembled game, not another POC claim. Use the free validation paths and evidence distinctions defined in T06. Missing real Android/iPhone/iPad access does not prevent executing the available checks or completing a readiness report; record affected criteria as not run. Full mobile acceptance still requires actual registered-device evidence and an appropriate secure origin. Do not report complete mobile compatibility or performance from emulation alone. No paid access or billing upgrade is authorized.
 
 ## Ownership
 

@@ -1,28 +1,33 @@
-# T06 — Pass the mobile POC gate
+# T06 — Run free mobile validation in parallel
 
-Dependencies: T02, T03, T04.
+Dependencies: T02, T03, T04. **Non-blocking:** no later implementation task depends on T06. The user replaced the former real-device development gate on October 19, 2026; see [requirements section 15](../requirements.md#15-free-parallel-validation-decision--october-19-2026).
 
-Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), `docs/module-contracts.md`, and the [manual POC protocol](../POC_REPORT.md). Follow shared verification/handoff rules.
+Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), [module contracts](../module-contracts.md), [free access options](../validation/mobile-access.md), and [manual POC protocol](../POC_REPORT.md).
 
-## Outcome and access needed
+## Outcome and ownership
 
-Validate the accepted mechanics and integrated controls on registered real reference devices before themes, audio, or mascots begin. Local engine tests and desktop viewport emulation are insufficient. Obtain the user's available Android and iPhone/iPad device details and an authorized HTTPS test origin. If unavailable, record the gap and leave this task blocked.
+Produce useful mobile-oriented evidence with zero paid-service spending while UI, themes, audio, celebration and integration continue. Own `docs/validation/mobile-poc.md`, its evidence manifest, and focused validation fixtures if needed. Keep test findings separate from implementation ownership. Do not edit shared app composition while T07–T11 are active; route reproducible defects to the relevant owner and coordinate any shared-file fix with the parent.
 
-## Ownership
+## Required free baseline
 
-Own `docs/validation/mobile-poc.md` and its diagnostic evidence manifest. During this wave only, own minimal `src/app/` composition changes needed to wire the completed control/session/model modules into the existing lab. Coordinate defect fixes back to the owning modules; no polish or unrelated retuning.
+- Run available automated input/session/physics checks and compare active-time behavior across render schedules. Preserve strength 75, drag 0.50 and both rule modes.
+- Exercise phone/tablet portrait and landscape layouts in available desktop browser tooling. Record actual viewport, browser/version and build; label these runs **desktop emulation**, not physical devices.
+- Use DevTools sensor emulation or deterministic fixtures for both tilt axes, full inversion, screen remapping, permission denial/error/no-data and manual fallback. Record whether an observation came from browser interaction or an automated fixture.
+- Exercise one pulse per press, keyboard/focus/cancel behavior and simulated simultaneous inputs; distinguish synthetic contacts from two physical fingers. Verify pumping and manual tilt can be used together.
+- Cover CA-01–CA-10 as applicable, both models and both rules. Run the twelve-ring classic soak; record engine timing separately from rendering FPS. Collection must not hide missing bodies or reduce the classic load.
+- Use locally available Android/iOS emulators when practical. Do not make a large installation or an emulator a new prerequisite; document missing tools and prioritize existing free browser/automated coverage.
+- Produce pass/fail/not-run results, reproduction steps, diagnostic locations and remaining device risks. Fix or assign reproducible regressions to their module owners rather than silently treating them as unavailable access.
 
-## Work and acceptance
+## Optional physical checks at no cost
 
-- Register model, OS, browser/version, orientation, build/commit, and graphics settings before making acceptance claims.
-- Run CA-01–CA-10 and the POC manual protocol, including both models and both rule modes where applicable.
-- Verify actual permission grant/denial/no-data paths, comfortable calibration, full inversion, simultaneous touch, manual orientation plus pumping, and portrait/landscape changes without losing state.
-- Run ten active minutes with twelve classic rings so collection cannot hide body loss or reduce the physics load. Separately verify accumulated progress and remaining-body accounting in collect mode.
-- Record sustained FPS and diagnostics on the devices tested. Resolve reproducible escapes, tunneling, dead controls, or prolonged sub-30 FPS before passing the gate.
-- Confirm accepted feel remains intact after module changes; preserve the existing user acceptance unless a regression requires new tuning.
+When access exists, use a borrowed/user-owned phone with USB/local debugging or an authorized temporary HTTPS link. Android Device Streaming has a documented free Spark quota; check remaining quota/availability before use and stop within the free allowance. No paid subscription, billing upgrade or paid overage is authorized. Neither a cloud account nor a phone is required to complete the free baseline.
 
-## Verification and handoff
+On actual hardware, register device/OS/browser/build/graphics settings. Test physical calibration, inversion, independent simultaneous fingers, permissions and ten active minutes of game-side FPS. A remote rotation control or synthetic input does not prove those physical interactions. No public tunnel, deployment or account setup is created as an incidental documentation/test step.
 
-Produce a pass/fail/not-run matrix with exact steps, diagnostics, limitations, and any fixes. Code changes pass typecheck, tests, and build. Never mark untested devices passed or publish/replace the hosted site without authorization. Gate completion requires the real-device evidence; a prepared protocol alone does not unlock T08–T10.
+## Completion and handoff
 
-Coverage: RF-06–RF-24; RT-07–RT-09, RT-11, RT-14; CA-01–CA-10.
+T06 can be marked done when the required free baseline has an integrated report with actual evidence and explicit unresolved/not-run items. A prepared protocol alone is insufficient. Missing physical-device evidence remains listed for later follow-up and T12; it does not block T07–T11 or make emulation equivalent to real-device acceptance. Actual test failures must remain visible and be assigned for repair.
+
+Code/fixture changes pass appropriate typecheck, tests and build; documentation-only updates use link/consistency checks. Full mobile compatibility, sensor behavior and sustained device FPS are accepted only with corresponding real-device evidence. No publication is part of this task.
+
+Coverage: RF-06–RF-24; RT-07–RT-09, RT-11, RT-14; CA-01–CA-10. Coverage is a checklist, not a pass claim.
