@@ -321,7 +321,7 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   const api: StickerFeature = {
     setRound(id, theme) { roundId = id; currentTheme = theme; updateOverlay(); updatePanel(); },
     handle(event) {
-      if (event.type !== 'victory') return;
+      if (disposed || event.type !== 'victory') return;
       const result = processStickerVictory(data, roundId, awardedRoundId, event.roundId, currentTheme, catalog);
       awardedRoundId = result.awardedRoundId;
       if (!result.reward) return;
