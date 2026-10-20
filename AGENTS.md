@@ -3,7 +3,7 @@
 Lee primero README.md, docs/requirements.md y docs/POC_REPORT.md.
 
 ## Objetivo actual
-El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 2026. Conservar el resultado y acordar el alcance de la siguiente iteración antes de desarrollar el juego completo. TypeScript, Rapier 3D y Three.js. Usar motor existente; crear uno propio queda fuera del alcance.
+El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 2026. El usuario reanudó los pendientes el 20 de octubre de 2026. Conservar el setup y las dos reglas al evolucionar el jugador y su laboratorio; consultar el tablero y el informe actual antes de repetir trabajo. TypeScript, Rapier 3D y Three.js. Usar motor existente; crear uno propio queda fuera del alcance.
 
 ## Reglas del producto
 - El agujero del aro debe existir en la colisión; ensartado y extracción físicos, sin teletransporte ni fijación artificial.
@@ -20,11 +20,11 @@ El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 202
 
 ## Verificación
 Node.js 22+ y pnpm 11.25.0. Ejecutar pnpm install, pnpm typecheck, pnpm test y pnpm build.
-El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. Tras T01–T05 la suite actual tiene 42 pruebas superadas; ver docs/validation/integration-t01-t05.md. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
+El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. La suite actual tiene 53 pruebas superadas tras la integración del 20 de octubre; ver docs/validation/release.md. El informe T01–T05 conserva la evidencia histórica de sus 42 pruebas. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
 No afirmar que se validaron sensores, controles táctiles, FPS o apariencia sin probarlos en navegador/dispositivo real.
 
 ## Pendientes prioritarios
-T01–T05 están integradas y verificadas. T06 queda planificada como validación gratuita sin bloqueo de otras tareas. Usar pruebas automatizadas, DevTools y emuladores disponibles; acceso físico gratuito o prestado es opcional. No contratar servicios ni activar facturación. La falta de dispositivos deja evidencia pendiente, sin impedir el desarrollo ni el informe de pruebas; no declarar superada la aceptación móvil real. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
+El jugador normal está en `/`; el POC está en `/lab.html` y la vista de pruebas en `/preview.html?scene=stack`. T01–T08 y T10–T12 tienen implementación/evidencia integradas. T09 está integrado y probado automáticamente; queda revisión auditiva subjetiva. T06 terminó su baseline gratuito; la aceptación en dispositivos reales sigue pendiente. Usar pruebas automatizadas, DevTools y emuladores disponibles; acceso físico gratuito o prestado es opcional. No contratar servicios ni activar facturación. La falta de dispositivos deja evidencia pendiente, sin impedir el desarrollo ni el informe de pruebas; no declarar superada la aceptación móvil real. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
 
 Esta es una copia portátil del fuente. No contiene credenciales ni la identidad del alojamiento original. No publicar ni reemplazar el sitio alojado como parte de la validación local.
 

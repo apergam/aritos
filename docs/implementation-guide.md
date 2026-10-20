@@ -28,7 +28,7 @@ Baseline commit: `dc20f5f` on `main`. Do not rebuild the physics experiment from
 | UI | Pump buttons below the tank; manual tilt, sensor activation, calibration, lab scenes, camera controls, diagnostics, versioned assets, and local no-cache serving exist. |
 | Validation | Sixteen engine/rule tests, typecheck, build, local browser checks, and user acceptance of feel. See the report for exact evidence. |
 
-Existing code is not equivalent to full product acceptance. Production onboarding, menu lifecycle, reliable preferences, themes, audio, mascots, production/lab separation, and real mobile validation are unfinished. Sensor code exists, but permissions, multitouch, orientation changes, and sustained FPS have not been verified on real reference devices. The sensor and alternative control paths need hardening, not an assumption of compatibility.
+At the baseline commit, production onboarding, menu lifecycle, reliable preferences, themes, audio, mascots, production/lab separation and real mobile validation were unfinished. The October 20 integrated player and its remaining acoustic/physical-device checks are recorded in [the readiness report](validation/release.md). Implementation is not equivalent to full product acceptance. Sensor code exists, but permissions, multitouch, orientation changes, and sustained FPS have not been verified on real reference devices. The sensor and alternative control paths need hardening, not an assumption of compatibility.
 
 Preserve both rule modes when evolving the accepted POC. The collect behavior in section 13 is an explicit exception to classic ring retention and victory rules; do not make classic rings disappear or reapply the classic two-second rule to completed collection. Keep collect as the initial selection from the accepted POC unless the user changes that choice.
 
@@ -49,7 +49,7 @@ T01–T05 are integrated. T07, T08 and T09 are ready for assignment in the next 
 
 ## Module boundaries and shared contracts
 
-The current entry point `src/main.ts` mixes rendering, controls, diagnostics, and lifecycle. `src/physics.ts` includes simulation and rule bookkeeping. T01 extracts cohesive modules and records their actual exported contracts in `docs/module-contracts.md`. The following responsibilities are the intended boundaries, not a requirement to create one file per function:
+At baseline, `src/main.ts` mixed rendering, controls, diagnostics and lifecycle; `src/physics.ts` included simulation and rule bookkeeping. T01 extracted cohesive modules and records their actual exported contracts in `docs/module-contracts.md`. The following responsibilities are the intended boundaries, not a requirement to create one file per function:
 
 | Boundary | Suggested ownership | Public responsibility |
 | --- | --- | --- |

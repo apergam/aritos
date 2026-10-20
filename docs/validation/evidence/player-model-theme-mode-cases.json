@@ -1,0 +1,122 @@
+[
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "octopus",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "ocean",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "octopus",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "ocean",
+    "model": "single-button"
+  },
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "astronaut",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "space",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "astronaut",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "space",
+    "model": "single-button"
+  },
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "capybara",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "capybaras",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "capybara",
+    "mode": "RETO · GUARDAR AL LLEGAR",
+    "overlayPointerEvents": "none",
+    "theme": "capybaras",
+    "model": "single-button"
+  },
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "octopus",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "ocean",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "octopus",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "ocean",
+    "model": "single-button"
+  },
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "astronaut",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "space",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "astronaut",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "space",
+    "model": "single-button"
+  },
+  {
+    "centerVisible": false,
+    "count": "12 / 12",
+    "leftVisible": true,
+    "mascot": "capybara",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "capybaras",
+    "model": "two-button"
+  },
+  {
+    "centerVisible": true,
+    "count": "12 / 12",
+    "leftVisible": false,
+    "mascot": "capybara",
+    "mode": "RETO · MODO CLÁSICO",
+    "overlayPointerEvents": "none",
+    "theme": "capybaras",
+    "model": "single-button"
+  }
+]

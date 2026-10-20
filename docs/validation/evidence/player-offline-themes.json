@@ -1,0 +1,20 @@
+{
+  "method": "local HTTP server process stopped after load",
+  "offlineThemes": [
+    {
+      "progress": "1 / 2",
+      "sound": "Activados",
+      "theme": "ocean"
+    },
+    {
+      "progress": "1 / 2",
+      "sound": "Activados",
+      "theme": "space"
+    },
+    {
+      "progress": "1 / 2",
+      "sound": "Activados",
+      "theme": "capybaras"
+    }
+  ]
+}

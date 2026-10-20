@@ -1,16 +1,16 @@
-# Aritos — POC de física
+# Aritos — Aros al agua
 
-Prototipo independiente para validar la sección 7 de la hoja de requisitos. TypeScript, Rapier 3D 0.19.3 y Three.js 0.180.0. No implementa todavía los temas, audio, mascotas, editor ni otros modos futuros.
+Juego de aros al agua en el navegador, con TypeScript, Rapier 3D 0.19.3 y Three.js 0.180.0. Incluye interfaz de juego en español, dos modelos, tres temas, controles manuales/sensores, preferencias, audio sintetizado y celebraciones. Conserva el laboratorio físico como entrada separada. Sin cuentas, backend de partida ni temporizador.
 
-## Estado del POC
+## Estado actual
 
 Aceptado por el usuario el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. Incluye depósito de fondo 1.8, estacas apoyadas en el piso, chorros laterales bajos, botones bajo el depósito y controles de cámara exclusivos del laboratorio.
 
-Las 16 pruebas originales preservan el setup aceptado. La integración T01–T05 supera ahora 42 pruebas, TypeScript y build, con comprobaciones adicionales en el navegador integrado; ver el [informe de integración](docs/validation/integration-t01-t05.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
+Las 16 pruebas originales preservan el setup aceptado. La integración del 20 de octubre supera 53 pruebas, TypeScript y build. Se comprobaron las doce combinaciones de modelo/tema/modo, seis tamaños de pantalla y el cambio de temas con el servidor detenido después de cargar; ver el [informe de preparación](docs/validation/release.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
 
 ## Implementation planning
 
-The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T05 are integrated. By the user’s October 19 decision, T06 uses free validation paths and runs in parallel without blocking later implementation. Real-device checks remain explicitly pending where access is unavailable; no paid subscription or billing activation is allowed. See requirements section 15. Player-facing text remains in Spanish.
+The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T08 and T10–T12 have integrated implementation/evidence. T09 audio is integrated with automated lifecycle checks; subjective browser/device audition remains in review. T06 completed its free baseline, independently of unavailable physical devices. See the board and release report for exact evidence; no paid subscription or billing activation is allowed. Player-facing text remains in Spanish.
 
 ## Ejecutar y construir
 
@@ -24,11 +24,18 @@ pnpm build
 pnpm serve
 ```
 
-Para probar en esta computadora, `pnpm serve` abre http://127.0.0.1:8000/ y evita la caché. Tras cambiar el fuente, ejecutar `pnpm build` y recargar. El encabezado muestra `POC / <revisión>`; CSS y JavaScript llevan esa misma revisión en su URL para evitar mezclar versiones.
+Para probar en esta computadora, `pnpm serve` sirve el juego en http://127.0.0.1:8000/ y el laboratorio en http://127.0.0.1:8000/lab.html, sin caché. Tras cambiar el fuente, ejecutar `pnpm build` y recargar. El laboratorio muestra `POC / <revisión>` y `/build.json` registra la revisión común; CSS y JavaScript llevan esa misma revisión en su URL para evitar mezclar versiones.
 
 Servir `dist/` mediante HTTPS para probar sensores en móvil. La salida es estática; no requiere backend. Los recursos JavaScript incluyen Rapier/WASM, sin CDN de dependencias. Las tipografías tienen respaldo de fuentes del sistema.
 
-## Usar el POC
+## Entradas y juego
+
+- `/`: selección de modelo, tema y modo, seguida de Jugar. Ajustes permite tema/sonido, pausa, ayuda, cambio de juguete y reinicio con confirmación. Cambiar el tema conserva la ronda; cambiar juguete vuelve a selección y crea otra al pulsar Jugar.
+- `/lab.html`: laboratorio conservado, con escenas, cámara, parámetros físicos, colisiones y diagnóstico.
+- `/preview.html?scene=stack`: vista de pruebas del jugador con escena física controlada; admite `free`, `drop`, `stack` y `depth`. Está separada de la entrada normal y sirve para comprobar victorias sin colocar aros desde el juego libre.
+- Recursos de temas y mascotas SVG incluidos en el bundle; audio generado con Web Audio. No se requieren peticiones de red para seguir jugando/cambiar tema tras la carga. Esto no implementa PWA ni arranque en frío sin conexión.
+
+## Usar el laboratorio
 
 - Juego libre: doce aros sueltos y dos estacas.
 - Modo inicial “Guardar al llegar a la base”: el aro debe ensartarse físicamente y tocar una base durante 0.12 s activos. Se retira su cuerpo y su dibujo, suma a “Guardados” y conserva ese progreso durante la partida. Tocar el piso fuera de las estacas no cuenta. Al guardar el último aro se completa el objetivo.

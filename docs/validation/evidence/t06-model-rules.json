@@ -1,0 +1,46 @@
+[
+  {
+    "centerHidden": false,
+    "count": "1 / 2",
+    "leftHidden": true,
+    "mode": "collect",
+    "model": "1",
+    "viewport": {
+      "height": 390,
+      "width": 844
+    }
+  },
+  {
+    "centerHidden": false,
+    "count": "1 / 2",
+    "leftHidden": true,
+    "mode": "classic",
+    "model": "1",
+    "viewport": {
+      "height": 390,
+      "width": 844
+    }
+  },
+  {
+    "centerHidden": true,
+    "count": "1 / 2",
+    "leftHidden": false,
+    "mode": "collect",
+    "model": "2",
+    "viewport": {
+      "height": 390,
+      "width": 844
+    }
+  },
+  {
+    "centerHidden": true,
+    "count": "1 / 2",
+    "leftHidden": false,
+    "mode": "classic",
+    "model": "2",
+    "viewport": {
+      "height": 390,
+      "width": 844
+    }
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "build": "b6c3db9f",
+  "cases": [
+    {
+      "centerVisible": false,
+      "count": "12 / 12",
+      "mascot": "octopus",
+      "theme": "ocean",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    },
+    {
+      "centerVisible": true,
+      "count": "12 / 12",
+      "mascot": "octopus",
+      "theme": "ocean",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    },
+    {
+      "centerVisible": false,
+      "count": "12 / 12",
+      "mascot": "astronaut",
+      "theme": "space",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    },
+    {
+      "centerVisible": true,
+      "count": "12 / 12",
+      "mascot": "astronaut",
+      "theme": "space",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    },
+    {
+      "centerVisible": false,
+      "count": "12 / 12",
+      "mascot": "capybara",
+      "theme": "capybaras",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    },
+    {
+      "centerVisible": true,
+      "count": "12 / 12",
+      "mascot": "capybara",
+      "theme": "capybaras",
+      "toastAbovePumps": true,
+      "toastPointerEvents": "none"
+    }
+  ]
+}

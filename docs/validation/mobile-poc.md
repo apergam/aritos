@@ -1,6 +1,6 @@
 # T06 — Mobile POC validation record
 
-Status: **planned — free baseline ready for the next session**. Updated October 19, 2026. T02–T04 are integrated; see [T01–T05 evidence](integration-t01-t05.md). This document is a protocol, not new acceptance evidence. T06 no longer blocks other implementation. No new tests or workers are started by this planning update.
+Status: **free baseline executed — physical-device acceptance pending**. Updated October 20, 2026. Tested accepted lab build `f930b866` (source `e7b12a3`, code unchanged from integration `c346c1b`) in the Codex in-app desktop browser. T06 does not block other implementation. This report distinguishes current desktop/fixture observations from earlier engine evidence and not-run hardware checks.
 
 ## Access and registration
 
@@ -8,18 +8,26 @@ Use [free browser/automated/emulator paths](mobile-access.md) first. Actual-devi
 
 ## Free baseline checklist
 
-These rows are planned, not completed. Previous desktop/automated evidence may be referenced with its original build and date; new runs require their own records.
+The parent executed the free baseline on October 20. Prior evidence is reused only with its original build/date; it is not relabeled as a new physical-device run.
 
 | Work | Evidence to record | Current status |
 | --- | --- | --- |
-| Input/session/physics regressions, active-time comparison and twelve-ring classic soak | Actual commands/build, results, body integrity and engine timing | planned; prior supporting evidence linked above |
-| Phone/tablet viewport portrait/landscape, both models/rules, accessible controls | Browser/version, dimensions, screenshots and observed behavior | planned |
-| Emulated tilt/inversion/remapping and synthetic permission/no-data transitions | Tool or fixture, steps, expected/actual state; label emulated | planned |
-| Pump edges, focus/cancel, simultaneous commands and manual tilt plus pumping | Browser/fixture evidence; label synthetic contacts | planned |
-| Available local OS emulator checks | Emulator/OS/browser/build or reason not run | optional |
-| Findings and follow-up manifest | Pass/fail/not-run, defects assigned to owners, remaining physical checks | planned |
+| Input/session/physics regressions, active-time comparison and twelve-ring classic soak | Current input/session checks: 16/16 passed. Unchanged physics uses the prior 600-second / 72,000-step classic soak and 42-test integration at `f930b866`; [evidence](integration-t01-t05.md). | pass, with prior engine evidence explicitly reused |
+| Phone/tablet viewport portrait/landscape, both models/rules, accessible controls | 390×844, 844×390, 768×1024, 1024×768; no horizontal page overflow, pumps below tank. Both models/rules retain 1/2 in drop scene after rotating viewport. [Bounds](evidence/t06-layouts.json), [model/rule results](evidence/t06-model-rules.json). | pass for state/overlap; lab landscape scrolling defect below |
+| Emulated tilt/inversion/remapping and synthetic permission/no-data transitions | `tests/input.test.ts` plus prior physics gravity vectors cover calibration/remap/manual inversion/denial/invalid data/late permission. Current run uses deterministic fixtures, not DevTools hardware injection. | pass, automated fixtures only |
+| Pump edges, focus/cancel, simultaneous commands and manual tilt plus pumping | Eight focused input tests cover one pulse, independent pointer IDs, key repeat/focus/cancel and manual tilt; session tests cover allowed model pumps. | pass, synthetic input |
+| Available local OS emulator checks | No full Xcode or Android Studio installation/adb found. No large installation or account setup performed. | not run, optional |
+| Findings and follow-up manifest | Landscape lab scroll issue assigned to T07; actual devices remain unavailable. Production responsive regression belongs to T12. | recorded |
 
-## Run registration
+## Current run and finding
+
+Evidence class: desktop viewport emulation and deterministic Node fixtures. Browser user agent reports Chrome 155 on Macintosh; pixel ratio 2. The four exact viewport bounds are in the JSON manifest. Screenshots: [phone portrait](evidence/t06-lab-390x844.png), [phone landscape](evidence/t06-lab-844x390.png), [tablet portrait](evidence/t06-lab-768x1024.png), [tablet landscape](evidence/t06-lab-1024x768.png).
+
+**Finding T06-01:** the old laboratory needs vertical scrolling in short landscape. At 844×390, tank bottom is 560.90 px and pump bottom is 641.90 px; at 1024×768, pump bottom is 969.03 px. This is not horizontal clipping or pump/tank overlap, but is inconvenient for play. Resolved in the production layout and verified by T12 across six viewport sizes, including 360×640 and 844×390; see [release evidence](release.md). The lab remains an explicit diagnostic view. No mobile FPS claim is inferred from desktop layout testing.
+
+Current command: `node --import tsx --test tests/input.test.ts tests/session.test.ts`, 16/16 passed. No engine tuning changed. Actual permission grant, physical tilt and two physical fingers remain not run. T06's baseline is complete with the production finding subsequently resolved, not a declaration that every mobile criterion passed.
+
+## Physical run registration
 
 Before each run, fill in:
 
