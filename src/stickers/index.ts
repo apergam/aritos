@@ -55,14 +55,22 @@ export function parseStickerData(serialized: string | null, catalog: readonly St
   } catch { return { unlocked: [], placements: [] }; }
 }
 
-export function normalizeStickerPoint(point: { x: number; y: number }, width: number, height: number): { x: number; y: number } | null {
+export function normalizeStickerPoint(point: { x: number; y: number }, width: number, height: number, insetX = 0.06, insetY = 0.06): { x: number; y: number } | null {
   if (![point.x, point.y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return null;
-  return { x: Math.max(0.06, Math.min(0.94, point.x / width)), y: Math.max(0.06, Math.min(0.94, point.y / height)) };
+  const xInset = Math.max(0, Math.min(0.49, Number.isFinite(insetX) ? insetX : 0.06));
+  const yInset = Math.max(0, Math.min(0.49, Number.isFinite(insetY) ? insetY : 0.06));
+  return { x: Math.max(xInset, Math.min(1 - xInset, point.x / width)), y: Math.max(yInset, Math.min(1 - yInset, point.y / height)) };
 }
 
 export function unlockThemeSticker(data: StickerData, theme: ThemeId, catalog: readonly StickerDefinition[]): StickerData {
   const reward = catalog.find(item => item.theme === theme && !data.unlocked.includes(item.id));
   return reward ? { ...data, unlocked: [...data.unlocked, reward.id] } : data;
+}
+
+export function processStickerVictory(data: StickerData, currentRoundId: number, awardedRoundId: number | null, eventRoundId: number, theme: ThemeId, catalog: readonly StickerDefinition[]): { data: StickerData; awardedRoundId: number | null; reward: StickerDefinition | null } {
+  if (eventRoundId !== currentRoundId || awardedRoundId === eventRoundId) return { data, awardedRoundId, reward: null };
+  const reward = catalog.find(item => item.theme === theme && !data.unlocked.includes(item.id)) ?? null;
+  return { data: reward ? { ...data, unlocked: [...data.unlocked, reward.id] } : data, awardedRoundId: eventRoundId, reward };
 }
 
 export function createStickerFeature(host: HTMLElement, options: StickerFeatureOptions): StickerFeature {
@@ -72,31 +80,63 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   let data = sandbox ? { unlocked: [] as string[], placements: [] as StickerPlacement[] } : parseStickerData(safeRead(options.storage), catalog);
   let roundId = -1;
   let currentTheme: ThemeId = 'ocean';
-  const awarded = new Set<number>();
+  let awardedRoundId: number | null = null;
   let editing = false;
   let pendingId: string | null = null;
   let selectedId: string | null = null;
   let disposed = false;
   let dragCleanup: (() => void) | null = null;
+  let opener: HTMLElement | null = null;
+  let toastTimer = 0;
 
   const overlay = document.createElement('div');
   overlay.className = 'sticker-overlay';
   overlay.setAttribute('aria-label', 'Decoraciones del juguete');
+  overlay.setAttribute('aria-live', 'off');
   const panel = document.createElement('section');
   panel.className = 'sticker-panel';
   panel.setAttribute('aria-label', 'Colección de stickers');
   panel.hidden = true;
+  const heading = document.createElement('h2');
+  heading.textContent = 'Stickers'; heading.tabIndex = -1;
+  const rewardStatus = document.createElement('p');
+  rewardStatus.className = 'sticker-reward'; rewardStatus.setAttribute('role', 'status'); rewardStatus.setAttribute('aria-live', 'polite'); rewardStatus.hidden = true;
+  const note = document.createElement('p');
+  note.className = 'sticker-sandbox-note'; note.textContent = 'Modo de prueba: los stickers no se guardan.'; note.hidden = !sandbox;
+  const list = document.createElement('div'); list.className = 'sticker-list';
+  const hint = document.createElement('p'); hint.className = 'sticker-hint'; hint.tabIndex = -1; hint.setAttribute('aria-live', 'polite');
+  const removeButton = document.createElement('button'); removeButton.type = 'button'; removeButton.textContent = 'Quitar';
+  const closeButton = document.createElement('button'); closeButton.type = 'button'; closeButton.textContent = 'Terminar';
+  panel.append(heading, rewardStatus, note, list, hint, removeButton, closeButton);
+  const toast = document.createElement('div');
+  toast.className = 'sticker-toast'; toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); toast.hidden = true;
   document.body.append(panel);
+  document.body.append(toast);
   host.append(overlay);
+
+  const previews = new Map<string, HTMLImageElement>();
+  const rows = new Map<string, { row: HTMLDivElement; status: HTMLSpanElement; preview: HTMLImageElement; action: HTMLButtonElement }>();
+  const buttons = new Map<string, HTMLButtonElement>();
+  for (const item of catalog) {
+    const preload = new Image();
+    if (item.src) { preload.decoding = 'async'; preload.src = item.src; }
+    previews.set(item.id, preload);
+    const row = document.createElement('div'); row.className = 'sticker-row';
+    const preview = document.createElement('img'); preview.className = 'sticker-thumb'; preview.alt = '';
+    if (item.src) preview.src = item.src;
+    const status = document.createElement('span');
+    const action = document.createElement('button'); action.type = 'button';
+    row.append(preview, status, action); list.append(row);
+    rows.set(item.id, { row, status, preview, action });
+  }
 
   const persist = () => {
     if (sandbox) return;
     try { getStorage(options.storage)?.setItem(STICKER_STORAGE_KEY, JSON.stringify({ version: 1, data })); } catch { /* Storage is optional. */ }
   };
   const notify = (value: boolean) => { if (editing !== value) { editing = value; host.classList.toggle('sticker-feature-editing', value); options.onEditingChange(value); } };
-  const draw = () => {
+  const updateOverlay = () => {
     if (disposed) return;
-    overlay.replaceChildren();
     const surface = options.getSurface();
     // Surface coordinates are relative to the renderer host, matching getSurface's contract.
     const sx = surface.left, sy = surface.top;
@@ -104,89 +144,152 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
       overlay.style.left = `${sx}px`; overlay.style.top = `${sy}px`;
       overlay.style.width = `${surface.width}px`; overlay.style.height = `${surface.height}px`;
       overlay.hidden = false;
+      const present = new Set(data.placements.map(p => p.id));
+      for (const [id, button] of buttons) if (!present.has(id)) { button.remove(); buttons.delete(id); }
       for (const placement of data.placements) {
         const sticker = byId.get(placement.id); if (!sticker) continue;
-        const button = document.createElement('button');
-        button.type = 'button'; button.className = `sticker placed${selectedId === sticker.id ? ' selected' : ''}`;
+        const button = ensureStickerButton(sticker);
+        const stickerSize = Math.min(54, Math.max(22, surface.width * 0.14));
+        button.style.width = `${stickerSize}px`; button.style.height = `${stickerSize}px`;
         button.style.left = `${placement.x * 100}%`; button.style.top = `${placement.y * 100}%`;
-        button.setAttribute('aria-label', `${sticker.label}. Seleccionar para mover o quitar`);
+        button.classList.toggle('selected', editing && selectedId === sticker.id);
         button.tabIndex = editing ? 0 : -1;
-        const image = document.createElement('img'); image.src = sticker.src; image.alt = sticker.alt ?? sticker.label; image.draggable = false;
-        button.append(image);
-        if (editing) {
-          button.addEventListener('pointerdown', event => {
-            event.preventDefault(); button.setPointerCapture(event.pointerId); selectedId = sticker.id;
-            const pointerId = event.pointerId;
-            const move = (e: PointerEvent) => { if (e.pointerId !== pointerId) return; const r = overlay.getBoundingClientRect(); place(sticker.id, e.clientX - r.left, e.clientY - r.top, r.width, r.height); };
-            const end = (e: PointerEvent) => {
-              if (e.pointerId !== pointerId) return;
-              window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end);
-              if (dragCleanup === cleanup) dragCleanup = null;
-            };
-            const cleanup = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end); };
-            dragCleanup?.(); dragCleanup = cleanup;
-            window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
-          });
-          button.addEventListener('click', () => { selectedId = sticker.id; draw(); });
-        }
-        overlay.append(button);
       }
       overlay.onpointerdown = event => {
         if (!editing || !pendingId || (event.target as HTMLElement).closest('.sticker')) return;
-        const r = overlay.getBoundingClientRect(); place(pendingId, event.clientX - r.left, event.clientY - r.top, r.width, r.height); pendingId = null; draw();
+        const r = overlay.getBoundingClientRect();
+        setPlacement(pendingId, event.clientX - r.left, event.clientY - r.top, r.width, r.height);
+        pendingId = null; updatePanel();
       };
     } else overlay.hidden = true;
-    renderPanel();
   };
-  const place = (id: string, x: number, y: number, width: number, height: number) => {
-    const point = normalizeStickerPoint({ x, y }, width, height); if (!point) return;
+  const updatePanel = () => {
+    if (disposed) return;
+    for (const item of catalog) {
+      const row = rows.get(item.id)!;
+      const unlocked = data.unlocked.includes(item.id);
+      const placed = data.placements.some(p => p.id === item.id);
+      row.status.textContent = unlocked ? `Desbloqueado: ${item.label}` : `${themeLabel(item.theme)}: gana una ronda`;
+      row.action.hidden = !unlocked;
+      row.action.textContent = placed ? 'Mover' : 'Colocar';
+      row.action.disabled = !unlocked || (data.placements.length >= 3 && !placed);
+      row.action.setAttribute('aria-label', `${placed ? 'Mover' : 'Colocar'} sticker: ${item.label}`);
+    }
+    hint.textContent = pendingId ? 'Toca el frente del juguete para colocarlo. Con teclado, usa flechas y Enter.' : 'Selecciona un sticker y muévelo con las flechas; Supr lo quita.';
+    removeButton.disabled = !selectedId || !data.placements.some(p => p.id === selectedId);
+    removeButton.setAttribute('aria-label', selectedId ? `Quitar sticker ${byId.get(selectedId)?.label ?? ''}` : 'Quitar sticker seleccionado');
+  };
+  const setPlacement = (id: string, x: number, y: number, width: number, height: number) => {
+    const stickerSize = Math.min(54, Math.max(22, width * 0.14));
+    const point = normalizeStickerPoint({ x, y }, width, height, stickerSize / (2 * width) + 0.01, stickerSize / (2 * height) + 0.01); if (!point) return;
     const old = data.placements.filter(item => item.id !== id);
     if (old.length >= 3 && !data.placements.some(item => item.id === id)) return;
-    data = { ...data, placements: [...old, { id, ...point }] }; selectedId = id; persist(); draw();
+    data = { ...data, placements: [...old, { id, ...point }] }; selectedId = id; persist();
+    updateOverlay(); updatePanel();
   };
-  const removeSelected = () => { if (!selectedId) return; data = { ...data, placements: data.placements.filter(item => item.id !== selectedId) }; selectedId = null; persist(); draw(); };
-  const renderPanel = () => {
-    panel.replaceChildren();
-    const heading = document.createElement('h2'); heading.textContent = 'Stickers'; panel.append(heading);
-    if (sandbox) { const note = document.createElement('p'); note.className = 'sticker-sandbox-note'; note.textContent = 'Modo de prueba: los stickers no se guardan.'; panel.append(note); }
-    for (const item of catalog) {
-      const row = document.createElement('div'); row.className = 'sticker-row';
-      const status = document.createElement('span'); status.textContent = data.unlocked.includes(item.id) ? `Desbloqueado: ${item.label}` : `${themeLabel(item.theme)}: gana una ronda para desbloquear`; row.append(status);
-      if (data.unlocked.includes(item.id)) {
-        const add = document.createElement('button'); add.type = 'button'; add.textContent = data.placements.some(p => p.id === item.id) ? 'Mover' : 'Colocar'; add.disabled = data.placements.length >= 3 && !data.placements.some(p => p.id === item.id);
-        add.addEventListener('click', () => { pendingId = item.id; selectedId = item.id; panel.querySelector<HTMLElement>('.sticker-hint')?.focus(); }); row.append(add);
+  const ensureStickerButton = (sticker: StickerDefinition) => {
+    const existing = buttons.get(sticker.id); if (existing) return existing;
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'sticker placed';
+    button.setAttribute('aria-label', `${sticker.label}. Seleccionar para mover o quitar`);
+    const image = document.createElement('img'); image.alt = sticker.alt ?? sticker.label; image.draggable = false;
+    const preload = previews.get(sticker.id); if (preload?.src) image.src = preload.src;
+    button.append(image);
+    button.addEventListener('pointerdown', event => {
+      if (!editing) return;
+      event.preventDefault();
+      selectedId = sticker.id; pendingId = null; button.focus(); updateOverlay(); updatePanel();
+      try { button.setPointerCapture(event.pointerId); } catch { /* A pointer may already have been canceled. */ }
+      const pointerId = event.pointerId;
+      const move = (e: PointerEvent) => {
+        if (e.pointerId !== pointerId) return;
+        const r = overlay.getBoundingClientRect();
+        const placement = data.placements.find(p => p.id === sticker.id);
+        if (!placement) return;
+        setPlacement(sticker.id, e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+      };
+      const end = (e: PointerEvent) => {
+        if (e.pointerId !== pointerId) return;
+        cleanup();
+      };
+      const cleanup = () => {
+        window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end);
+        try { if (button.hasPointerCapture(pointerId)) button.releasePointerCapture(pointerId); } catch { /* Capture may already be gone. */ }
+        if (dragCleanup === cleanup) dragCleanup = null;
+      };
+      dragCleanup?.(); dragCleanup = cleanup;
+      window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+    });
+    button.addEventListener('click', () => { if (!editing) return; selectedId = sticker.id; pendingId = null; updateOverlay(); updatePanel(); });
+    buttons.set(sticker.id, button); overlay.append(button); return button;
+  };
+  const removeSelected = () => {
+    if (!selectedId) return;
+    const removedId = selectedId;
+    data = { ...data, placements: data.placements.filter(item => item.id !== removedId) };
+    selectedId = null; persist(); updateOverlay(); updatePanel();
+    panel.querySelector<HTMLElement>('.sticker-action')?.focus();
+  };
+  removeButton.addEventListener('click', removeSelected);
+  closeButton.addEventListener('click', () => api.close());
+  for (const item of catalog) {
+    const row = rows.get(item.id)!;
+    row.action.classList.add('sticker-action');
+    row.action.addEventListener('click', () => {
+      if (data.placements.some(p => p.id === item.id)) {
+        pendingId = null; selectedId = item.id; updateOverlay(); updatePanel();
+      } else {
+        pendingId = item.id; selectedId = item.id; updatePanel();
       }
-      panel.append(row);
-    }
-    const hint = document.createElement('p'); hint.className = 'sticker-hint'; hint.tabIndex = -1; hint.textContent = pendingId ? 'Toca el frente del juguete para colocar. También puedes usar las flechas.' : 'Selecciona un sticker colocado para moverlo con las flechas o quitarlo.'; panel.append(hint);
-    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Quitar seleccionado'; remove.disabled = !selectedId; remove.addEventListener('click', removeSelected); panel.append(remove);
-    const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Terminar'; close.addEventListener('click', () => api.close()); panel.append(close);
-  };
+      hint.focus();
+    });
+  }
   const keydown = (event: KeyboardEvent) => {
-    if (!editing || !selectedId || !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Backspace'].includes(event.key)) return;
+    if (!editing) return;
+    if (event.key === 'Escape') { event.preventDefault(); api.close(); return; }
+    if (pendingId && event.key === 'Enter') {
+      event.preventDefault(); setPlacement(pendingId, overlay.clientWidth / 2, overlay.clientHeight / 2, overlay.clientWidth, overlay.clientHeight); pendingId = null; updatePanel(); return;
+    }
+    if (pendingId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.preventDefault();
+      const delta = event.shiftKey ? 0.05 : 0.015;
+      const x = overlay.clientWidth * (0.5 + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0));
+      const y = overlay.clientHeight * (0.5 + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0));
+      setPlacement(pendingId, x, y, overlay.clientWidth, overlay.clientHeight); pendingId = null; updatePanel(); return;
+    }
+    if (!selectedId || !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Backspace'].includes(event.key)) return;
     if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); removeSelected(); return; }
     event.preventDefault();
     const delta = event.shiftKey ? 0.05 : 0.015;
     const p = data.placements.find(item => item.id === selectedId); if (!p) return;
-    place(selectedId, (p.x + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0)) * overlay.clientWidth, (p.y + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0)) * overlay.clientHeight, overlay.clientWidth, overlay.clientHeight);
+    setPlacement(selectedId, (p.x + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0)) * overlay.clientWidth, (p.y + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0)) * overlay.clientHeight, overlay.clientWidth, overlay.clientHeight);
   };
   window.addEventListener('keydown', keydown);
-  const resize = () => draw(); window.addEventListener('resize', resize);
-  function open() { panel.hidden = false; pendingId = null; notify(true); draw(); }
-  function close() { panel.hidden = true; pendingId = null; notify(false); draw(); }
+  const resize = () => updateOverlay(); window.addEventListener('resize', resize);
+  function open() { if (disposed || editing) return; opener = document.activeElement instanceof HTMLElement ? document.activeElement : null; pendingId = null; panel.hidden = false; updatePanel(); notify(true); updateOverlay(); heading.focus(); }
+  function close() {
+    if (!editing && panel.hidden) return;
+    dragCleanup?.(); dragCleanup = null; pendingId = null; panel.hidden = true; notify(false); updateOverlay();
+    const returnFocus = opener; opener = null;
+    if (returnFocus?.isConnected) returnFocus.focus();
+  }
   const api: StickerFeature = {
-    setRound(id, theme) { roundId = id; currentTheme = theme; awarded.clear(); draw(); },
+    setRound(id, theme) { roundId = id; currentTheme = theme; updateOverlay(); updatePanel(); },
     handle(event) {
-      if (event.type !== 'victory' || event.roundId !== roundId || awarded.has(event.roundId)) return;
-      awarded.add(event.roundId);
-      const next = unlockThemeSticker(data, currentTheme, catalog);
-      if (next === data) return;
-      data = next; persist(); draw();
+      if (event.type !== 'victory') return;
+      const result = processStickerVictory(data, roundId, awardedRoundId, event.roundId, currentTheme, catalog);
+      awardedRoundId = result.awardedRoundId;
+      if (!result.reward) return;
+      data = result.data; persist(); updatePanel(); updateOverlay();
+      const rewardName = result.reward.label;
+      toast.textContent = `¡Ganaste el sticker ${rewardName}!`; toast.hidden = false;
+      rewardStatus.textContent = toast.textContent; rewardStatus.hidden = false;
+      window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => { toast.hidden = true; }, 4200);
     },
-    open, close, refresh: draw,
-    dispose() { if (disposed) return; close(); dragCleanup?.(); dragCleanup = null; disposed = true; window.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize); overlay.remove(); panel.remove(); },
+    open, close, refresh() { updateOverlay(); updatePanel(); },
+    dispose() { if (disposed) return; close(); dragCleanup?.(); dragCleanup = null; disposed = true; window.clearTimeout(toastTimer); toast.remove(); window.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize); overlay.remove(); panel.remove(); },
   };
-  draw();
+  updatePanel(); updateOverlay();
   return api;
 }
 
