@@ -1,0 +1,21 @@
+{
+  "build": "3bbe1ed3",
+  "method": "Loaded page, HTTP server process suspended; themes and reward preview activated; server resumed afterward",
+  "checks": [
+    {
+      "theme": "ocean",
+      "count": "1 / 2",
+      "sample": "Muestra de monedita."
+    },
+    {
+      "theme": "space",
+      "count": "1 / 2",
+      "sample": "Muestra de monedita."
+    },
+    {
+      "theme": "capybaras",
+      "count": "1 / 2",
+      "sample": "Muestra de monedita."
+    }
+  ]
+}

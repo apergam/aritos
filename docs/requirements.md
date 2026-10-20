@@ -334,3 +334,10 @@ T22/T23 introduce optional arcade experiments beyond the unassisted first versio
 T23 explicitly extends the initial/fixed-count assumptions in RF-04, classic victory criteria and section 13 for its experimental round only. Successfully added rings increase the objective; already collected progress is preserved. Classic stability restarts after adding rings. Failed spawns do not change the objective, and a completed round cannot be reopened by an encounter. Exact limits and ordering are part of the task's evidence, not changes already implemented in the current session contract.
 
 Keep normal play and its accepted setup available unchanged. Compare pressure, powerups and enemies separately before combining them with width/count/peg changes. No new worker or code change is started by recording these ideas, and no paid asset/service or economy is requested.
+
+
+## 18. Selected polish iteration — October 20, 2026
+
+After recording sections 16–17, the user selected collection reward sound (T14), music (T15) and rear plastic illustrations (T16) for implementation. Geometry and arcade POCs are deferred to a later round. Workers use the requested `gpt-6-luna` / `high`; T14 and T16 ran in parallel and T15 followed the integrated audio base.
+
+This implements the section 16 music extension: original local synthesized theme loops, global mute plus a saved independent music toggle, and two saved collection cue choices with explicit audition. T16 supplies bundled original SVG rear inserts. See [the polish report](validation/polish-audio-art.md) for current checks and listening limitations. T14/T15 remain in review for acoustic feedback; no paid service, external track, physics retuning or publication was introduced.

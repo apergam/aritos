@@ -1,5 +1,7 @@
 # Integrated player readiness — October 20, 2026
 
+Later audio/art polish: [October 20 follow-up](polish-audio-art.md), build `3bbe1ed3`, 64 tests. The 53-test evidence below describes the preceding first-version candidate.
+
 **Decision:** ready for continued local play and player review. Full Android/iOS acceptance is **not established**. Physical sensors, two independent fingers, sustained device FPS and acoustic audition remain not run. T12 is the completed readiness audit; it does not convert these gaps into passes or authorize publication.
 
 Source candidate: `611ae64` (integration `ad730e0`, fresh-world correction `a1ebc32`). Final content build: **b6c3db9f**. Final changes after the complete test run were CSS-only compact-screen fixes, verified in the browser. All work remains local; no paid access, account, tunnel or deployment was created.

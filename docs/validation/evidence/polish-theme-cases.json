@@ -1,0 +1,63 @@
+{
+  "build": "3bbe1ed3",
+  "evidence": "desktop browser, controlled drop, manual pause",
+  "cases": [
+    {
+      "model": "two-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-left",
+        "pump-right"
+      ],
+      "theme": "ocean"
+    },
+    {
+      "model": "two-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-left",
+        "pump-right"
+      ],
+      "theme": "space"
+    },
+    {
+      "model": "two-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-left",
+        "pump-right"
+      ],
+      "theme": "capybaras"
+    },
+    {
+      "model": "single-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-center"
+      ],
+      "theme": "ocean"
+    },
+    {
+      "model": "single-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-center"
+      ],
+      "theme": "space"
+    },
+    {
+      "model": "single-button",
+      "count": "1 / 2",
+      "pause": "En pausa",
+      "pumps": [
+        "pump-center"
+      ],
+      "theme": "capybaras"
+    }
+  ]
+}

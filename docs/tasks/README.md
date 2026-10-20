@@ -23,14 +23,14 @@ For an assignment, provide the agent with exactly one task path and the prompt f
 
 ## Polish backlog — recorded October 20
 
-These eight planned cards capture the user's seven ideas; sound effects and music are separate assignments. No worker is assigned and no code change is started. Suggested first comparisons are T13 and T14; this order is a recommendation, not a scheduled iteration. Run geometry experiments separately before combining candidates. T14/T15 share audio ownership and T16/T17 share theme/rendering ownership, so serialize each pair or explicitly separate files/contracts before parallel work.
+These eight cards capture the user's seven ideas; sound effects and music are separate assignments. The user selected T14, T15 and T16 for the current polish iteration; all other cards remain planned. T14 and T16 ran in parallel, followed by T15 on the integrated audio base. All three are now integrated; the two audio cards await subjective listening. Geometry experiments are deferred to the next round. Run geometry experiments separately before combining candidates. T14/T15 share audio ownership and T16/T17 share theme/rendering ownership, so serialize each pair or explicitly separate files/contracts before parallel work.
 
 | ID | Task | Dependencies | Status | Owner | Evidence / next decision |
 | --- | --- | --- | --- | --- | --- |
 | T13 | [Compare a narrower toy](T13-narrower-tank-poc.md) | T04, T11 | planned | Unassigned | Lab comparison; user selects width before production adoption |
-| T14 | [Improve collection reward sound](T14-collection-reward-sound.md) | T09 implementation, T11 | planned | Unassigned | Coin-like/sparkling audition; listening still pending |
-| T15 | [Add theme music loops](T15-theme-music.md) | T09 implementation, T08, T11 | planned | Unassigned | Document rights, seamless loops and controls; new music scope |
-| T16 | [Illustrate rear plastic inserts](T16-themed-rear-inserts.md) | T08, T11 | planned | Unassigned | Three themes, readable rings/pegs and preserved physical state |
+| T14 | [Improve collection reward sound](T14-collection-reward-sound.md) | T09 implementation, T11 | review | /root/t14_reward | `272cbdd`, `29a3972`, integration `c25218a`; two saved cues + browser samples; [evidence](../validation/polish-audio-art.md); user audition pending |
+| T15 | [Add theme music loops](T15-theme-music.md) | T09 implementation, T08, T11 | review | /root/t15_music | `ff51cab`, integration `c25218a`; original local loops, five lifecycle/sample tests; [evidence](../validation/polish-audio-art.md); listening/mix review pending |
+| T16 | [Illustrate rear plastic inserts](T16-themed-rear-inserts.md) | T08, T11 | done | /root/t16_rear | `45a9b69`, `a01ac11`; six browser model/theme comparisons and no-origin-request check; [evidence](../validation/polish-audio-art.md) |
 | T17 | [Explore themed rings](T17-themed-rings.md) | T08, T11 | planned | Unassigned | Palette/decorative comparison; recheck with T16 art |
 | T18 | [Compare twelve and twenty rings](T18-twenty-rings-poc.md) | T04, T03, T11 | planned | Unassigned | Existing BL-03; capacity, activity and performance comparison |
 | T19 | [Prototype earned stickers](T19-sticker-rewards-poc.md) | T03, T05, T08, T11 | planned | Unassigned | Define reward rule, placement and local persistence |
@@ -50,4 +50,4 @@ Three additional lab experiments are planned. T22 contains the two requested pow
 
 ## Next review
 
-The October 20 implementation is available locally. The user praised the first version on October 20. Remaining review: listen to the synthesized effects in the actual browser/device and collect specific feedback on the planned comparisons; run real Android/iOS sensors, independent fingers and sustained FPS checks when free hardware access is available. T12 is a completed readiness audit, not a declaration that not-run mobile criteria passed. No paid service, cloud session or deployment was created.
+The October 20 implementation and selected polish are available locally (build `3bbe1ed3`, 64 tests). The user praised the first version before this polish; new audio/art feedback has not yet been received. Remaining review: listen to the synthesized effects in the actual browser/device and collect specific feedback on the planned comparisons; run real Android/iOS sensors, independent fingers and sustained FPS checks when free hardware access is available. T12 is a completed readiness audit, not a declaration that not-run mobile criteria passed. No paid service, cloud session or deployment was created.

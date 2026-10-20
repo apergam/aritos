@@ -2,7 +2,7 @@
 
 Dependencies: T09 implementation, T08, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user subsequently selected this card for the October 20 polish iteration. Consult the task board for current integrated status and review evidence.
 
 ## Outcome and ownership
 

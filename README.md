@@ -6,7 +6,7 @@ Juego de aros al agua en el navegador, con TypeScript, Rapier 3D 0.19.3 y Three.
 
 Aceptado por el usuario el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. Incluye depósito de fondo 1.8, estacas apoyadas en el piso, chorros laterales bajos, botones bajo el depósito y controles de cámara exclusivos del laboratorio.
 
-Las 16 pruebas originales preservan el setup aceptado. La integración del 20 de octubre supera 53 pruebas, TypeScript y build. Se comprobaron las doce combinaciones de modelo/tema/modo, seis tamaños de pantalla y el cambio de temas con el servidor detenido después de cargar; ver el [informe de preparación](docs/validation/release.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
+Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas. El pulido posterior de audio y fondos supera **64 pruebas**, TypeScript y build; ver [la revisión actual](docs/validation/polish-audio-art.md). Se comprobaron las doce combinaciones de modelo/tema/modo, seis tamaños de pantalla y el cambio de temas con el servidor detenido después de cargar; ver el [informe de preparación](docs/validation/release.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
 
 ## Implementation planning
 
@@ -14,7 +14,7 @@ The [requirements](docs/requirements.md) are available in English, with their or
 
 ## Backlog de pulido
 
-El usuario aprobó la primera versión visual el 20 de octubre. Se registraron [ocho tareas T13–T20](docs/tasks/README.md#polish-backlog--recorded-october-20) para sus siete ideas: ancho, sonido de recompensa, música por tema, ilustraciones traseras, aros temáticos, veinte aros, stickers y estacas en otras posiciones. Están planeadas, sin iniciar; los cambios físicos se compararán en el laboratorio. La música amplía el alcance anterior de solo efectos; ver [la decisión](docs/requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026).
+El usuario aprobó la primera versión visual el 20 de octubre. Se registraron [ocho tareas T13–T20](docs/tasks/README.md#polish-backlog--recorded-october-20) para sus siete ideas: ancho, sonido de recompensa, música por tema, ilustraciones traseras, aros temáticos, veinte aros, stickers y estacas en otras posiciones. El usuario seleccionó T14/T15/T16: están integradas, con sonido/música pendientes de revisión auditiva. Las demás siguen planeadas; los cambios físicos se compararán en el laboratorio. La música amplía el alcance anterior de solo efectos; ver [la decisión](docs/requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026).
 
 Se añadieron [T21–T23](docs/tasks/README.md#pressure-and-arcade-backlog--recorded-october-20): presión variable en el POC, dos powerups con mascota acuática y un enemigo que añade uno o dos aros llamativos con música de villano. Quedan planeados como experimentos separados; ver [alcance y reglas pendientes](docs/requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026).
 
@@ -39,7 +39,8 @@ Servir `dist/` mediante HTTPS para probar sensores en móvil. La salida es está
 - `/`: selección de modelo, tema y modo, seguida de Jugar. Ajustes permite tema/sonido, pausa, ayuda, cambio de juguete y reinicio con confirmación. Cambiar el tema conserva la ronda; cambiar juguete vuelve a selección y crea otra al pulsar Jugar.
 - `/lab.html`: laboratorio conservado, con escenas, cámara, parámetros físicos, colisiones y diagnóstico.
 - `/preview.html?scene=stack`: vista de pruebas del jugador con escena física controlada; admite `free`, `drop`, `stack` y `depth`. Está separada de la entrada normal y sirve para comprobar victorias sin colocar aros desde el juego libre.
-- Recursos de temas y mascotas SVG incluidos en el bundle; audio generado con Web Audio. No se requieren peticiones de red para seguir jugando/cambiar tema tras la carga. Esto no implementa PWA ni arranque en frío sin conexión.
+- Ajustes incluye sonido general, música por tema y sonido al guardar (Monedita/Chispas), con botón Escuchar. La música usa loops originales de unos 19 segundos, se activa al jugar y se pausa con la partida; reiniciar la ronda conserva su posición musical. Sonido general silencia música y efectos; música se puede apagar por separado. Las elecciones se recuerdan sin restaurar la ronda.
+- Recursos de temas, ilustraciones del plástico posterior y mascotas SVG incluidos en el bundle; audio y música generados con Web Audio, sin grabaciones de terceros. No se requieren peticiones de red para seguir jugando/cambiar tema tras la carga. Esto no implementa PWA ni arranque en frío sin conexión.
 
 ## Usar el laboratorio
 
