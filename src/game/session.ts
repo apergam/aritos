@@ -1,5 +1,6 @@
 import { Simulation, type GameMode, type PumpSide, type Scene, type Vec } from '../physics';
 import { toyModel, type ToyModelId } from '../models/toy-model';
+import type { LabSimulationSettings } from '../lab/experiments/geometry';
 
 export type PauseReason = 'manual' | 'menu' | 'document-hidden' | 'restart-confirmation' | 'decoration';
 export type RingPose = Readonly<{ id: number; position: Vec; rotation: Readonly<{ x: number; y: number; z: number; w: number }>; threaded: boolean }>;
@@ -20,7 +21,7 @@ export type GameEvent =
   | Readonly<{ type: 'pump'; roundId: number; side: PumpSide }>
   | Readonly<{ type: 'ring-collected'; roundId: number; ringId: number; collected: number; total: number }>
   | Readonly<{ type: 'victory'; roundId: number; mode: GameMode }>;
-export type SessionOptions = Readonly<{ scene?: Scene; model?: ToyModelId; mode?: GameMode }>;
+export type SessionOptions = Readonly<{ scene?: Scene; model?: ToyModelId; mode?: GameMode; lab?: LabSimulationSettings }>;
 
 /** Owns round identity and rule-facing events; Rapier details stay behind Simulation. */
 export class GameSession {
@@ -28,6 +29,7 @@ export class GameSession {
   private round = 0;
   private scene: Scene;
   private model: ToyModelId;
+  private labSettings: LabSimulationSettings = {};
   private listeners = new Set<(event: GameEvent) => void>();
   private pauses = new Set<PauseReason>();
   private victoryRound = -1;
@@ -37,7 +39,8 @@ export class GameSession {
 
   constructor(options: SessionOptions = {}) {
     this.scene = options.scene ?? 'free'; this.model = options.model ?? 'two-button';
-    this.simulation = new Simulation();
+    this.labSettings = options.lab ?? {};
+    this.simulation = new Simulation(this.labSettings);
     this.simulation.mode = options.mode ?? 'collect';
     this.simulation.model = toyModel(this.model).buttonCount;
     this.simulation.onWin = () => {
@@ -49,7 +52,7 @@ export class GameSession {
       this.victoryRound = roundId;
       this.pendingVictory = { type: 'victory', roundId, mode };
     };
-    this.simulation.reset(this.scene);
+    this.simulation.reset(this.scene, this.labSettings);
   }
 
   subscribe(listener: (event: GameEvent) => void): () => void {
@@ -87,8 +90,9 @@ export class GameSession {
     this.scene = options.scene ?? this.scene;
     this.model = options.model ?? this.model;
     if (options.mode) this.simulation.mode = options.mode;
+    if (options.lab) this.labSettings = Object.freeze({ ...options.lab });
     this.simulation.model = toyModel(this.model).buttonCount;
-    this.simulation.reset(this.scene);
+    this.simulation.reset(this.scene, this.labSettings);
   }
 
   /** One fixed physics tick. The caller owns accumulation and frame catch-up limits. */
