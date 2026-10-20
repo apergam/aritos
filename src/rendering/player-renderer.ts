@@ -138,16 +138,14 @@ export class PlayerRenderer {
     for (const [id, ring] of this.rings) {
       ring.material.color.setHex(colors.rings[Math.abs(id) % colors.rings.length]);
     }
-    this.rebuildButtons(colors.button, colors.buttonEdge);
   }
 
-  /** Rebuilds only pump-button meshes, which have no relationship to physics state. */
+  /** Model changes only select the matching visual jet outlets. */
   setModel(id: ToyModelId): void {
     if (this.currentModel !== id || this.modelGroup.children.length === 0) {
       this.clearGroup(this.modelGroup);
       this.outlets.splice(0);
       this.currentModel = id;
-      this.createButtons(theme(this.currentTheme).colors.button, theme(this.currentTheme).colors.buttonEdge);
       this.createOutlets();
     }
     const visible = new Set(toyModel(id).outlets);
@@ -257,19 +255,6 @@ export class PlayerRenderer {
       const tipMat = this.standard(colors.peg, 0.19, 0.35);
       this.bindThemeColor(tipMat, 'peg');
       this.sphere(this.tankGroup, TOY_PHYSICS.pegRadius, 20, 12, tipMat, [peg.x, TOY_PHYSICS.pegTipY, peg.z]);
-    }
-  }
-
-  private createButtons(buttonColor: number, edgeColor: number): void {
-    const model = toyModel(this.currentModel);
-    const xs = model.buttonCount === 1 ? [0] : [-2.15, 2.15];
-    for (const x of xs) {
-      const bodyMat = this.standard(edgeColor, 0.29, 0.2);
-      const buttonMat = this.physical(buttonColor, 0.22, 0.16);
-      this.box(this.modelGroup, 1.74, 0.3, 1.05, bodyMat, [x, -6.85, 0]);
-      this.cylinder(this.modelGroup, 0.57, 0.63, 0.23, 32, bodyMat, [x, -6.61, 0]);
-      this.cylinder(this.modelGroup, 0.46, 0.5, 0.36, 32, buttonMat, [x, -6.35, 0]);
-      this.cylinder(this.modelGroup, 0.3, 0.36, 0.045, 32, this.standard(0xfff3cb, 0.18, 0.28), [x, -6.16, 0]);
     }
   }
 
@@ -430,15 +415,6 @@ export class PlayerRenderer {
     this.geometries.add(mesh.geometry);
     const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const material of materials) this.materials.add(material);
-  }
-
-  private rebuildButtons(button: number, edge: number): void {
-    this.clearGroup(this.modelGroup);
-    this.outlets.splice(0);
-    this.createButtons(button, edge);
-    this.createOutlets();
-    const visible = new Set(toyModel(this.currentModel).outlets);
-    for (const outlet of this.outlets) outlet.mesh.visible = visible.has(outlet.side);
   }
 
   private clearGroup(group: THREE.Group): void {
