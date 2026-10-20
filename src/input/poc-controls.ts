@@ -24,7 +24,11 @@ export const INPUT_HELP = 'Toca los botones para bombear. En computadora: A/D bo
 const GAME_KEYS = new Set([' ', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', 'p']);
 function isEditingControl(target: EventTarget | null): boolean {
   if (!target || typeof (target as Element).closest !== 'function') return false;
-  return Boolean((target as Element).closest('input, select, textarea, button, a[href], [contenteditable=""], [contenteditable="true"], [role="textbox"]'));
+  return Boolean((target as Element).closest('input, select, textarea, [contenteditable=""], [contenteditable="true"], [role="textbox"]'));
+}
+function hasNativeSpaceActivation(target: EventTarget | null): boolean {
+  if (!target || typeof (target as Element).closest !== 'function') return false;
+  return Boolean((target as Element).closest('button, a[href]'));
 }
 
 /** Owns pump pointer edges, keyboard commands, and held-key manual tilt. */
@@ -42,7 +46,10 @@ export class PocControls {
     const buttonActivations: Array<{ release(key: string): void; clear(): void }> = [];
     const down = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-      if (!GAME_KEYS.has(key) || isEditingControl(event.target)) return;
+      if (!GAME_KEYS.has(key) || event.defaultPrevented || isEditingControl(event.target)) return;
+      // Focused buttons keep their native Space activation; pump buttons handle
+      // Space at the element and mark it prevented before this window listener.
+      if (key === ' ' && hasNativeSpaceActivation(event.target)) return;
       event.preventDefault();
       if (event.repeat || this.acceptedKeys.has(key)) return;
       this.acceptedKeys.add(key);

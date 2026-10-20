@@ -96,6 +96,29 @@ test('button activation state clears on blur and window keyup after focus moves'
   controls.dispose();
 });
 
+test('global A and P shortcuts work from focused buttons while Space keeps native pump activation', () => {
+  const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
+  const left = htmlElement();
+  const pumps: PumpSide[] = [];
+  let pauses = 0;
+  const controls = new PocControls({ model: () => 'two-button', paused: () => false, pump: side => pumps.push(side), togglePause: () => pauses++, setManualTilt() {} }, { left }, target as unknown as Window);
+  const ordinaryButton = { closest: (selector: string) => selector.includes('button') ? {} : null } as unknown as EventTarget;
+
+  target.emit('keydown', { key: 'p', repeat: false, target: ordinaryButton });
+  target.emit('keydown', { key: 'a', repeat: false, target: ordinaryButton });
+  target.emit('keyup', { key: 'p' });
+  target.emit('keyup', { key: 'a' });
+  assert.equal(pauses, 1);
+  assert.deepEqual(pumps, ['left']);
+
+  target.emit('keydown', { key: ' ', repeat: false, target: ordinaryButton });
+  assert.deepEqual(pumps, ['left']); // The focused button retains its native Space activation.
+  (left as any).emit('keydown', { key: ' ', repeat: false });
+  target.emit('keydown', { key: ' ', repeat: false, target: left, defaultPrevented: true });
+  assert.deepEqual(pumps, ['left', 'left']); // Element activation is not repeated globally.
+  controls.dispose();
+});
+
 test('editing controls retain keyboard input and held orientation keys release on blur/hidden', () => {
   const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
   const tilts: Array<[number, number]> = [];
