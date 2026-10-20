@@ -62,6 +62,13 @@ export function normalizeStickerPoint(point: { x: number; y: number }, width: nu
   return { x: Math.max(xInset, Math.min(1 - xInset, point.x / width)), y: Math.max(yInset, Math.min(1 - yInset, point.y / height)) };
 }
 
+export function clampStickerPlacementToSurface(placement: StickerPlacement, width: number, height: number): StickerPlacement {
+  if (![placement.x, placement.y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return placement;
+  const stickerSize = Math.min(54, Math.max(22, width * 0.14));
+  const point = normalizeStickerPoint({ x: placement.x * width, y: placement.y * height }, width, height, stickerSize / (2 * width) + 0.01, stickerSize / (2 * height) + 0.01);
+  return point ? { ...placement, ...point } : placement;
+}
+
 export function unlockThemeSticker(data: StickerData, theme: ThemeId, catalog: readonly StickerDefinition[]): StickerData {
   const reward = catalog.find(item => item.theme === theme && !data.unlocked.includes(item.id));
   return reward ? { ...data, unlocked: [...data.unlocked, reward.id] } : data;
@@ -88,6 +95,7 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   let dragCleanup: (() => void) | null = null;
   let opener: HTMLElement | null = null;
   let toastTimer = 0;
+  let headingFocusFrame = 0;
 
   const overlay = document.createElement('div');
   overlay.className = 'sticker-overlay';
@@ -104,10 +112,15 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   const note = document.createElement('p');
   note.className = 'sticker-sandbox-note'; note.textContent = 'Modo de prueba: los stickers no se guardan.'; note.hidden = !sandbox;
   const list = document.createElement('div'); list.className = 'sticker-list';
+  const help = document.createElement('details'); help.className = 'sticker-help';
+  const helpSummary = document.createElement('summary'); helpSummary.textContent = 'Ayuda';
   const hint = document.createElement('p'); hint.className = 'sticker-hint'; hint.tabIndex = -1; hint.setAttribute('aria-live', 'polite');
+  help.append(helpSummary, hint);
   const removeButton = document.createElement('button'); removeButton.type = 'button'; removeButton.textContent = 'Quitar';
   const closeButton = document.createElement('button'); closeButton.type = 'button'; closeButton.textContent = 'Terminar';
-  panel.append(heading, rewardStatus, note, list, hint, removeButton, closeButton);
+  const footer = document.createElement('div'); footer.className = 'sticker-footer';
+  footer.append(removeButton, closeButton);
+  panel.append(heading, rewardStatus, note, list, help, footer);
   const toast = document.createElement('div');
   toast.className = 'sticker-toast'; toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); toast.hidden = true;
   document.body.append(panel);
@@ -118,12 +131,10 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   const rows = new Map<string, { row: HTMLDivElement; status: HTMLSpanElement; preview: HTMLImageElement; action: HTMLButtonElement }>();
   const buttons = new Map<string, HTMLButtonElement>();
   for (const item of catalog) {
-    const preload = new Image();
-    if (item.src) { preload.decoding = 'async'; preload.src = item.src; }
-    previews.set(item.id, preload);
     const row = document.createElement('div'); row.className = 'sticker-row';
     const preview = document.createElement('img'); preview.className = 'sticker-thumb'; preview.alt = '';
-    if (item.src) preview.src = item.src;
+    if (item.src) { preview.decoding = 'async'; preview.src = item.src; }
+    previews.set(item.id, preview);
     const status = document.createElement('span');
     const action = document.createElement('button'); action.type = 'button';
     row.append(preview, status, action); list.append(row);
@@ -144,8 +155,20 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
       overlay.style.left = `${sx}px`; overlay.style.top = `${sy}px`;
       overlay.style.width = `${surface.width}px`; overlay.style.height = `${surface.height}px`;
       overlay.hidden = false;
+      let didClamp = false;
+      const clampedPlacements = data.placements.map(placement => {
+        const next = clampStickerPlacementToSurface(placement, surface.width, surface.height);
+        if (Math.abs(next.x - placement.x) < 1e-6 && Math.abs(next.y - placement.y) < 1e-6) return placement;
+        didClamp = true;
+        return next;
+      });
+      if (didClamp) { data = { ...data, placements: clampedPlacements }; persist(); }
       const present = new Set(data.placements.map(p => p.id));
-      for (const [id, button] of buttons) if (!present.has(id)) { button.remove(); buttons.delete(id); }
+      for (const [id, button] of buttons) if (!present.has(id)) {
+        const preview = previews.get(id), row = rows.get(id)?.row;
+        if (preview && row) row.prepend(preview);
+        button.remove(); buttons.delete(id);
+      }
       for (const placement of data.placements) {
         const sticker = byId.get(placement.id); if (!sticker) continue;
         const button = ensureStickerButton(sticker);
@@ -192,8 +215,7 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'sticker placed';
     button.setAttribute('aria-label', `${sticker.label}. Seleccionar para mover o quitar`);
-    const image = document.createElement('img'); image.alt = sticker.alt ?? sticker.label; image.draggable = false;
-    const preload = previews.get(sticker.id); if (preload?.src) image.src = preload.src;
+    const image = previews.get(sticker.id)!; image.alt = sticker.alt ?? sticker.label; image.draggable = false;
     button.append(image);
     button.addEventListener('pointerdown', event => {
       if (!editing) return;
@@ -201,12 +223,15 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
       selectedId = sticker.id; pendingId = null; button.focus(); updateOverlay(); updatePanel();
       try { button.setPointerCapture(event.pointerId); } catch { /* A pointer may already have been canceled. */ }
       const pointerId = event.pointerId;
+      const stickerRect = button.getBoundingClientRect();
+      const pointerOffsetX = event.clientX - (stickerRect.left + stickerRect.width / 2);
+      const pointerOffsetY = event.clientY - (stickerRect.top + stickerRect.height / 2);
       const move = (e: PointerEvent) => {
         if (e.pointerId !== pointerId) return;
         const r = overlay.getBoundingClientRect();
         const placement = data.placements.find(p => p.id === sticker.id);
         if (!placement) return;
-        setPlacement(sticker.id, e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+        setPlacement(sticker.id, e.clientX - r.left - pointerOffsetX, e.clientY - r.top - pointerOffsetY, r.width, r.height);
       };
       const end = (e: PointerEvent) => {
         if (e.pointerId !== pointerId) return;
@@ -236,6 +261,7 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
     const row = rows.get(item.id)!;
     row.action.classList.add('sticker-action');
     row.action.addEventListener('click', () => {
+      help.open = true;
       if (data.placements.some(p => p.id === item.id)) {
         pendingId = null; selectedId = item.id; updateOverlay(); updatePanel();
       } else {
@@ -246,32 +272,51 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
   }
   const keydown = (event: KeyboardEvent) => {
     if (!editing) return;
-    if (event.key === 'Escape') { event.preventDefault(); api.close(); return; }
+    const key = event.key.toLowerCase();
+    if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); api.close(); return; }
     if (pendingId && event.key === 'Enter') {
-      event.preventDefault(); setPlacement(pendingId, overlay.clientWidth / 2, overlay.clientHeight / 2, overlay.clientWidth, overlay.clientHeight); pendingId = null; updatePanel(); return;
+      event.preventDefault(); event.stopImmediatePropagation(); setPlacement(pendingId, overlay.clientWidth / 2, overlay.clientHeight / 2, overlay.clientWidth, overlay.clientHeight); pendingId = null; updatePanel(); return;
     }
     if (pendingId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      event.preventDefault();
+      event.preventDefault(); event.stopImmediatePropagation();
       const delta = event.shiftKey ? 0.05 : 0.015;
       const x = overlay.clientWidth * (0.5 + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0));
       const y = overlay.clientHeight * (0.5 + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0));
       setPlacement(pendingId, x, y, overlay.clientWidth, overlay.clientHeight); pendingId = null; updatePanel(); return;
     }
-    if (!selectedId || !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Backspace'].includes(event.key)) return;
-    if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); removeSelected(); return; }
-    event.preventDefault();
-    const delta = event.shiftKey ? 0.05 : 0.015;
-    const p = data.placements.find(item => item.id === selectedId); if (!p) return;
-    setPlacement(selectedId, (p.x + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0)) * overlay.clientWidth, (p.y + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0)) * overlay.clientHeight, overlay.clientWidth, overlay.clientHeight);
+    if (selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Backspace'].includes(event.key)) {
+      if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); event.stopImmediatePropagation(); removeSelected(); return; }
+      event.preventDefault(); event.stopImmediatePropagation();
+      const delta = event.shiftKey ? 0.05 : 0.015;
+      const p = data.placements.find(item => item.id === selectedId); if (!p) return;
+      setPlacement(selectedId, (p.x + (event.key === 'ArrowRight' ? delta : event.key === 'ArrowLeft' ? -delta : 0)) * overlay.clientWidth, (p.y + (event.key === 'ArrowDown' ? delta : event.key === 'ArrowUp' ? -delta : 0)) * overlay.clientHeight, overlay.clientWidth, overlay.clientHeight);
+      return;
+    }
+    // Prevent the game's window-level shortcuts from consuming editor keys.
+    if ([' ', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', 'p'].includes(key)) {
+      const nativeButton = event.key === ' ' && event.target instanceof Element && event.target.closest('button, a[href]');
+      if (!nativeButton) { event.preventDefault(); event.stopImmediatePropagation(); }
+    }
   };
-  window.addEventListener('keydown', keydown);
+  window.addEventListener('keydown', keydown, true);
   const resize = () => updateOverlay(); window.addEventListener('resize', resize);
-  function open() { if (disposed || editing) return; opener = document.activeElement instanceof HTMLElement ? document.activeElement : null; pendingId = null; panel.hidden = false; updatePanel(); notify(true); updateOverlay(); heading.focus(); }
+  function open() {
+    if (disposed || editing) return;
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    pendingId = null; help.open = false; panel.hidden = false; updatePanel(); notify(true); updateOverlay();
+    window.cancelAnimationFrame(headingFocusFrame);
+    headingFocusFrame = window.requestAnimationFrame(() => { if (editing && !panel.hidden && heading.isConnected) heading.focus(); });
+  }
   function close() {
     if (!editing && panel.hidden) return;
+    window.cancelAnimationFrame(headingFocusFrame); headingFocusFrame = 0;
     dragCleanup?.(); dragCleanup = null; pendingId = null; panel.hidden = true; notify(false); updateOverlay();
     const returnFocus = opener; opener = null;
-    if (returnFocus?.isConnected) returnFocus.focus();
+    if (returnFocus?.isConnected) {
+      const dialog = returnFocus.closest('dialog') as HTMLDialogElement | null;
+      const target = dialog && !dialog.open ? document.querySelector<HTMLElement>('#settings-open') : returnFocus;
+      if (target?.isConnected) target.focus();
+    }
   }
   const api: StickerFeature = {
     setRound(id, theme) { roundId = id; currentTheme = theme; updateOverlay(); updatePanel(); },
@@ -287,7 +332,7 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
       window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => { toast.hidden = true; }, 4200);
     },
     open, close, refresh() { updateOverlay(); updatePanel(); },
-    dispose() { if (disposed) return; close(); dragCleanup?.(); dragCleanup = null; disposed = true; window.clearTimeout(toastTimer); toast.remove(); window.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize); overlay.remove(); panel.remove(); },
+    dispose() { if (disposed) return; close(); window.cancelAnimationFrame(headingFocusFrame); dragCleanup?.(); dragCleanup = null; disposed = true; window.clearTimeout(toastTimer); toast.remove(); window.removeEventListener('keydown', keydown, true); window.removeEventListener('resize', resize); overlay.remove(); panel.remove(); },
   };
   updatePanel(); updateOverlay();
   return api;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_STICKERS, normalizeStickerPoint, parseStickerData, processStickerVictory, type StickerData } from '../src/stickers';
+import { clampStickerPlacementToSurface, DEFAULT_STICKERS, normalizeStickerPoint, parseStickerData, processStickerVictory, type StickerData } from '../src/stickers';
 
 test('a theme victory grants its one catalog reward once and earned rewards cross themes', () => {
   let data: StickerData = { unlocked: [], placements: [] };
@@ -62,4 +62,14 @@ test('placement coordinates stay inside the toy surface and reject invalid dimen
   });
   assert.equal(normalizeStickerPoint({ x: 5, y: 5 }, 0, 200), null);
   assert.equal(normalizeStickerPoint({ x: Number.NaN, y: 5 }, 300, 200), null);
+});
+
+test('surface resize clamps only stickers that would cross the edge and does not drift on repeated refresh', () => {
+  const centered = { id: 'ocean-octopus', x: 0.5, y: 0.5 };
+  assert.deepEqual(clampStickerPlacementToSurface(centered, 205, 274), centered);
+  const nearEdge = { id: 'ocean-octopus', x: 0.07, y: 0.93 };
+  const clamped = clampStickerPlacementToSurface(nearEdge, 205, 274);
+  assert.notDeepEqual(clamped, nearEdge);
+  assert.deepEqual(clampStickerPlacementToSurface(clamped, 205, 274), clamped);
+  assert.equal(clampStickerPlacementToSurface(centered, 0, 274), centered);
 });
