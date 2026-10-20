@@ -39,7 +39,7 @@ export class Simulation {
  private settings:LabSimulationSettings;
  private nextRingId=0;
  private baseColliders:RAPIER.Collider[]=[];
- private baseContactTime=new Map<number,number>();
+ private baseContactTime=new Map<number,{pegIndex:number;time:number}>();
  constructor(settings:LabSimulationSettings={}){ this.settings=Object.freeze({...settings}); this.layout=createLabLayout(this.settings); this.world=this.createWorld(); }
  private createWorld(){
   const {tank,pegs}=this.layout;
@@ -50,6 +50,9 @@ export class Simulation {
   wall(-tank.x-.15,0,0,.15,tank.y+.3,tank.z+.3);wall(tank.x+.15,0,0,.15,tank.y+.3,tank.z+.3);
   wall(0,-tank.y-.15,0,tank.x+.3,.15,tank.z+.3);wall(0,tank.y+.15,0,tank.x+.3,.15,tank.z+.3);
   wall(0,0,-tank.z-.15,tank.x+.3,tank.y+.3,.15);wall(0,0,tank.z+.15,tank.x+.3,tank.y+.3,.15);
+  for(const support of this.layout.supports){
+   world.createCollider(RAPIER.ColliderDesc.cuboid(support.halfExtents.x,support.halfExtents.y,support.halfExtents.z).setTranslation(support.center.x,support.center.y,support.center.z).setFriction(.3).setRestitution(.02));
+  }
   for(const p of pegs){
    this.baseColliders.push(wall(p.x,p.baseY-TOY_PHYSICS.base.footHeight/2,p.z,TOY_PHYSICS.base.halfWidth,TOY_PHYSICS.base.footHeight/2,TOY_PHYSICS.base.halfDepth));
    world.createCollider(RAPIER.ColliderDesc.cylinder((p.tipY-p.baseY)/2,TOY_PHYSICS.pegRadius).setTranslation(p.x,(p.tipY+p.baseY)/2,p.z).setFriction(.2));
@@ -87,10 +90,12 @@ export class Simulation {
   }else{
    // Start clear of the floor-mounted pedestals and shafts, including tilted rings.
    const narrow=this.layout.width<9;
-   const columns=narrow?[-2.1,0,2.1]:[-3.8,-2.5,-.675,.675,2.5,3.8];
-   const rowWidth=narrow?3:6;
+   const raised=this.layout.pegLayout==='raised';
+   const columns=raised?[-3.8,0,3.8]:(narrow?[-2.1,0,2.1]:[-3.8,-2.5,-.675,.675,2.5,3.8]);
+   const rowWidth=raised||narrow?3:6;
+   const rows=raised?[-5,-2.5,.5,4]:undefined;
    for(let i=0;i<this.layout.ringCount;i++){
-    const x=columns[i%rowWidth],y=narrow?-4.7+Math.floor(i/rowWidth)*1.4:-4.7+Math.floor(i/rowWidth)*1.4,z=((i%3)-1)*.24;
+    const x=columns[i%rowWidth],y=rows?rows[Math.floor(i/rowWidth)]:-4.7+Math.floor(i/rowWidth)*1.4,z=((i%3)-1)*.24;
     const q=new Quaternion().setFromEuler(new Euler(.2*(i%3),.24*(i%2),i*.73));
     this.addRing(x,y,z,q);
    }
@@ -103,38 +108,44 @@ export class Simulation {
  pump(side:PumpSide){
   this.pulses.push({side,left:PULSE_DURATION});
  }
- isThreaded(ring:Ring){
+ isThreaded(ring:Ring){return this.threadedPegIndex(ring)!==undefined;}
+ private threadedPegIndex(ring:Ring):number|undefined{
   const p=ring.body.translation(),q=ring.body.rotation();
   const n=new Vector3(0,0,1).applyQuaternion(new Quaternion(q.x,q.y,q.z,q.w));
-  if(Math.abs(n.y)<.3)return false;
-  return this.layout.pegs.some(peg=>{
+  if(Math.abs(n.y)<.3)return undefined;
+  for(let index=0;index<this.layout.pegs.length;index++){
+   const peg=this.layout.pegs[index];
    const dy=-(n.x*(peg.x-p.x)+n.z*(peg.z-p.z))/n.y;
    const axisY=p.y+dy;
-   return axisY>peg.baseY+.02&&axisY<peg.tipY-.14&&Math.hypot(peg.x-p.x,dy,peg.z-p.z)<RING.radius-RING.tube-TOY_PHYSICS.pegRadius-.015;
-  });
+   if(axisY>peg.baseY+.02&&axisY<peg.tipY-.14&&Math.hypot(peg.x-p.x,dy,peg.z-p.z)<RING.radius-RING.tube-TOY_PHYSICS.pegRadius-.015)return index;
+  }
+  return undefined;
  }
  get count(){return this.rings.filter(r=>this.isThreaded(r)).length;}
- private touchesBase(ring:Ring){
+ private touchesBase(ring:Ring,pegIndex:number){
   let touching=false;
-  for(const base of this.baseColliders){
-   for(let i=0;i<ring.body.numColliders()&&!touching;i++){
-    this.world.contactPair(ring.body.collider(i),base,manifold=>{
-     for(let j=0;j<manifold.numContacts();j++)if(manifold.contactDist(j)<=.01)touching=true;
-    });
-   }
+  const base=this.baseColliders[pegIndex];
+  if(!base)return false;
+  for(let i=0;i<ring.body.numColliders()&&!touching;i++){
+   this.world.contactPair(ring.body.collider(i),base,manifold=>{
+    for(let j=0;j<manifold.numContacts();j++)if(manifold.contactDist(j)<=.01)touching=true;
+   });
   }
   return touching;
  }
  private collectAtBase(){
   const remaining:Ring[]=[];
   for(const ring of this.rings){
-   // Require real threading and sustained contact with a pedestal, not just the floor.
-   const eligible=ring.body.translation().y<BASE+RING.radius+RING.tube+.1&&this.isThreaded(ring)&&this.touchesBase(ring);
-   const contactTime=eligible?(this.baseContactTime.get(ring.id)??0)+DT:0;
+   // Threading and contact must refer to the same physical peg/base pair.
+   const pegIndex=this.threadedPegIndex(ring);
+   const peg=pegIndex===undefined?undefined:this.layout.pegs[pegIndex];
+   const eligible=pegIndex!==undefined&&peg!==undefined&&ring.body.translation().y<peg.baseY+RING.radius+RING.tube+.1&&this.touchesBase(ring,pegIndex);
+   const prior=this.baseContactTime.get(ring.id);
+   const contactTime=eligible?(prior?.pegIndex===pegIndex?prior.time:0)+DT:0;
    if(contactTime>=.12){
     this.world.removeRigidBody(ring.body);this.collected++;this.baseContactTime.delete(ring.id);
    }else{
-    if(eligible)this.baseContactTime.set(ring.id,contactTime);else this.baseContactTime.delete(ring.id);
+    if(eligible&&pegIndex!==undefined)this.baseContactTime.set(ring.id,{pegIndex,time:contactTime});else this.baseContactTime.delete(ring.id);
     remaining.push(ring);
    }
   }
