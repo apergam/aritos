@@ -1,0 +1,57 @@
+/* Link this file from the player shell. The celebration host should cover only
+   the toy stage so the controls remain available throughout the effect. */
+.aritos-celebration {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint;
+}
+.aritos-celebration[data-state="idle"] { display: none; }
+.aritos-celebration__mascot {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  right: 12px;
+  width: clamp(60px, 15vw, 92px);
+  height: auto;
+  filter: drop-shadow(0 5px 8px #17383c28);
+  transform-origin: 50% 88%;
+  animation: aritos-mascot-dance 1.05s ease-in-out infinite;
+}
+.aritos-celebration__confetti { position: absolute; inset: 0; }
+.aritos-celebration__confetti i {
+  position: absolute;
+  display: block;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--piece-color);
+  opacity: .82;
+  animation: aritos-confetti-fall 1.5s ease-in var(--piece-delay) infinite;
+}
+.aritos-celebration__confetti i[data-edge="top"] { top: -12px; left: var(--piece-lane); }
+.aritos-celebration__confetti i[data-edge="right"] { top: var(--piece-lane); right: 2px; }
+.aritos-celebration__confetti i[data-edge="bottom"] { bottom: -12px; left: var(--piece-lane); }
+.aritos-celebration__confetti i[data-edge="left"] { top: var(--piece-lane); left: 2px; }
+.aritos-celebration.is-paused .aritos-celebration__mascot,
+.aritos-celebration.is-paused .aritos-celebration__confetti i { animation-play-state: paused; }
+.aritos-celebration[data-reduced-motion="true"] .aritos-celebration__confetti { display: none; }
+.aritos-celebration[data-reduced-motion="true"] .aritos-celebration__mascot { animation: none; }
+@keyframes aritos-mascot-dance {
+  0%, 100% { transform: rotate(-8deg) translateY(1px); }
+  28% { transform: rotate(8deg) translateY(-5px); }
+  56% { transform: rotate(-5deg) translateY(0); }
+  78% { transform: rotate(10deg) translateY(-4px); }
+}
+@keyframes aritos-confetti-fall {
+  0% { translate: 0 -8px; rotate: 0deg; opacity: 0; }
+  12% { opacity: .82; }
+  100% { translate: 0 58px; rotate: 150deg; opacity: .08; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aritos-celebration__confetti { display: none; }
+  .aritos-celebration__mascot { animation: none; }
+}
