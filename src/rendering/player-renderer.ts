@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { SessionSnapshot } from '../game/session';
 import { TOY_PHYSICS, toyModel, type PumpSide, type ToyModelId } from '../models/toy-model';
-import { theme, type ThemeId } from '../themes';
+import { REAR_INSERT_ASSETS, theme, type ThemeId } from '../themes';
 
 export type RenderQuality = 'high' | 'reduced';
 export type PlayerRendererOptions = Readonly<{ model: ToyModelId; theme: ThemeId; quality?: RenderQuality }>;
@@ -35,9 +35,13 @@ export class PlayerRenderer {
   private readonly themeColors: Array<{ material: THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial; key: keyof ReturnType<typeof theme>['colors'] }> = [];
   private readonly outlets: Array<{ side: PumpSide; mesh: THREE.Mesh }> = [];
   private readonly themeDecor = new Map<ThemeId, THREE.Group>();
+  private readonly rearInserts = new Map<ThemeId, THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>>();
+  private readonly rearInsertTextures = new Map<ThemeId, THREE.Texture>();
+  private readonly pendingRearInsertLoads = new Set<ThemeId>();
   private currentTheme: ThemeId;
   private currentModel: ToyModelId;
   private quality: RenderQuality;
+  private disposed = false;
 
   constructor(private readonly container: HTMLElement, options: PlayerRendererOptions) {
     this.currentTheme = options.theme;
@@ -70,6 +74,7 @@ export class PlayerRenderer {
     this.scene.add(rimLight);
     this.scene.add(this.tankGroup, this.modelGroup);
     this.createTank();
+    this.createRearInserts();
     this.createBubbles();
     this.setTheme(this.currentTheme);
     this.setModel(this.currentModel);
@@ -135,6 +140,7 @@ export class PlayerRenderer {
     for (const [themeId, group] of this.themeDecor) {
       group.visible = themeId === id;
     }
+    for (const [themeId, insert] of this.rearInserts) insert.visible = themeId === id;
     for (const [id, ring] of this.rings) {
       ring.material.color.setHex(colors.rings[Math.abs(id) % colors.rings.length]);
     }
@@ -175,8 +181,12 @@ export class PlayerRenderer {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.rings.clear();
     this.pulses.length = 0;
+    for (const texture of this.rearInsertTextures.values()) texture.dispose();
+    this.rearInsertTextures.clear();
+    this.pendingRearInsertLoads.clear();
     this.renderer.dispose();
     this.renderer.domElement.remove();
     for (const geometry of this.geometries) geometry.dispose();
@@ -341,6 +351,53 @@ export class PlayerRenderer {
     this.addReeds(capybaras, 5.75, -5.9);
     this.addLilyPad(capybaras, -5.85, -6.05);
     this.addLilyPad(capybaras, 5.85, -6.05);
+  }
+
+  /**
+   * Bundled SVG scenes sit on the inner face of the rear acrylic wall. They
+   * remain behind the water and every physical ring, with open center space
+   * preserving contrast around holes and peg tips.
+   */
+  private createRearInserts(): void {
+    const z = -TOY_PHYSICS.tank.z + 0.095;
+    for (const id of ['ocean', 'capybaras', 'space'] as const) {
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: this.quality === 'high' ? 0.78 : 0.62,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(9.9, 13.85), material);
+      mesh.position.set(0, 0, z);
+      mesh.renderOrder = 2;
+      mesh.visible = id === this.currentTheme;
+      this.tankGroup.add(mesh);
+      this.geometries.add(mesh.geometry);
+      this.materials.add(material);
+      this.rearInserts.set(id, mesh);
+      this.loadRearInsert(id, material);
+    }
+  }
+
+  private loadRearInsert(id: ThemeId, material: THREE.MeshBasicMaterial): void {
+    if (this.pendingRearInsertLoads.has(id) || this.rearInsertTextures.has(id)) return;
+    this.pendingRearInsertLoads.add(id);
+    new THREE.TextureLoader().load(REAR_INSERT_ASSETS[id].source, texture => {
+      this.pendingRearInsertLoads.delete(id);
+      if (this.disposed || !this.rearInserts.has(id)) {
+        texture.dispose();
+        return;
+      }
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = this.quality === 'high' ? Math.min(4, this.renderer.capabilities.getMaxAnisotropy()) : 1;
+      this.rearInsertTextures.set(id, texture);
+      material.map = texture;
+      material.needsUpdate = true;
+    }, undefined, () => {
+      this.pendingRearInsertLoads.delete(id);
+    });
   }
 
   private makeDecorationGroup(id: ThemeId): THREE.Group {
