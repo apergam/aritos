@@ -39,6 +39,7 @@ export class PocControls {
 
   constructor(private readonly actions: PocInputActions, buttons: PumpElements, private readonly target: Window = window) {
     const doc = target.document;
+    const buttonActivations: Array<{ release(key: string): void; clear(): void }> = [];
     const down = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
       if (!GAME_KEYS.has(key) || isEditingControl(event.target)) return;
@@ -55,8 +56,12 @@ export class PocControls {
       const key = event.key.toLowerCase();
       this.acceptedKeys.delete(key);
       this.keys.delete(key);
+      for (const activation of buttonActivations) activation.release(event.key);
     };
-    const clearHeld = () => { this.keys.clear(); this.acceptedKeys.clear(); this.pointers.clear(); };
+    const clearHeld = () => {
+      this.keys.clear(); this.acceptedKeys.clear(); this.pointers.clear();
+      for (const activation of buttonActivations) activation.clear();
+    };
     const visibility = () => { if (doc.hidden) clearHeld(); };
     target.addEventListener('keydown', down);
     target.addEventListener('keyup', up);
@@ -82,7 +87,15 @@ export class PocControls {
       this.originalTouchAction.set(element, element.style.touchAction);
       element.style.touchAction = 'none';
       const keyboardKeys = new Set<string>();
-      let suppressKeyboardClick = false;
+      const activation = {
+        suppressClick: false,
+        release(key: string) {
+          if (!keyboardKeys.delete(key)) return;
+          queueMicrotask(() => { activation.suppressClick = false; });
+        },
+        clear() { keyboardKeys.clear(); activation.suppressClick = false; },
+      };
+      buttonActivations.push(activation);
       const keyDown = (event: KeyboardEvent) => {
         if (event.key !== ' ' && event.key !== 'Enter') return;
         event.preventDefault();
@@ -90,16 +103,14 @@ export class PocControls {
         keyboardKeys.add(event.key);
         actions.pump(side);
         // Ignore a browser-synthesized click for this same key activation.
-        suppressKeyboardClick = true;
+        activation.suppressClick = true;
       };
-      const keyUp = (event: KeyboardEvent) => {
-        if (!keyboardKeys.delete(event.key)) return;
-        queueMicrotask(() => { suppressKeyboardClick = false; });
-      };
+      const keyUp = (event: KeyboardEvent) => activation.release(event.key);
+      const buttonBlur = () => activation.clear();
       const click = (event: MouseEvent) => {
         // Pointer activation already fired on pointerdown. detail=0 covers assistive
         // technology and programmatic activation that has no pointer event.
-        if (event.detail !== 0 || suppressKeyboardClick) return;
+        if (event.detail !== 0 || activation.suppressClick) return;
         event.preventDefault();
         actions.pump(side);
       };
@@ -113,11 +124,13 @@ export class PocControls {
       element.addEventListener('pointerdown', pointerDown);
       element.addEventListener('keydown', keyDown);
       element.addEventListener('keyup', keyUp);
+      element.addEventListener('blur', buttonBlur);
       element.addEventListener('click', click);
       this.cleanup.push(
         () => element.removeEventListener('pointerdown', pointerDown),
         () => element.removeEventListener('keydown', keyDown),
         () => element.removeEventListener('keyup', keyUp),
+        () => element.removeEventListener('blur', buttonBlur),
         () => element.removeEventListener('click', click),
       );
     }

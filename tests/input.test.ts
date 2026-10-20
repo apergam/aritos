@@ -77,6 +77,25 @@ test('focused pump buttons support Space, Enter, and assistive clicks without du
   controls.dispose();
 });
 
+test('button activation state clears on blur and window keyup after focus moves', () => {
+  const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
+  const left = htmlElement();
+  const pumps: PumpSide[] = [];
+  const controls = new PocControls({ model: () => 'two-button', paused: () => false, pump: side => pumps.push(side), togglePause() {}, setManualTilt() {} }, { left }, target as unknown as Window);
+
+  (left as any).emit('keydown', { key: ' ', repeat: false });
+  (left as any).emit('keydown', { key: ' ', repeat: true });
+  target.emit('blur');
+  (left as any).emit('keydown', { key: ' ', repeat: false });
+  assert.deepEqual(pumps, ['left', 'left']);
+
+  (left as any).emit('keydown', { key: 'Enter', repeat: false });
+  target.emit('keyup', { key: 'Enter' }); // Focus moved before the button saw keyup.
+  (left as any).emit('keydown', { key: 'Enter', repeat: false });
+  assert.deepEqual(pumps, ['left', 'left', 'left', 'left']);
+  controls.dispose();
+});
+
 test('editing controls retain keyboard input and held orientation keys release on blur/hidden', () => {
   const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
   const tilts: Array<[number, number]> = [];
