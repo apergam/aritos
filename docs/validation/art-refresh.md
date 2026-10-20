@@ -1,5 +1,14 @@
 # Rear artwork refresh — October 20, 2026
 
+## Space matching follow-up — current candidate
+
+Build **a3889036**, source **d0c5503**. The user accepted the illustrated ocean/capybara backgrounds and requested the same finish for space. Its former SVG is replaced with a locally bundled generated PNG: ringed planet, nebula, smaller planet and exploratory ships framing an open violet center. Peripheral star points are smaller/sparser; physics, rules, music and controls are unchanged. All three rear panels are now illustrated PNGs (~8 MiB total initial image files). Exact generation prompts and filenames are in the linked prompt set below.
+
+Typecheck, build, **66/66 tests** and `git diff --check` pass via direct Node commands. In the in-app browser, the space image was inspected with both button models, switches through all three themes worked, and the cycle was repeated with the already-loaded local HTTP server suspended. No captured error-level console entries; the server was resumed. This is desktop appearance and offline-after-load evidence, not mobile performance or acoustic acceptance. [Current space in game](evidence/aritos-space-v2.png). Final tab: normal two-button/collect player, space. Space awaits the user's visual feedback; ocean/capybaras have explicit positive feedback. No deployment or push.
+
+## Ocean and capybara replacement — preceding candidate
+
+
 Current local candidate: **8f561176**, source **11ab2c9**. The user disliked the first capybara and ocean illustrations. Both rear inserts are replaced with generated illustrative scenes: a coral reef with fish/turtle, and a wetland with recognizable capybaras resting on its banks. Space retains its existing SVG. These are artwork changes; physics, rules, controls and music are unchanged. The new visual candidate awaits player feedback.
 
 ## Resources and provenance

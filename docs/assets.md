@@ -1,4 +1,4 @@
-Current rear artwork: [October 20 illustrated replacements](validation/art-refresh.md). Ocean and capybaras now use generated local PNG scenes; space and mascots remain SVG. The earlier SVG-only descriptions below record the first polish iteration.
+Current rear artwork: [October 20 illustrated replacements](validation/art-refresh.md). All three rear themes now use generated local PNG scenes; mascots remain SVG. The earlier SVG-only descriptions below record the first polish iteration.
 
 # Player assets and offline strategy
 
@@ -23,3 +23,6 @@ After user feedback that the first music candidates sounded alike, each eight-ba
 ## Illustrated rear replacements
 
 The current ocean and capybara inserts were generated for this project with the built-in image_gen tool. [Exact prompts](art/rear-scenes-v2-prompts.json) and committed content-fingerprinted PNGs identify their provenance. No stock-image site or external image CDN is used. The build copies them from `public/assets/themes/` to `dist/assets/themes/` and hashes their bytes along with code/styles. Both are requested locally during renderer construction; once decoded they remain resident for theme switching, and are disposed on teardown. Unlike the earlier all-SVG candidate, initial loading includes two local PNG requests (~5 MiB total). This does not add cold offline startup.
+
+
+Space was subsequently replaced with `public/assets/themes/space-nebula-v2-25760af803.png`, generated through the same built-in image_gen workflow and recorded in the prompt set. All three rear illustrations now load locally at renderer construction. Combined PNG asset size is about 8 MiB before browser decoding; performance on physical mobile hardware remains unmeasured. The new artwork follows the user's acceptance of ocean/capybara illustrations and request for a matching space theme. Peripheral space particles were reduced in size/density to complement the painted panel.

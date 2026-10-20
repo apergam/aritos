@@ -346,3 +346,8 @@ This implements the section 16 music extension: original local synthesized theme
 ## 19. Theme music feedback — October 20, 2026
 
 The user reported that changing theme appeared to leave the same music. Tests confirmed correct buffer selection through the settings pause/resume path but reproduced an identical opening between ocean and space. The revised candidate differentiates tempo, meter/register and instrument for each theme, and a new theme starts at its own phrase beginning. Pause, mute and round restart preserve musical position. This refines T15's recognizability; subjective acceptance of the revised music remains open. See [the current report](validation/polish-audio-art.md).
+
+
+## 20. Matched illustrated rear panels — October 20, 2026
+
+The user approved the replacement ocean and capybara rear illustrations and requested the same quality for space. T16 now supplies three locally bundled generated PNG panels, with quiet center space for readable rings/pegs. Mascots remain SVG; art changes do not change physical state, models, rules or music. The matched space candidate and provenance are recorded in [the art report](validation/art-refresh.md). This acceptance is visual feedback on ocean/capybaras, not mobile or acoustic validation.
