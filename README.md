@@ -8,6 +8,8 @@ Aceptado por el usuario el 19 de octubre de 2026 con fuerza de bombeo **75**, re
 
 Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas. El pulido posterior de audio y fondos supera **66 pruebas**, TypeScript y build; ver [la revisión actual](docs/validation/polish-audio-art.md). Se comprobaron las doce combinaciones de modelo/tema/modo, seis tamaños de pantalla y el cambio de temas con el servidor detenido después de cargar; ver el [informe de preparación](docs/validation/release.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
 
+Los fondos de océano y capibaras se rehicieron como escenas ilustradas tras el feedback visual; ver [el candidato actual](docs/validation/art-refresh.md), build **8f561176**, con las mismas 66 pruebas superadas.
+
 ## Implementation planning
 
 The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T08 and T10–T12 have integrated implementation/evidence. T09 audio is integrated with automated lifecycle checks; subjective browser/device audition remains in review. T06 completed its free baseline, independently of unavailable physical devices. See the board and release report for exact evidence; no paid subscription or billing activation is allowed. Player-facing text remains in Spanish.
@@ -40,7 +42,7 @@ Servir `dist/` mediante HTTPS para probar sensores en móvil. La salida es está
 - `/lab.html`: laboratorio conservado, con escenas, cámara, parámetros físicos, colisiones y diagnóstico.
 - `/preview.html?scene=stack`: vista de pruebas del jugador con escena física controlada; admite `free`, `drop`, `stack` y `depth`. Está separada de la entrada normal y sirve para comprobar victorias sin colocar aros desde el juego libre.
 - Ajustes incluye sonido general, música por tema y sonido al guardar (Monedita/Chispas), con botón Escuchar. La música usa loops originales de 17–20 segundos con tempo e instrumento distintos por tema, se activa al jugar y se pausa con la partida; reiniciar la ronda conserva su posición musical. Cambiar de tema empieza la nueva melodía desde su propia entrada. Sonido general silencia música y efectos; música se puede apagar por separado. Las elecciones se recuerdan sin restaurar la ronda.
-- Recursos de temas, ilustraciones del plástico posterior y mascotas SVG incluidos en el bundle; audio y música generados con Web Audio, sin grabaciones de terceros. No se requieren peticiones de red para seguir jugando/cambiar tema tras la carga. Esto no implementa PWA ni arranque en frío sin conexión.
+- Recursos de temas, ilustraciones del plástico posterior y mascotas incluidos localmente (mascotas y espacio SVG; océano/capibaras PNG ilustrados); audio y música generados con Web Audio, sin grabaciones de terceros. No se requieren peticiones de red para seguir jugando/cambiar tema tras la carga. Esto no implementa PWA ni arranque en frío sin conexión.
 
 ## Usar el laboratorio
 

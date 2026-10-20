@@ -1,5 +1,7 @@
 # Audio and rear-plastic polish — October 20, 2026
 
+Later artwork replacement candidate: [8f561176](art-refresh.md). Audio behavior from the music correction below is preserved.
+
 ## Music contrast correction — current candidate
 
 Build **497767e7**, source **76c890a**. The user reported that music sounded the same when changing themes. A focused test of the actual settings pattern (pause → set theme → resume/activate) confirmed that each theme selects its own buffer and only one source remains active. A second regression test failed: the first 250 ms of ocean/space had normalized PCM similarity **1.0000**. This is a concrete identical-opening defect, not a measurement of perceived similarity over the whole track.
