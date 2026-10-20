@@ -1,26 +1,20 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import {Quaternion,Vector3,Euler} from 'three';
+import { TOY_PHYSICS, TOY_OUTLETS, type PumpSide } from '../models/toy-model';
+export type { PumpSide } from '../models/toy-model';
 
 export const DT=1/120;
-// Interior half-extents. A 1.8-deep tank leaves room for a 1.3-wide ring to turn,
-// while keeping a horizontal ring's Z travel within the peg's threading clearance.
-export const TANK={x:4.5,y:6,z:.9};
-export const RING={radius:.52,tube:.13,segments:20};
-export const PEGS=[{x:-1.7,z:0},{x:1.7,z:0}];
-// BASE is the pedestal's top; its 0.3-high foot rests on the interior floor.
-export const BASE=-TANK.y+.3, TIP=BASE+4.35;
+// Compatibility exports reference the accepted model registry, shared with rendering.
+export const TANK=TOY_PHYSICS.tank;
+export const RING=TOY_PHYSICS.ring;
+export const PEGS=TOY_PHYSICS.pegs;
+export const BASE=TOY_PHYSICS.base.topY, TIP=TOY_PHYSICS.pegTipY;
 export type Scene='free'|'drop'|'stack'|'depth';
 export type GameMode='classic'|'collect';
 export type Vec={x:number,y:number,z:number};
 export type Ring={body:RAPIER.RigidBody,id:number};
-export const PULSE_DURATION=.24;
-// Shared by physics and rendering: side outlets point inward and upward.
-export const JETS={
- left:{origin:{x:-TANK.x+.3,y:-TANK.y+.75,z:0},direction:{x:.48,y:Math.sqrt(1-.48**2),z:0}},
- right:{origin:{x:TANK.x-.3,y:-TANK.y+.75,z:0},direction:{x:-.48,y:Math.sqrt(1-.48**2),z:0}},
- center:{origin:{x:0,y:-TANK.y+.3,z:0},direction:{x:0,y:1,z:0}},
-};
-export type PumpSide=keyof typeof JETS;
+export const PULSE_DURATION=TOY_PHYSICS.pulseDuration;
+export const JETS=TOY_OUTLETS;
 function flowAt(side:PumpSide,p:Vec){
  const jet=JETS[side],h=Math.max(0,p.y-jet.origin.y);
  const axisX=jet.origin.x+jet.direction.x/jet.direction.y*h;
@@ -37,7 +31,7 @@ export const initPhysics=()=>initialized??=RAPIER.init();
 export const horizontal=new Quaternion().setFromEuler(new Euler(Math.PI/2,0,0));
 export class Simulation {
  world:RAPIER.World; rings:Ring[]=[]; pulses:{side:PumpSide,left:number}[]=[];
- gravity=new Vector3(0,-3,0); strength=75; drag=.50; time=0; model=2;
+ gravity=new Vector3(0,-3,0); strength:number=TOY_PHYSICS.strength; drag:number=TOY_PHYSICS.drag; time=0; model=2;
  stableTime=0; won=false; onWin?:()=>void; escaped=false;
  mode:GameMode='classic';collected=0;totalRings=0;
  private nextRingId=0;
@@ -51,8 +45,8 @@ export class Simulation {
   wall(0,-6.15,0,4.8,.15,TANK.z+.3);wall(0,6.15,0,4.8,.15,TANK.z+.3);
   wall(0,0,-TANK.z-.15,4.8,6.3,.15);wall(0,0,TANK.z+.15,4.8,6.3,.15);
   for(const p of PEGS){
-   this.baseColliders.push(wall(p.x,BASE-.15,p.z,.76,.15,.76));
-   this.world.createCollider(RAPIER.ColliderDesc.cylinder((TIP-BASE)/2,.11).setTranslation(p.x,(TIP+BASE)/2,p.z).setFriction(.2));
+   this.baseColliders.push(wall(p.x,BASE-TOY_PHYSICS.base.footHeight/2,p.z,TOY_PHYSICS.base.halfWidth,TOY_PHYSICS.base.footHeight/2,TOY_PHYSICS.base.halfDepth));
+   this.world.createCollider(RAPIER.ColliderDesc.cylinder((TIP-BASE)/2,TOY_PHYSICS.pegRadius).setTranslation(p.x,(TIP+BASE)/2,p.z).setFriction(.2));
   }
  }
  addRing(x:number,y:number,z:number,rotation:Quaternion=horizontal){
@@ -104,7 +98,7 @@ export class Simulation {
   return PEGS.some(peg=>{
    const dy=-(n.x*(peg.x-p.x)+n.z*(peg.z-p.z))/n.y;
    const axisY=p.y+dy;
-   return axisY>BASE+.02&&axisY<TIP-.14&&Math.hypot(peg.x-p.x,dy,peg.z-p.z)<RING.radius-RING.tube-.11-.015;
+   return axisY>BASE+.02&&axisY<TIP-.14&&Math.hypot(peg.x-p.x,dy,peg.z-p.z)<RING.radius-RING.tube-TOY_PHYSICS.pegRadius-.015;
   });
  }
  get count(){return this.rings.filter(r=>this.isThreaded(r)).length;}

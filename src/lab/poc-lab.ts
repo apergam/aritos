@@ -3,6 +3,7 @@ import { BASE, JETS, PEGS, PULSE_DURATION, RING, TANK, TIP, type Scene } from '.
 import type { SessionSnapshot } from '../game/session';
 import type { Simulation } from '../physics';
 import { PocRingRenderer } from '../rendering/poc-renderer';
+import { toyModel, TOY_PHYSICS, type ToyModelId } from '../models/toy-model';
 
 type CameraSettings = { azimuth: number; elevation: number; distanceScale: number; targetY: number };
 export type CameraSnapshot = Readonly<CameraSettings & {
@@ -27,7 +28,7 @@ export class PocLab {
   private cameraSettings: CameraSettings = { ...this.cameraDefaults };
   private fitDistance = 25;
   private readonly resources: Array<THREE.BufferGeometry | THREE.Material> = [];
-  constructor(private readonly viewport: HTMLElement, modelCount: number) {
+  constructor(private readonly viewport: HTMLElement, model: ToyModelId) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8)); this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.3;
@@ -50,7 +51,7 @@ export class PocLab {
     for(const x of [-4.65,4.65])mesh(new THREE.BoxGeometry(.3,12.55,2*(TANK.z+.25)),0x6b9d87,v(x,0,0),.35);
     for(const y of [-6.15,6.15])mesh(new THREE.BoxGeometry(9.5,.3,2*(TANK.z+.25)),0x6b9d87,v(0,y,0),.38);
     const edges=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(9.3,12.3,2*(TANK.z+.15))),new THREE.LineBasicMaterial({color:0x447d65,transparent:true,opacity:.52}));this.scene.add(edges);this.resources.push(edges.geometry,edges.material as THREE.Material);
-    for(const p of PEGS){mesh(new THREE.CylinderGeometry(.79,.86,.3,32),0x739f87,v(p.x,BASE-.15,p.z));mesh(new THREE.CylinderGeometry(.11,.11,TIP-BASE,24),0xe2c789,v(p.x,(TIP+BASE)/2,p.z));mesh(new THREE.SphereGeometry(.11,16,8),0xf4db9c,v(p.x,TIP,p.z));}
+    for(const p of PEGS){mesh(new THREE.CylinderGeometry(.79,.86,.3,32),0x739f87,v(p.x,BASE-.15,p.z));mesh(new THREE.CylinderGeometry(TOY_PHYSICS.pegRadius,TOY_PHYSICS.pegRadius,TIP-BASE,24),0xe2c789,v(p.x,(TIP+BASE)/2,p.z));mesh(new THREE.SphereGeometry(TOY_PHYSICS.pegRadius,16,8),0xf4db9c,v(p.x,TIP,p.z));}
     this.outlets=Object.entries(JETS).map(([side,jet])=>{const outlet=mesh(new THREE.CylinderGeometry(.13,.18,.42,16),0x458a89,v(jet.origin.x,jet.origin.y,jet.origin.z));outlet.quaternion.setFromUnitVectors(v(0,1,0),v(jet.direction.x,jet.direction.y,jet.direction.z));return {side,mesh:outlet};});
     const front=mesh(new THREE.PlaneGeometry(9,12),0xd6fff1,v(0,0,TANK.z+.01),.035);front.renderOrder=10;
     this.ringLayer=new PocRingRenderer(this.scene);
@@ -58,13 +59,13 @@ export class PocLab {
     this.bubbles=Array.from({length:36},()=>{const b=new THREE.Mesh(bubbleG,bubbleM);jets.add(b);return b;});this.resources.push(bubbleG,bubbleM);
     this.debugLines=new THREE.LineSegments(this.debugGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.7,depthTest:false}));this.debugLines.renderOrder=20;this.scene.add(this.debugLines);this.resources.push(this.debugGeometry,this.debugLines.material as THREE.Material);
     this.gravityArrow=new THREE.ArrowHelper(v(0,-1,0),v(3.65,4.8,.9),.75,0x477b60,.2,.13);this.scene.add(this.gravityArrow);
-    this.bindCameraControls();this.updateOutlets(modelCount);
+    this.bindCameraControls();this.updateOutlets(model);
     $('depth-readout').textContent=`FONDO ${(2*TANK.z).toFixed(1)} · ARO ${(2*(RING.radius+RING.tube)).toFixed(1)}`;
   }
   cameraSnapshot(): CameraSnapshot {
     return Object.freeze({...this.cameraSettings,position:Object.freeze({x:this.camera.position.x,y:this.camera.position.y,z:this.camera.position.z}),target:Object.freeze({x:0,y:this.cameraSettings.targetY,z:0}),distance:this.fitDistance*this.cameraSettings.distanceScale,fov:this.camera.fov,aspect:this.camera.aspect});
   }
-  updateOutlets(modelCount:number):void {for(const {side,mesh} of this.outlets)mesh.visible=modelCount===1?side==='center':side!=='center';}
+  updateOutlets(model:ToyModelId):void {const sides:readonly string[]=toyModel(model).outlets;for(const {side,mesh} of this.outlets)mesh.visible=sides.includes(side);}
   resize():void {
     const w=this.viewport.clientWidth,h=this.viewport.clientHeight;if(!w||!h)return;
     this.renderer.setSize(w,h,false);this.camera.aspect=w/h;
