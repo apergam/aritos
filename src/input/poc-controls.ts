@@ -12,115 +12,265 @@ export type PocInputActions = Readonly<{
 }>;
 export type PumpElements = Partial<Record<PumpSide, HTMLElement>>;
 
-/** Owns POC keyboard/pointer listeners and held-key tilt; permission UI stays with the app shell. */
+export const INPUT_SHORTCUTS = Object.freeze([
+  { keys: 'A / D', description: 'Bombear lado izquierdo / derecho' },
+  { keys: 'Espacio', description: 'Bombear ambos lados' },
+  { keys: 'Flechas', description: 'Inclinar de lado y adelante / atrás' },
+  { keys: 'W / S', description: 'Inclinar adelante / atrás' },
+  { keys: 'P', description: 'Pausar o continuar' },
+] as const);
+export const INPUT_HELP = 'Toca los botones para bombear. En computadora: A/D bombea, Espacio activa ambos lados y las flechas o W/S inclinan hasta invertir el juguete; P pausa.';
+
+const GAME_KEYS = new Set([' ', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', 'p']);
+function isEditingControl(target: EventTarget | null): boolean {
+  if (!target || typeof (target as Element).closest !== 'function') return false;
+  return Boolean((target as Element).closest('input, select, textarea, button, a[href], [contenteditable=""], [contenteditable="true"], [role="textbox"]'));
+}
+
+/** Owns pump pointer edges, keyboard commands, and held-key manual tilt. */
 export class PocControls {
   private keys = new Set<string>();
+  private acceptedKeys = new Set<string>();
+  private pointers = new Map<number, PumpSide>();
   private cleanup: Array<() => void> = [];
+  private originalTouchAction = new Map<HTMLElement, string>();
   private roll = 0;
   private pitch = 0;
+
   constructor(private readonly actions: PocInputActions, buttons: PumpElements, private readonly target: Window = window) {
     const doc = target.document;
     const down = (event: KeyboardEvent) => {
-      if ((event.target as HTMLElement | null)?.matches?.('input,select,textarea')) return;
       const key = event.key.toLowerCase();
-      if ([' ', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', 'p'].includes(key)) event.preventDefault();
-      if (event.repeat) return;
+      if (!GAME_KEYS.has(key) || isEditingControl(event.target)) return;
+      event.preventDefault();
+      if (event.repeat || this.acceptedKeys.has(key)) return;
+      this.acceptedKeys.add(key);
       this.keys.add(key);
       if (key === 'p') actions.togglePause();
       if (key === ' ') this.pumpPair();
       if (key === 'a') actions.pump(actions.model() === 'single-button' ? 'center' : 'left');
       if (key === 'd') actions.pump(actions.model() === 'single-button' ? 'center' : 'right');
     };
-    const up = (event: KeyboardEvent) => this.keys.delete(event.key.toLowerCase());
-    const blur = () => this.keys.clear();
-    target.addEventListener('keydown', down); target.addEventListener('keyup', up); target.addEventListener('blur', blur);
-    this.cleanup.push(() => target.removeEventListener('keydown', down), () => target.removeEventListener('keyup', up), () => target.removeEventListener('blur', blur));
+    const up = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      this.acceptedKeys.delete(key);
+      this.keys.delete(key);
+    };
+    const clearHeld = () => { this.keys.clear(); this.acceptedKeys.clear(); this.pointers.clear(); };
+    const visibility = () => { if (doc.hidden) clearHeld(); };
+    target.addEventListener('keydown', down);
+    target.addEventListener('keyup', up);
+    target.addEventListener('blur', clearHeld);
+    doc.addEventListener('visibilitychange', visibility);
+    this.cleanup.push(
+      () => target.removeEventListener('keydown', down),
+      () => target.removeEventListener('keyup', up),
+      () => target.removeEventListener('blur', clearHeld),
+      () => doc.removeEventListener('visibilitychange', visibility),
+    );
+
+    const pointerUp = (event: PointerEvent) => { this.pointers.delete(event.pointerId); };
+    const pointerCancel = (event: PointerEvent) => { this.pointers.delete(event.pointerId); };
+    target.addEventListener('pointerup', pointerUp);
+    target.addEventListener('pointercancel', pointerCancel);
+    this.cleanup.push(
+      () => target.removeEventListener('pointerup', pointerUp),
+      () => target.removeEventListener('pointercancel', pointerCancel),
+    );
     for (const [side, element] of Object.entries(buttons) as [PumpSide, HTMLElement][]) {
       if (!element) continue;
-      const handler = (event: PointerEvent) => { event.preventDefault(); actions.pump(side); };
-      element.addEventListener('pointerdown', handler);
-      this.cleanup.push(() => element.removeEventListener('pointerdown', handler));
+      this.originalTouchAction.set(element, element.style.touchAction);
+      element.style.touchAction = 'none';
+      const pointerDown = (event: PointerEvent) => {
+        if (event.button !== 0 || this.pointers.has(event.pointerId)) return;
+        event.preventDefault();
+        this.pointers.set(event.pointerId, side);
+        actions.pump(side);
+        try { element.setPointerCapture(event.pointerId); } catch { /* Window-level release handlers remain available. */ }
+      };
+      element.addEventListener('pointerdown', pointerDown);
+      this.cleanup.push(() => element.removeEventListener('pointerdown', pointerDown));
     }
-    const visibility = () => { if (doc.hidden) this.keys.clear(); };
-    doc.addEventListener('visibilitychange', visibility); this.cleanup.push(() => doc.removeEventListener('visibilitychange', visibility));
   }
+
   update(elapsedSeconds: number): void {
     if (this.actions.paused()) return;
-    let changed = false; const rate = 90 * elapsedSeconds;
+    let changed = false;
+    const rate = 90 * Math.max(0, Math.min(elapsedSeconds, 0.1));
     if (this.keys.has('arrowleft')) { this.roll -= rate; changed = true; }
     if (this.keys.has('arrowright')) { this.roll += rate; changed = true; }
     if (this.keys.has('arrowup') || this.keys.has('w')) { this.pitch -= rate; changed = true; }
     if (this.keys.has('arrowdown') || this.keys.has('s')) { this.pitch += rate; changed = true; }
-    if (changed) { this.roll = Math.max(-180, Math.min(180, this.roll)); this.pitch = Math.max(-180, Math.min(180, this.pitch)); this.actions.setManualTilt(this.roll, this.pitch); }
+    if (changed) {
+      this.roll = Math.max(-180, Math.min(180, this.roll));
+      this.pitch = Math.max(-180, Math.min(180, this.pitch));
+      this.actions.setManualTilt(this.roll, this.pitch);
+    }
   }
-  resetTilt(roll = 0, pitch = 0, publish = true): void { this.roll = roll; this.pitch = pitch; if (publish) this.actions.setManualTilt(roll, pitch); }
+
+  resetTilt(roll = 0, pitch = 0, publish = true): void {
+    this.roll = roll; this.pitch = pitch;
+    if (publish) this.actions.setManualTilt(roll, pitch);
+  }
   /** Synchronize UI-selected angles without changing the active sensor/manual source. */
   syncTilt(roll: number, pitch: number): void { this.roll = roll; this.pitch = pitch; }
-  dispose(): void { for (const dispose of this.cleanup.splice(0)) dispose(); this.keys.clear(); }
-  private pumpPair(): void { if (this.actions.model() === 'single-button') this.actions.pump('center'); else { this.actions.pump('left'); this.actions.pump('right'); } }
+  dispose(): void {
+    for (const dispose of this.cleanup.splice(0)) dispose();
+    for (const [element, value] of this.originalTouchAction) element.style.touchAction = value;
+    this.originalTouchAction.clear(); this.keys.clear(); this.acceptedKeys.clear(); this.pointers.clear();
+  }
+  private pumpPair(): void {
+    if (this.actions.model() === 'single-button') this.actions.pump('center');
+    else { this.actions.pump('left'); this.actions.pump('right'); }
+  }
 }
 
-export type MotionControlsOptions = Readonly<{ button: HTMLElement; status: HTMLElement; rollValue: HTMLInputElement; pitchValue: HTMLInputElement; rollLabel: HTMLElement; pitchLabel: HTMLElement; target?: Window }>;
+export type MotionControlState = 'manual' | 'unavailable' | 'waiting' | 'usable' | 'denied' | 'unusable-data';
+export type MotionControlsOptions = Readonly<{
+  button: HTMLElement; status: HTMLElement; rollValue: HTMLInputElement; pitchValue: HTMLInputElement;
+  rollLabel: HTMLElement; pitchLabel: HTMLElement; target?: Window; sensorTimeoutMs?: number;
+  onGravity?: (gravity: THREE.Vector3) => void;
+}>;
 
-/** Owns the POC sensor permission flow, reference calibration, manual tilt, and sensor cleanup. */
+const DOWN = new THREE.Vector3(0, -1, 0);
+const SENSOR_MESSAGES: Record<MotionControlState, string> = {
+  manual: 'Control manual activo. Flechas: de lado · W/S: profundidad.',
+  unavailable: 'Sin sensores disponibles. Usa los controles manuales; flechas y W/S permiten inclinar e invertir.',
+  waiting: 'Esperando movimiento del dispositivo… Puedes usar los controles manuales.',
+  usable: 'Movimiento activo. Centrar ajusta tu postura de referencia.',
+  denied: 'Permiso de movimiento denegado. Usa los controles manuales; flechas y W/S permiten inclinar e invertir.',
+  'unusable-data': 'Los datos de movimiento no son utilizables. Usa los controles manuales; flechas y W/S permiten inclinar e invertir.',
+};
+
+/** Sensor permission, capability state, calibration, manual tilt, and sensor lifecycle. */
 export class PocMotionControls {
   readonly gravity = new THREE.Vector3(0, -3, 0);
   private readonly target: Window;
   private raw: THREE.Vector3 | null = null;
+  private lastAngles: { beta: number; gamma: number } | null = null;
   private calibration = new THREE.Quaternion();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private listening = false;
   private active = false;
-  private hasSensor = false;
+  private stateValue: MotionControlState = 'manual';
+  private invalidData = false;
+  private disposed = false;
+  private requestGeneration = 0;
   private roll = 0;
   private pitch = 0;
+
   constructor(private readonly elements: MotionControlsOptions) {
     this.target = elements.target ?? window;
+    const C = (this.target as Window & typeof globalThis).DeviceOrientationEvent;
+    this.setState(C ? 'manual' : 'unavailable');
     this.target.addEventListener('deviceorientation', this.onOrientation);
+    this.target.addEventListener('orientationchange', this.onScreenOrientationChange);
+    this.target.screen?.orientation?.addEventListener('change', this.onScreenOrientationChange);
     this.listening = true;
     elements.button.addEventListener('click', this.enable);
   }
+
   get sensorMode(): boolean { return this.active; }
-  get hasSensorData(): boolean { return this.hasSensor; }
+  get hasSensorData(): boolean { return this.stateValue === 'usable'; }
+  get state(): MotionControlState { return this.stateValue; }
+  get capabilityMessage(): string { return SENSOR_MESSAGES[this.stateValue]; }
+
+  /** Called from an explicit user click; browsers requiring a gesture keep permission gated here. */
   enable = async (): Promise<void> => {
-    const C = (this.target as Window & typeof globalThis).DeviceOrientationEvent as typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> };
+    if (this.disposed) return;
+    const generation = ++this.requestGeneration;
+    const C = (this.target as Window & typeof globalThis).DeviceOrientationEvent as (typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> }) | undefined;
+    if (!C) { this.active = false; this.setState('unavailable'); return; }
+    this.active = false; this.invalidData = false; this.setState('waiting');
     try {
-      if (!C) { this.elements.status.textContent = 'Sin sensores disponibles. Usa los controles manuales.'; return; }
-      if (C.requestPermission && await C.requestPermission() !== 'granted') { this.elements.status.textContent = 'Permiso no autorizado. Puedes seguir con los controles manuales.'; return; }
-      this.active = true; this.hasSensor = false; this.elements.status.textContent = 'Esperando movimiento del dispositivo…';
-      if (this.raw) this.calibration.setFromUnitVectors(this.raw, new THREE.Vector3(0, -1, 0));
+      if (C.requestPermission && await C.requestPermission() !== 'granted') {
+        if (this.isCurrent(generation)) this.setState('denied');
+        return;
+      }
+      if (!this.isCurrent(generation)) return;
+      this.active = true;
       clearTimeout(this.timer);
-      this.timer = setTimeout(() => { if (!this.hasSensor) { this.active = false; this.elements.status.textContent = 'No llegaron datos de movimiento. El control manual sigue disponible.'; } }, 3000);
-    } catch { this.elements.status.textContent = 'No fue posible activar movimiento. Usa los controles manuales.'; this.active = false; }
+      this.timer = setTimeout(() => {
+        if (!this.disposed && generation === this.requestGeneration && this.stateValue === 'waiting') {
+          this.active = false;
+          this.setState(this.invalidData ? 'unusable-data' : 'unavailable');
+        }
+      }, this.elements.sensorTimeoutMs ?? 3000);
+      if (this.raw) this.calibrateToDown(this.raw);
+    } catch {
+      if (this.isCurrent(generation)) { this.active = false; this.setState('denied'); }
+    }
   };
+
   center(): void {
-    if (this.active && this.raw) { this.calibration.setFromUnitVectors(this.raw, new THREE.Vector3(0, -1, 0)); this.gravity.set(0, -3, 0); }
-    else this.setManual(0, 0);
+    if (this.active && this.raw) {
+      this.calibrateToDown(this.raw);
+      this.gravity.set(0, -3, 0);
+      this.elements.button.textContent = 'Movimiento activo ✓';
+      this.elements.onGravity?.(this.gravity.clone());
+      this.setState('usable');
+    } else this.setManual(0, 0);
   }
   invert(): void { this.setManual(180, 0); }
   setManual(roll: number, pitch: number): void {
-    this.active = false; this.roll = roll; this.pitch = pitch;
+    if (this.disposed) return;
+    this.active = false; clearTimeout(this.timer); this.roll = roll; this.pitch = pitch;
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch * Math.PI / 180, 0, roll * Math.PI / 180, 'XYZ'));
-    this.gravity.set(0, -3, 0).applyQuaternion(q);
-    this.elements.rollLabel.textContent = `${Math.round(roll)}°`; this.elements.pitchLabel.textContent = `${Math.round(pitch)}°`;
+    this.gravity.copy(DOWN).multiplyScalar(3).applyQuaternion(q);
+    this.elements.rollLabel.textContent = `${Math.round(roll)}°`;
+    this.elements.pitchLabel.textContent = `${Math.round(pitch)}°`;
     this.elements.rollValue.value = String(roll); this.elements.pitchValue.value = String(pitch);
     this.elements.button.textContent = 'Usar movimiento';
-    this.elements.status.textContent = 'Control manual activo. Flechas: de lado · W/S: profundidad.';
+    this.setState('manual');
+    this.elements.onGravity?.(this.gravity.clone());
   }
   dispose(): void {
-    if (this.listening) this.target.removeEventListener('deviceorientation', this.onOrientation);
+    this.disposed = true; ++this.requestGeneration;
+    if (this.listening) {
+      this.target.removeEventListener('deviceorientation', this.onOrientation);
+      this.target.removeEventListener('orientationchange', this.onScreenOrientationChange);
+      this.target.screen?.orientation?.removeEventListener('change', this.onScreenOrientationChange);
+    }
     this.elements.button.removeEventListener('click', this.enable);
-    clearTimeout(this.timer); this.listening = false;
+    clearTimeout(this.timer); this.timer = undefined; this.listening = false; this.active = false;
   }
+
   private onOrientation = (event: DeviceOrientationEvent): void => {
-    if (event.beta === null || event.gamma === null || !Number.isFinite(event.beta + event.gamma)) return;
-    const angle = this.target.screen.orientation?.angle ?? Number((this.target as Window & { orientation?: number }).orientation ?? 0);
-    this.raw = gravityFromOrientation(event.beta, event.gamma, angle);
-    if (!this.active) return;
-    if (!this.hasSensor) { this.calibration.setFromUnitVectors(this.raw, new THREE.Vector3(0, -1, 0)); this.hasSensor = true; }
-    clearTimeout(this.timer);
-    this.elements.status.textContent = 'Movimiento activo. Centrar ajusta tu postura de referencia.';
-    this.elements.button.textContent = 'Movimiento activo ✓';
+    const { beta, gamma } = event;
+    if (beta === null || gamma === null || !Number.isFinite(beta) || !Number.isFinite(gamma)) {
+      if (this.active) this.invalidData = true;
+      return;
+    }
+    this.lastAngles = { beta, gamma };
+    this.raw = this.rawForScreen(beta, gamma);
+    if (!this.active || this.disposed) return;
+    if (this.stateValue === 'waiting') this.calibrateToDown(this.raw);
+    clearTimeout(this.timer); this.timer = undefined;
     this.gravity.copy(calibratedGravity(this.raw, this.calibration));
+    this.elements.button.textContent = 'Movimiento activo ✓';
+    this.setState('usable');
+    this.elements.onGravity?.(this.gravity.clone());
   };
+  private onScreenOrientationChange = (): void => {
+    if (!this.lastAngles) return;
+    const priorGravity = this.gravity.clone().normalize();
+    this.raw = this.rawForScreen(this.lastAngles.beta, this.lastAngles.gamma);
+    if (this.active && this.stateValue === 'usable') {
+      // Rebase the coordinate mapping while preserving current gravity through rotation.
+      this.calibration.setFromUnitVectors(this.raw, priorGravity);
+      this.gravity.copy(priorGravity).multiplyScalar(3);
+      this.elements.onGravity?.(this.gravity.clone());
+    }
+  };
+  private rawForScreen(beta: number, gamma: number): THREE.Vector3 {
+    const angle = this.target.screen?.orientation?.angle ?? Number((this.target as Window & { orientation?: number }).orientation ?? 0);
+    return gravityFromOrientation(beta, gamma, angle);
+  }
+  private calibrateToDown(raw: THREE.Vector3): void { this.calibration.setFromUnitVectors(raw, DOWN); }
+  private setState(state: MotionControlState): void {
+    this.stateValue = state;
+    this.elements.status.textContent = SENSOR_MESSAGES[state];
+    if (state !== 'usable') this.elements.button.textContent = state === 'waiting' ? 'Esperando movimiento…' : 'Usar movimiento';
+  }
+  private isCurrent(generation: number): boolean { return !this.disposed && generation === this.requestGeneration; }
 }
