@@ -33,15 +33,16 @@ export type PlayerUIRefs = Readonly<{
 
 const THEME_NAMES: Record<ThemeId, string> = { ocean: 'Océano', space: 'Espacio', capybaras: 'Capibaras' };
 const MODEL_NAMES: Record<ToyModelId, string> = { 'two-button': 'Dos botones', 'single-button': 'Un botón' };
-const THEMES: Array<{ id: ThemeId; emoji: string; detail: string }> = [
-  { id: 'ocean', emoji: '🐙', detail: 'Aventura bajo el mar' },
-  { id: 'space', emoji: '🚀', detail: 'Misión entre estrellas' },
-  { id: 'capybaras', emoji: '🦫', detail: 'Un chapuzón tranquilo' },
+const CAPYBARA_ICON = '<svg viewBox="0 0 32 24" role="img" aria-label="Capibara"><path fill="currentColor" d="M4 15c0-4.4 3.8-7.7 9.1-8.3 2-.2 4.1.2 5.9 1.1l3.4-.3c1.2-.1 2.2.6 2.5 1.7l.3 1.1 2.5 1.2c1.1.5 1.8 1.6 1.8 2.8v2.2h-3.4c-.3 2.3-1.5 3.5-2.8 3.5-1.2 0-2.2-1.1-2.5-3.3h-8.1c-.3 2.2-1.4 3.3-2.7 3.3s-2.4-1.2-2.7-3.3H4v-1.7Zm17.8-6.1 1.2-2.1c.4-.7 1.3-.9 2-.5.7.4.9 1.3.5 2l-.7 1.2-3-.6ZM5 10.2 3.6 8.6c-.5-.6-.4-1.5.2-2.1.6-.5 1.5-.4 2.1.2l1.5 1.7-2.4 1.8Zm15.6 2.4a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Z"/></svg>';
+const THEMES: Array<{ id: ThemeId; icon: string; detail: string }> = [
+  { id: 'ocean', icon: '🐙', detail: 'Aventura bajo el mar' },
+  { id: 'space', icon: '🚀', detail: 'Misión entre estrellas' },
+  { id: 'capybaras', icon: CAPYBARA_ICON, detail: 'Un chapuzón tranquilo' },
 ];
 
 function themeChoices(selected: ThemeId): string {
   return THEMES.map(theme => `<button class="theme-choice ${selected === theme.id ? 'is-selected' : ''}" type="button" data-theme="${theme.id}" aria-pressed="${selected === theme.id}" aria-label="Tema ${THEME_NAMES[theme.id]}">
-    <span class="theme-emoji" aria-hidden="true">${theme.emoji}</span><span><b>${THEME_NAMES[theme.id]}</b><small>${theme.detail}</small></span>
+    <span class="theme-emoji" aria-hidden="true">${theme.icon}</span><span><b>${THEME_NAMES[theme.id]}</b><small>${theme.detail}</small></span>
   </button>`).join('');
 }
 
@@ -52,7 +53,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     <main class="player-shell" aria-label="Aritos">
       <header class="player-header">
         <a class="brand" href="#" aria-label="Aritos, inicio"><span class="brand-mark" aria-hidden="true">◎</span><span>Aritos</span></a>
-        <div class="header-actions"><span class="theme-pill" id="player-theme-pill">🐙 Océano</span><button class="icon-button" id="settings-open" type="button" aria-label="Abrir ajustes" aria-haspopup="dialog">⚙</button></div>
+        <div class="header-actions"><span class="theme-pill" id="player-theme-pill"></span><button class="icon-button" id="settings-open" type="button" aria-label="Abrir ajustes" aria-haspopup="dialog">⚙</button></div>
       </header>
       <section class="setup-screen" id="setup-screen" aria-labelledby="setup-title">
         <div class="setup-copy"><p class="eyebrow">TU JUGUETE, TU AVENTURA</p><h1 id="setup-title">¡Aros al agua!</h1><p>Impulsa, inclina y encuentra el ángulo perfecto para ensartar cada aro.</p></div>
@@ -104,7 +105,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
         <div class="dialog-content"><p class="eyebrow">NUEVA RONDA</p><h2 id="restart-title">¿Empezamos de nuevo?</h2><p>Tu progreso de esta partida se reiniciará.</p><div class="dialog-actions"><button class="outline-button" id="restart-cancel" type="button">Seguir jugando</button><button class="danger-button" id="restart-confirm" type="button">Reiniciar</button></div></div>
       </dialog>
       <dialog class="player-dialog narrow" id="help-dialog" aria-labelledby="help-title">
-        <form method="dialog" class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">EN TRES PASOS</p><h2 id="help-title">¿Cómo se juega?</h2></div><button class="icon-button dialog-close" value="close" aria-label="Cerrar ayuda">×</button></div>
+        <form method="dialog" class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">EN TRES PASOS</p><h2 id="help-title" tabindex="-1">¿Cómo se juega?</h2></div><button class="icon-button dialog-close" value="close" aria-label="Cerrar ayuda">×</button></div>
           <ol class="help-steps"><li><span>1</span><div><b>Bombea</b><small>Toca los botones debajo del depósito para impulsar los aros.</small></div></li><li><span>2</span><div><b>Inclina</b><small>Usa los controles para mover el agua en cualquier dirección, incluso boca abajo.</small></div></li><li><span>3</span><div><b>Ensarta</b><small>Guía cada aro hasta una estaca. En esta ronda, los aros que llegan a la base quedan guardados.</small></div></li></ol>
           <p class="help-note">En el modo clásico, mantén todos los aros ensartados a la vez.</p><button class="primary-button" value="close">¡Entendido!</button>
         </form>
@@ -112,48 +113,67 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     </main>`;
 
   const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
-  let current = initialPreferences;
+  let currentPreferences = initialPreferences;
+  let lastPreferenceSync = initialPreferences;
+  let draftModel = initialPreferences.model;
+  let modelDraftDirty = false;
   let activeModel = initialPreferences.model;
   let mode: GameMode = 'collect';
   let started = false;
+  let disposed = false;
+  let scheduledFrame = 0;
   let latestSnapshot: SessionSnapshot | undefined;
   const settings = $('#settings-dialog') as HTMLDialogElement;
   const restart = $('#restart-dialog') as HTMLDialogElement;
   const help = $('#help-dialog') as HTMLDialogElement;
-  const prefsFromChoices = () => current;
-  const setPreference = (changes: Partial<PlayerPreferences>) => { current = { ...current, ...changes }; handlers.onPreferenceChange(changes); syncPrefs(); };
+  const prefsFromChoices = () => ({ ...currentPreferences, model: draftModel });
+  const setPreference = (changes: Partial<PlayerPreferences>) => {
+    currentPreferences = { ...currentPreferences, ...changes };
+    lastPreferenceSync = currentPreferences;
+    handlers.onPreferenceChange(changes); syncPrefs();
+  };
   const syncPrefs = () => {
-    root.dataset.theme = current.theme;
-    const icon = THEMES.find(t => t.id === current.theme)!.emoji;
-    $('#player-theme-pill').textContent = `${icon} ${THEME_NAMES[current.theme]}`;
+    root.dataset.theme = currentPreferences.theme;
+    root.dataset.control = currentPreferences.control;
+    const theme = THEMES.find(t => t.id === currentPreferences.theme)!;
+    $('#player-theme-pill').innerHTML = `<span class="theme-pill-icon" aria-hidden="true">${theme.icon}</span>${THEME_NAMES[currentPreferences.theme]}`;
     root.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => {
-      const selected = button.dataset.theme === current.theme;
+      const selected = button.dataset.theme === currentPreferences.theme;
       button.classList.toggle('is-selected', selected); button.setAttribute('aria-pressed', String(selected));
     });
     root.querySelectorAll<HTMLButtonElement>('[data-model]').forEach(button => {
-      const selected = button.dataset.model === current.model;
+      const selected = button.dataset.model === draftModel;
       button.classList.toggle('is-selected', selected); button.setAttribute('aria-pressed', String(selected));
     });
-    $('#sound-toggle').setAttribute('aria-pressed', String(current.sound));
-    $('#sound-copy').textContent = current.sound ? 'Activados' : 'Silenciados';
-    $('#model-copy').textContent = MODEL_NAMES[current.model];
-    $('#pump-hint').textContent = current.model === 'single-button' ? 'Un impulso central por toque' : 'Toca uno o ambos botones';
+    $('#sound-toggle').setAttribute('aria-pressed', String(currentPreferences.sound));
+    $('#sound-copy').textContent = currentPreferences.sound ? 'Activados' : 'Silenciados';
+    $('#model-copy').textContent = MODEL_NAMES[draftModel];
+    $('#pump-hint').textContent = draftModel === 'single-button' ? 'Un impulso central por toque' : 'Toca uno o ambos botones';
   };
-  const chooseModel = (model: ToyModelId) => { current = { ...current, model }; syncPrefs(); };
+  const chooseModel = (model: ToyModelId) => { draftModel = model; modelDraftDirty = true; syncPrefs(); };
   root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(button => button.addEventListener('click', () => {
     mode = button.dataset.mode as GameMode;
     root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(option => { const selected = option === button; option.classList.toggle('is-selected', selected); option.setAttribute('aria-pressed', String(selected)); });
   }));
   root.querySelectorAll<HTMLButtonElement>('[data-model]').forEach(button => button.addEventListener('click', () => chooseModel(button.dataset.model as ToyModelId)));
   root.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => button.addEventListener('click', () => setPreference({ theme: button.dataset.theme as ThemeId })));
-  $('#start-game').addEventListener('click', () => { started = true; activeModel = current.model; $('#setup-screen').hidden = true; $('#game-screen').hidden = false; handlers.onStart(prefsFromChoices(), mode); $('#pump-left').hidden = current.model !== 'two-button'; $('#pump-right').hidden = current.model !== 'two-button'; $('#pump-center').hidden = current.model !== 'single-button'; });
+  $('#start-game').addEventListener('click', () => {
+    started = true; activeModel = draftModel; modelDraftDirty = false;
+    if (currentPreferences.model !== draftModel) {
+      currentPreferences = { ...currentPreferences, model: draftModel };
+      lastPreferenceSync = currentPreferences; handlers.onPreferenceChange({ model: draftModel });
+    }
+    $('#setup-screen').hidden = true; $('#game-screen').hidden = false;
+    handlers.onStart(prefsFromChoices(), mode);
+    $('#pump-left').hidden = draftModel !== 'two-button'; $('#pump-right').hidden = draftModel !== 'two-button'; $('#pump-center').hidden = draftModel !== 'single-button';
+  });
   $('#settings-open').addEventListener('click', () => { handlers.onPause('menu', true); settings.showModal(); });
-  settings.addEventListener('close', () => handlers.onPause('menu', !started));
+  settings.addEventListener('close', () => { if (!disposed) handlers.onPause('menu', !started); });
   $('#pause-toggle').addEventListener('click', () => handlers.onPause('manual', !latestSnapshot?.paused.includes('manual')));
-  $('#sound-toggle').addEventListener('click', () => setPreference({ sound: !current.sound }));
-  $('#controls-open').addEventListener('click', () => { settings.close(); requestAnimationFrame(() => { $('#tilt-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); refs.motion.button.focus(); }); });
+  $('#sound-toggle').addEventListener('click', () => setPreference({ sound: !currentPreferences.sound }));
+  $('#controls-open').addEventListener('click', () => { settings.close(); scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#tilt-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); refs.motion.button.focus(); }); });
   const returnToSetup = (includeModel: boolean) => {
-    if (!includeModel) { current = { ...current, model: activeModel }; syncPrefs(); }
+    if (!includeModel || !modelDraftDirty) { draftModel = activeModel; modelDraftDirty = false; syncPrefs(); }
     started = false; settings.close(); $('#setup-screen').hidden = false; $('#game-screen').hidden = true;
   };
   $('#rule-change').addEventListener('click', () => returnToSetup(false));
@@ -161,10 +181,14 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   $('#restart-open').addEventListener('click', () => { handlers.onPause('restart-confirmation', true); settings.close(); restart.showModal(); });
   $('#restart-cancel').addEventListener('click', () => { restart.close(); handlers.onPause('restart-confirmation', false); });
   $('#restart-confirm').addEventListener('click', () => { restart.close(); handlers.onPause('restart-confirmation', false); handlers.onRestart(); });
-  restart.addEventListener('cancel', () => handlers.onPause('restart-confirmation', false));
-  $('#help-open').addEventListener('click', () => { handlers.onPause('menu', true); help.showModal(); });
-  $('#game-help-open').addEventListener('click', () => { handlers.onPause('menu', true); help.showModal(); });
-  help.addEventListener('close', () => handlers.onPause('menu', !started));
+  restart.addEventListener('cancel', () => { if (!disposed) handlers.onPause('restart-confirmation', false); });
+  const openHelp = () => {
+    handlers.onPause('menu', true); help.showModal();
+    scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#help-title').focus(); });
+  };
+  $('#help-open').addEventListener('click', openHelp);
+  $('#game-help-open').addEventListener('click', openHelp);
+  help.addEventListener('close', () => { if (!disposed) handlers.onPause('menu', !started); });
   $('#upright').addEventListener('click', handlers.onRecenter);
   syncPrefs();
 
@@ -177,17 +201,29 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     refs,
     update(snapshot: SessionSnapshot, preferences: PlayerPreferences, nextState: PlayerUIState = {}) {
       latestSnapshot = snapshot;
+      if (preferences.model !== lastPreferenceSync.model || preferences.theme !== lastPreferenceSync.theme || preferences.sound !== lastPreferenceSync.sound || preferences.control !== lastPreferenceSync.control) {
+        if (!modelDraftDirty && preferences.model !== lastPreferenceSync.model) draftModel = preferences.model;
+        currentPreferences = preferences;
+        lastPreferenceSync = preferences;
+        syncPrefs();
+      }
       $('#count').textContent = `${snapshot.mode === 'collect' ? snapshot.collected : snapshot.rings.filter(r => r.threaded).length} / ${snapshot.total}`;
       $('#count-label').textContent = snapshot.mode === 'collect' ? 'AROS GUARDADOS' : 'AROS ENSARTADOS';
       $('#round-label').textContent = snapshot.mode === 'collect' ? 'RETO · GUARDAR AL LLEGAR' : 'RETO · MODO CLÁSICO';
       $('#player-status').textContent = nextState.paused ? 'En pausa' : '';
       $('#pause-title').textContent = snapshot.paused.includes('manual') ? 'Continuar partida' : 'Pausar partida';
-      refs.motion.status.textContent = nextState.motionMessage ?? refs.motion.status.textContent;
-      refs.motion.button.textContent = nextState.motionState === 'usable' ? 'Movimiento activo ✓' : nextState.motionState === 'waiting' ? 'Esperando movimiento…' : 'Usar movimiento';
+      if (nextState.motionMessage !== undefined) refs.motion.status.textContent = nextState.motionMessage;
+      refs.motion.button.setAttribute('aria-pressed', String(currentPreferences.control === 'motion'));
+      refs.motion.button.textContent = nextState.motionState === 'usable' ? 'Movimiento activo ✓' : nextState.motionState === 'waiting' ? 'Esperando movimiento…' : currentPreferences.control === 'motion' ? 'Reintentar movimiento' : 'Usar movimiento';
       const feedback = $('#feedback-toast'); feedback.textContent = nextState.victory || nextState.feedback || '';
       feedback.hidden = !feedback.textContent;
       if (started) { $('#setup-screen').hidden = true; $('#game-screen').hidden = false; }
     },
-    dispose() { root.innerHTML = ''; root.classList.remove('aritos-player'); delete root.dataset.theme; },
+    dispose() {
+      disposed = true;
+      if (scheduledFrame) cancelAnimationFrame(scheduledFrame);
+      for (const dialog of [settings, restart, help]) if (dialog.open) dialog.close();
+      root.innerHTML = ''; root.classList.remove('aritos-player'); delete root.dataset.theme; delete root.dataset.control;
+    },
   };
 }
