@@ -6,6 +6,7 @@ import { mountPlayerUI } from '../ui/player-view';
 import { PlayerRenderer } from '../rendering/player-renderer';
 import { theme } from '../themes';
 import { createAudioController } from '../audio/audio-controller';
+import { createMusicController } from '../audio/theme-music';
 import { createCelebration } from '../celebration/celebration-controller';
 
 /** Owns app composition and teardown; physical rules stay in GameSession. */
@@ -24,32 +25,36 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   target.addEventListener(event, action); cleanup.push(() => target.removeEventListener(event, action));
  };
  const resetClock = () => { accumulator = 0; last = performance.now(); };
- const audio = createAudioController({ enabled: preferences.sound, roundId: 0 });
+ const audio = createAudioController({ enabled: preferences.sound, roundId: 0, collectionSound: preferences.collectionSound });
+ const music = createMusicController({ enabled: preferences.sound && preferences.music, theme: preferences.theme });
  let view: ReturnType<typeof mountPlayerUI>;
  let renderer: PlayerRenderer;
  let celebration: ReturnType<typeof createCelebration>;
  let motion: PocMotionControls;
  let controls: PocControls;
  const syncPause = () => {
-  audio.setPaused(session.isPaused); celebration?.setPaused(session.isPaused);
+  audio.cancelPreview();
+  audio.setPaused(session.isPaused); music.setPaused(session.isPaused); celebration?.setPaused(session.isPaused);
   resetClock();
  };
  const pause = (reason: PauseReason, paused: boolean) => {
   session.dispatch({ type: 'pause', reason, paused }); syncPause();
   // An already unlocked context can resume after closing a menu or returning to the page.
-  if (!session.isPaused && started) void audio.activate();
+  if (!session.isPaused && started) { void audio.activate(); void music.activate(); }
  };
  const save = (changes: Partial<PlayerPreferences>) => {
   const previous = preferences;
   preferences = Object.freeze({ ...preferences, ...changes });
   store.save(preferences);
   if (preferences.theme !== previous.theme) {
-   renderer?.setTheme(preferences.theme); celebration?.setTheme(preferences.theme);
+   renderer?.setTheme(preferences.theme); celebration?.setTheme(preferences.theme); music.setTheme(preferences.theme);
   }
   const ui = theme(preferences.theme).ui;
   for (const [name, value] of Object.entries({ accent: ui.accent, 'accent-text': ui.accentText, ink: ui.text, muted: ui.muted })) root.style.setProperty('--' + name, value);
   audio.setEnabled(preferences.sound);
-  if (preferences.sound && !session.isPaused) void audio.activate();
+  audio.setCollectionSound(preferences.collectionSound);
+  music.setEnabled(preferences.sound && preferences.music);
+  if (preferences.sound && !session.isPaused) { void audio.activate(); void music.activate(); }
  };
  const manualTilt = (roll: number, pitch: number) => {
   motion.setManual(roll, pitch);
@@ -69,11 +74,12 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   renderer.resize();
  };
  view = mountPlayerUI(root, preferences, {
-  onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); },
+  onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); void music.activate(); },
   onPreferenceChange: changes => save(changes),
   onPause: pause,
   onRecenter: center,
   onRestart: () => freshRound(),
+  onPreviewSound: () => document.hidden || pageSuspended ? Promise.resolve(false) : audio.previewCollectionSound(),
  });
  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  renderer = new PlayerRenderer(view.refs.viewport, { model: preferences.model, theme: preferences.theme, quality: reduced ? 'reduced' : 'high' });
@@ -87,7 +93,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   paused: () => !started || session.isPaused || document.hidden,
   pump: side => {
    if (!started || document.hidden || session.isPaused) return;
-   void audio.activate(); session.dispatch({ type: 'pump', side });
+   void audio.activate(); void music.activate(); session.dispatch({ type: 'pump', side });
   },
   togglePause: () => { if (started) pause('manual', !session.pauseReasons.includes('manual')); },
   setManualTilt: manualTilt,
@@ -136,7 +142,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  function dispose() {
   if (disposed) return; disposed = true; cancelAnimationFrame(animationFrame); resizeObserver.disconnect();
   cleanup.splice(0).forEach(remove => remove()); pressedTimers.forEach(clearTimeout); pressedTimers.clear();
-  controls.dispose(); motion.dispose(); celebration.dispose(); audio.dispose(); renderer.dispose(); session.dispose(); view.dispose();
+  controls.dispose(); motion.dispose(); celebration.dispose(); audio.dispose(); music.dispose(); renderer.dispose(); session.dispose(); view.dispose();
  }
  listen(window, 'pagehide', ((event: PageTransitionEvent) => {
   if (!event.persisted) { dispose(); return; }

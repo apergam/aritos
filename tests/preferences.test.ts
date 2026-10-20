@@ -9,7 +9,7 @@ import {
 } from '../src/platform/preferences';
 
 const customized: PlayerPreferences = Object.freeze({
-  model: 'single-button', theme: 'space', sound: false, control: 'motion',
+  model: 'single-button', theme: 'space', sound: false, music: false, collectionSound: 'sparkle', control: 'motion',
 });
 
 test('missing preference data uses the accepted two-button defaults', () => {
@@ -30,7 +30,7 @@ test('valid fields survive partial and invalid data while invalid fields fall ba
     preferences: { model: 'single-button', theme: 'pastel', sound: false, control: 'keyboard' },
   }));
   assert.deepEqual(parsed, {
-    model: 'single-button', theme: 'ocean', sound: false, control: 'manual',
+    ...DEFAULT_PREFERENCES, model: 'single-button', theme: 'ocean', sound: false, control: 'manual',
   });
   assert.deepEqual(parsePreferences(JSON.stringify({ version: 1, preferences: { theme: 'capybaras' } })), {
     ...DEFAULT_PREFERENCES, theme: 'capybaras',
@@ -77,4 +77,20 @@ test('an inaccessible localStorage getter does not prevent loading or saving att
     if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor);
     else delete (globalThis as { localStorage?: unknown }).localStorage;
   }
+});
+
+
+test('legacy preferences retain mute and gain safe music/reward defaults', () => {
+  const legacy = parsePreferences(JSON.stringify({ version: 1, preferences: {
+    model: 'single-button', theme: 'capybaras', sound: false, control: 'manual',
+  } }));
+  assert.equal(legacy.sound, false);
+  assert.equal(legacy.music, true, 'music choice does not override global mute');
+  assert.equal(legacy.collectionSound, 'coin');
+  const invalid = parsePreferences(JSON.stringify({ version: 1, preferences: {
+    sound: false, music: 'yes', collectionSound: 'unknown',
+  } }));
+  assert.equal(invalid.sound, false);
+  assert.equal(invalid.music, DEFAULT_PREFERENCES.music);
+  assert.equal(invalid.collectionSound, DEFAULT_PREFERENCES.collectionSound);
 });

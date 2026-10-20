@@ -221,3 +221,9 @@
  .motion-row .outline-button { align-self:flex-end; }
  .center-button { margin-top:2px; }
 }
+
+/* Audio choices stay in settings; they do not consume tank/control space. */
+.reward-controls { display:flex; align-items:center; gap:10px; margin:10px 0 5px; }
+.reward-controls select { flex:1; min-width:0; min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); font:inherit; font-size:13px; }
+.reward-controls button { min-height:44px; }
+.reward-setting>small { display:block; color:var(--muted); font-size:11px; }

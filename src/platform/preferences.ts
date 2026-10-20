@@ -2,12 +2,15 @@ import type { ToyModelId } from '../models/toy-model';
 
 export type ThemeId = 'ocean' | 'space' | 'capybaras';
 export type ControlPreference = 'motion' | 'manual';
+export type CollectionSound = 'coin' | 'sparkle';
 
 /** Only durable user choices belong here; round and physics state never do. */
 export type PlayerPreferences = Readonly<{
   model: ToyModelId;
   theme: ThemeId;
   sound: boolean;
+  music: boolean;
+  collectionSound: CollectionSound;
   control: ControlPreference;
 }>;
 
@@ -15,6 +18,8 @@ export const DEFAULT_PREFERENCES: PlayerPreferences = Object.freeze({
   model: 'two-button',
   theme: 'ocean',
   sound: true,
+  music: true,
+  collectionSound: 'coin',
   control: 'manual',
 });
 
@@ -32,6 +37,8 @@ function validFallback(fallback: PlayerPreferences): PlayerPreferences {
     model: isModel(fallback.model) ? fallback.model : DEFAULT_PREFERENCES.model,
     theme: isTheme(fallback.theme) ? fallback.theme : DEFAULT_PREFERENCES.theme,
     sound: typeof fallback.sound === 'boolean' ? fallback.sound : DEFAULT_PREFERENCES.sound,
+    music: typeof fallback.music === 'boolean' ? fallback.music : DEFAULT_PREFERENCES.music,
+    collectionSound: isCollectionSound(fallback.collectionSound) ? fallback.collectionSound : DEFAULT_PREFERENCES.collectionSound,
     control: isControl(fallback.control) ? fallback.control : DEFAULT_PREFERENCES.control,
   });
 }
@@ -46,6 +53,10 @@ function isTheme(value: unknown): value is ThemeId {
 
 function isControl(value: unknown): value is ControlPreference {
   return value === 'motion' || value === 'manual';
+}
+
+function isCollectionSound(value: unknown): value is CollectionSound {
+  return value === 'coin' || value === 'sparkle';
 }
 
 /** Parse only the supported, versioned preference format; invalid fields use the fallback. */
@@ -64,6 +75,8 @@ export function parsePreferences(
       model: isModel(p.model) ? p.model : defaults.model,
       theme: isTheme(p.theme) ? p.theme : defaults.theme,
       sound: typeof p.sound === 'boolean' ? p.sound : defaults.sound,
+      music: typeof p.music === 'boolean' ? p.music : defaults.music,
+      collectionSound: isCollectionSound(p.collectionSound) ? p.collectionSound : defaults.collectionSound,
       control: isControl(p.control) ? p.control : defaults.control,
     });
   } catch {
@@ -103,6 +116,8 @@ export function createPreferenceStore(storage?: PreferenceStorage) {
             model: safe.model,
             theme: safe.theme,
             sound: safe.sound,
+            music: safe.music,
+            collectionSound: safe.collectionSound,
             control: safe.control,
           },
         });

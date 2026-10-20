@@ -17,6 +17,7 @@ export type PlayerUIHandlers = Readonly<{
   onPause: (reason: PauseReason, paused: boolean) => void;
   onRecenter: () => void;
   onRestart: () => void;
+  onPreviewSound: () => Promise<boolean>;
 }>;
 
 export type PlayerUIRefs = Readonly<{
@@ -92,7 +93,9 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
         <form method="dialog" class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">TU PARTIDA</p><h2 id="settings-title">Ajustes</h2></div><button class="icon-button dialog-close" value="close" aria-label="Cerrar ajustes">×</button></div>
           <button class="setting-row" id="pause-toggle" type="button"><span class="setting-icon">Ⅱ</span><span><b id="pause-title">Pausar partida</b><small>Detiene el movimiento mientras estás aquí</small></span><span class="setting-arrow">›</span></button>
           <div class="setting-section"><b>Tema</b><div class="theme-choices compact" id="settings-themes">${themeChoices(initialPreferences.theme)}</div></div>
-          <button class="setting-row" id="sound-toggle" type="button" aria-pressed="${initialPreferences.sound}"><span class="setting-icon">♫</span><span><b>Sonidos</b><small id="sound-copy">${initialPreferences.sound ? 'Activados' : 'Silenciados'}</small></span><span class="toggle-indicator" aria-hidden="true"></span></button>
+          <button class="setting-row" id="sound-toggle" type="button" aria-pressed="${initialPreferences.sound}"><span class="setting-icon">♫</span><span><b>Sonido general</b><small id="sound-copy">${initialPreferences.sound ? 'Activados' : 'Silenciados'}</small></span><span class="toggle-indicator" aria-hidden="true"></span></button>
+          <button class="setting-row" id="music-toggle" type="button" aria-pressed="${initialPreferences.music}"><span class="setting-icon">♪</span><span><b>Música del tema</b><small id="music-copy"></small></span><span class="toggle-indicator" aria-hidden="true"></span></button>
+          <div class="setting-section reward-setting"><label for="collection-sound"><b>Al guardar un aro</b></label><div class="reward-controls"><select id="collection-sound" aria-label="Sonido al guardar un aro"><option value="coin">Monedita</option><option value="sparkle">Chispas</option></select><button class="compact-button" id="preview-sound" type="button">Escuchar</button></div><small id="preview-sound-status" role="status">Elige tu sonido de recompensa.</small></div>
           <button class="setting-row" id="controls-open" type="button"><span class="setting-icon">↗</span><span><b>Controles e inclinación</b><small>Movimiento del dispositivo o ajuste manual</small></span><span class="setting-arrow">›</span></button>
           <button class="setting-row" id="rule-change" type="button"><span class="setting-icon">◎</span><span><b>Cambiar modo de juego</b><small>Guardar al llegar o jugar en modo clásico</small></span><span class="setting-arrow">›</span></button>
           <button class="setting-row" id="model-change" type="button"><span class="setting-icon">▣</span><span><b>Cambiar juguete</b><small id="model-copy">${MODEL_NAMES[initialPreferences.model]}</small></span><span class="setting-arrow">›</span></button>
@@ -146,6 +149,10 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     });
     $('#sound-toggle').setAttribute('aria-pressed', String(currentPreferences.sound));
     $('#sound-copy').textContent = currentPreferences.sound ? 'Activados' : 'Silenciados';
+    $('#music-toggle').setAttribute('aria-pressed', String(currentPreferences.music));
+    $('#music-copy').textContent = !currentPreferences.music ? 'Desactivada' : !currentPreferences.sound ? 'Silenciada por el sonido general' : 'Activada · ' + THEME_NAMES[currentPreferences.theme];
+    $<HTMLSelectElement>('#collection-sound').value = currentPreferences.collectionSound;
+    $<HTMLButtonElement>('#preview-sound').disabled = !currentPreferences.sound;
     $('#model-copy').textContent = MODEL_NAMES[draftModel];
     $('#pump-hint').textContent = draftModel === 'single-button' ? 'Un impulso central por toque' : 'Toca uno o ambos botones';
   };
@@ -173,6 +180,15 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   settings.addEventListener('close', () => { if (!disposed) handlers.onPause('menu', !started); });
   $('#pause-toggle').addEventListener('click', () => handlers.onPause('manual', !latestSnapshot?.paused.includes('manual')));
   $('#sound-toggle').addEventListener('click', () => setPreference({ sound: !currentPreferences.sound }));
+  $('#music-toggle').addEventListener('click', () => setPreference({ music: !currentPreferences.music }));
+  $('#collection-sound').addEventListener('change', () => {
+    setPreference({ collectionSound: $<HTMLSelectElement>('#collection-sound').value === 'sparkle' ? 'sparkle' : 'coin' });
+    $('#preview-sound-status').textContent = 'Pulsa Escuchar para comparar.';
+  });
+  $('#preview-sound').addEventListener('click', async () => {
+    const played = await handlers.onPreviewSound();
+    if (!disposed) $('#preview-sound-status').textContent = played ? 'Muestra de ' + (currentPreferences.collectionSound === 'coin' ? 'monedita.' : 'chispas.') : 'No se pudo activar el audio. Puedes seguir jugando.';
+  });
   $('#controls-open').addEventListener('click', () => { settings.close(); scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#tilt-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); refs.motion.button.focus(); }); });
   const returnToSetup = (includeModel: boolean) => {
     if (!includeModel || !modelDraftDirty) { draftModel = activeModel; modelDraftDirty = false; syncPrefs(); }
@@ -207,7 +223,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     refs,
     update(snapshot: SessionSnapshot, preferences: PlayerPreferences, nextState: PlayerUIState = {}) {
       latestSnapshot = snapshot;
-      if (preferences.model !== lastPreferenceSync.model || preferences.theme !== lastPreferenceSync.theme || preferences.sound !== lastPreferenceSync.sound || preferences.control !== lastPreferenceSync.control) {
+      if (preferences.model !== lastPreferenceSync.model || preferences.theme !== lastPreferenceSync.theme || preferences.sound !== lastPreferenceSync.sound || preferences.music !== lastPreferenceSync.music || preferences.collectionSound !== lastPreferenceSync.collectionSound || preferences.control !== lastPreferenceSync.control) {
         if (!modelDraftDirty && preferences.model !== lastPreferenceSync.model) draftModel = preferences.model;
         currentPreferences = preferences;
         lastPreferenceSync = preferences;
