@@ -12,6 +12,9 @@ export type SessionCommand =
   | { type: 'pump'; side: PumpSide }
   | { type: 'orient'; gravity: Vec }
   | { type: 'pause'; reason: PauseReason; paused: boolean }
+  | { type: 'start'; options?: SessionOptions }
+  | { type: 'set-model'; model: ToyModelId; scene?: Scene }
+  | { type: 'set-mode'; mode: GameMode; scene?: Scene }
   | { type: 'restart'; scene?: Scene };
 export type GameEvent =
   | Readonly<{ type: 'pump'; roundId: number; side: PumpSide }>
@@ -28,6 +31,7 @@ export class GameSession {
   private listeners = new Set<(event: GameEvent) => void>();
   private pauses = new Set<PauseReason>();
   private victoryRound = -1;
+  private steppingRound: number | undefined;
   private disposed = false;
 
   constructor(options: SessionOptions = {}) {
@@ -36,9 +40,12 @@ export class GameSession {
     this.simulation.mode = options.mode ?? 'collect';
     this.simulation.model = toyModel(this.model).buttonCount;
     this.simulation.onWin = () => {
-      if (this.victoryRound === this.round) return;
-      this.victoryRound = this.round;
-      this.emit({ type: 'victory', roundId: this.round, mode: this.simulation.mode });
+      const roundId = this.steppingRound ?? this.round;
+      if (roundId !== this.round) return;
+      const mode = this.simulation.mode;
+      if (this.victoryRound === roundId) return;
+      this.victoryRound = roundId;
+      this.emit({ type: 'victory', roundId, mode });
     };
     this.simulation.reset(this.scene);
   }
@@ -52,17 +59,28 @@ export class GameSession {
     if (this.disposed) return;
     switch (command.type) {
       case 'pump':
-        if (!this.isPaused) { this.simulation.pump(command.side); this.emit({ type: 'pump', roundId: this.round, side: command.side }); }
+        if (!this.isPaused && toyModel(this.model).pumpSides.includes(command.side)) {
+          const roundId = this.round;
+          this.simulation.pump(command.side);
+          this.emit({ type: 'pump', roundId, side: command.side });
+        }
         break;
       case 'orient': this.simulation.setGravity(command.gravity); break;
       case 'pause': command.paused ? this.pauses.add(command.reason) : this.pauses.delete(command.reason); break;
+      case 'start': this.startRound(command.options); break;
+      case 'set-model': this.startRound({ model: command.model, scene: command.scene ?? this.scene }); break;
+      case 'set-mode': this.startRound({ mode: command.mode, scene: command.scene ?? this.scene }); break;
       case 'restart': this.startRound({ scene: command.scene ?? this.scene }); break;
     }
   }
 
   startRound(options: SessionOptions = {}): void {
     if (this.disposed) return;
-    this.round++; this.victoryRound = -1; this.pauses.clear();
+    this.round++; this.victoryRound = -1;
+    // A completed/canceled settings flow closes with the new round. Manual pause
+    // and browser visibility remain independent and continue to hold simulation.
+    this.pauses.delete('menu');
+    this.pauses.delete('restart-confirmation');
     this.scene = options.scene ?? this.scene;
     this.model = options.model ?? this.model;
     if (options.mode) this.simulation.mode = options.mode;
@@ -73,12 +91,21 @@ export class GameSession {
   /** One fixed physics tick. The caller owns accumulation and frame catch-up limits. */
   step(): void {
     if (this.disposed || this.isPaused) return;
+    const roundId = this.round;
     const before = this.simulation.rings.map(r => r.id);
     const priorCollected = this.simulation.collected;
-    this.simulation.step();
+    this.steppingRound = roundId;
+    try { this.simulation.step(); }
+    finally { this.steppingRound = undefined; }
+    // A victory subscriber may synchronously start another round during step().
+    // Never interpret that new round's state as events from the old one.
+    if (this.disposed || roundId !== this.round) return;
     if (this.simulation.collected > priorCollected) {
       const removed = new Set(before.filter(id => !this.simulation.rings.some(r => r.id === id)));
-      for (const ringId of removed) this.emit({ type: 'ring-collected', roundId: this.round, ringId, collected: this.simulation.collected, total: this.simulation.totalRings });
+      for (const ringId of removed) {
+        if (this.disposed || roundId !== this.round) return;
+        this.emit({ type: 'ring-collected', roundId, ringId, collected: this.simulation.collected, total: this.simulation.totalRings });
+      }
     }
   }
 
@@ -96,5 +123,10 @@ export class GameSession {
   get isPaused(): boolean { return this.pauses.size > 0; }
   get pauseReasons(): readonly PauseReason[] { return Object.freeze([...this.pauses]); }
   dispose(): void { if (this.disposed) return; this.disposed = true; this.listeners.clear(); this.pauses.clear(); this.simulation.onWin = undefined; this.simulation.dispose(); }
-  private emit(event: GameEvent): void { for (const listener of [...this.listeners]) listener(event); }
+  private emit(event: GameEvent): void {
+    for (const listener of [...this.listeners]) {
+      if (this.disposed || event.roundId !== this.round) return;
+      listener(event);
+    }
+  }
 }
