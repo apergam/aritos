@@ -37,17 +37,20 @@ export class Simulation {
  private nextRingId=0;
  private baseColliders:RAPIER.Collider[]=[];
  private baseContactTime=new Map<number,number>();
- constructor(){
-  this.world=new RAPIER.World(this.gravity);this.world.timestep=DT;
-  this.world.numSolverIterations=8;
-  const wall=(x:number,y:number,z:number,hx:number,hy:number,hz:number)=>this.world.createCollider(RAPIER.ColliderDesc.cuboid(hx,hy,hz).setTranslation(x,y,z).setFriction(.3).setRestitution(.02));
+ constructor(){ this.world=this.createWorld(); }
+ private createWorld(){
+  const world=new RAPIER.World(this.gravity);world.timestep=DT;
+  world.numSolverIterations=8;
+  this.baseColliders=[];
+  const wall=(x:number,y:number,z:number,hx:number,hy:number,hz:number)=>world.createCollider(RAPIER.ColliderDesc.cuboid(hx,hy,hz).setTranslation(x,y,z).setFriction(.3).setRestitution(.02));
   wall(-4.65,0,0,.15,6.3,TANK.z+.3);wall(4.65,0,0,.15,6.3,TANK.z+.3);
   wall(0,-6.15,0,4.8,.15,TANK.z+.3);wall(0,6.15,0,4.8,.15,TANK.z+.3);
   wall(0,0,-TANK.z-.15,4.8,6.3,.15);wall(0,0,TANK.z+.15,4.8,6.3,.15);
   for(const p of PEGS){
    this.baseColliders.push(wall(p.x,BASE-TOY_PHYSICS.base.footHeight/2,p.z,TOY_PHYSICS.base.halfWidth,TOY_PHYSICS.base.footHeight/2,TOY_PHYSICS.base.halfDepth));
-   this.world.createCollider(RAPIER.ColliderDesc.cylinder((TIP-BASE)/2,TOY_PHYSICS.pegRadius).setTranslation(p.x,(TIP+BASE)/2,p.z).setFriction(.2));
+   world.createCollider(RAPIER.ColliderDesc.cylinder((TIP-BASE)/2,TOY_PHYSICS.pegRadius).setTranslation(p.x,(TIP+BASE)/2,p.z).setFriction(.2));
   }
+  return world;
  }
  addRing(x:number,y:number,z:number,rotation:Quaternion=horizontal){
   const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(x,y,z).setRotation(rotation).setLinearDamping(this.drag).setAngularDamping(1.6).setCcdEnabled(true).setCanSleep(true));
@@ -62,7 +65,9 @@ export class Simulation {
   const ring={id:this.nextRingId++,body};this.rings.push(ring);this.totalRings++;return ring;
  }
  reset(scene:Scene='free'){
-  for(const r of this.rings)this.world.removeRigidBody(r.body);
+  // Rebuild the world at a round boundary: removing bodies alone leaves Rapier
+  // broad/narrow-phase history that changes an identical restarted stack.
+  const previous=this.world;this.world=this.createWorld();previous.free();
   this.rings=[];this.pulses=[];this.time=0;this.stableTime=0;this.won=false;this.escaped=false;
   this.collected=0;this.totalRings=0;this.nextRingId=0;this.baseContactTime.clear();
   this.setGravity({x:0,y:-3,z:0});

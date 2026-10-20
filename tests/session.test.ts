@@ -165,3 +165,22 @@ test('hidden time cannot accumulate into active simulation time', async () => {
     assert.equal(session.snapshot().activeSeconds, 1 / 120);
   } finally { session.dispose(); }
 });
+
+test('fresh stack rounds repeat the same physical outcome after immediate restart', async () => {
+ await initPhysics();
+ const session = new GameSession({ scene: 'stack', mode: 'collect' });
+ const victories: number[] = [];
+ session.subscribe(event => { if (event.type === 'victory') victories.push(event.roundId); });
+ try {
+  // The player creates a paused preview and starts a fresh round on Jugar.
+  session.startRound({ scene: 'stack', mode: 'collect' });
+  for (let i=0;i<1440;i++) session.step();
+  assert.equal(session.snapshot().collected, 12);
+  assert.equal(session.snapshot().active, 0);
+  assert.deepEqual(victories, [1]);
+  session.dispatch({ type: 'restart' });
+  for (let i=0;i<1440;i++) session.step();
+  assert.equal(session.snapshot().collected, 12);
+  assert.deepEqual(victories, [1,2]);
+ } finally { session.dispose(); }
+});
