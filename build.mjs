@@ -1,0 +1,10 @@
+import {build} from 'esbuild';
+import {mkdir,readFile,writeFile,copyFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+await mkdir('dist',{recursive:true});
+await build({entryPoints:['src/main.ts'],bundle:true,format:'esm',target:'es2022',outfile:'dist/app.js',minify:true,sourcemap:true});
+await copyFile('public/style.css','dist/style.css');
+const [html,css,js]=await Promise.all([readFile('public/index.html','utf8'),readFile('dist/style.css'),readFile('dist/app.js')]);
+const revision=createHash('sha256').update(html).update(css).update(js).digest('hex').slice(0,8);
+await writeFile('dist/index.html',html.replace('./style.css',`./style.css?v=${revision}`).replace('./app.js',`./app.js?v=${revision}`).replace('POC / 01',`POC / ${revision}`));
+console.log(`POC / ${revision}`);
