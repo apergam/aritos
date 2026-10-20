@@ -159,3 +159,56 @@ test('muting while activation is pending prevents late playback and resuspends t
   assert.equal(context.sources.length, 0);
   controller.dispose();
 });
+
+test('collection reward is once per ring, supports both cues, and bounds rapid overlap', async () => {
+  const { controller, contexts } = setup({ enabled: true });
+  await controller.activate();
+  const context = contexts[0];
+  assert.ok(context);
+
+  const collected: GameEvent = { type: 'ring-collected', roundId: 0, ringId: 4, collected: 1, total: 12 };
+  controller.handle(collected);
+  controller.handle(collected);
+  controller.handle({ ...collected });
+  assert.equal(context.sources.length, 3, 'coin is the default and duplicate ring events play once');
+
+  controller.setCollectionSound('sparkle');
+  for (let ringId = 5; ringId < 20; ringId++) {
+    controller.handle({ type: 'ring-collected', roundId: 0, ringId, collected: ringId - 3, total: 12 });
+  }
+  assert.equal(context.sources.length, 15, 'at most four overlapping reward voices are started');
+  assert.ok(context.sources.slice(3).some(source => source.frequency.value >= 2349), 'sparkle uses its own higher register');
+  controller.dispose();
+});
+
+test('explicit collection preview works during settings pause and stops cleanly', async () => {
+  const { controller, contexts } = setup({ enabled: true });
+  controller.setPaused(true);
+  assert.equal(await controller.activate(), false, 'ordinary activation remains unavailable while paused');
+  assert.equal(await controller.previewCollectionSound(), true, 'explicit preview may resume audio while settings pause physics');
+  const context = contexts[0];
+  assert.equal(context?.state, 'running');
+  assert.equal(context?.sources.length, 3);
+  assert.equal(controller.status, 'paused');
+
+  for (const source of context?.sources ?? []) source.onended?.();
+  await Promise.resolve();
+  assert.equal(context?.state, 'suspended', 'preview suspends the context after its short voice ends');
+  controller.dispose();
+});
+
+test('preview cancellation handles a hidden transition while pause is already active', async () => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const context = new FakeContext();
+  context.resumeGate = gate;
+  const controller = createAudioController({ enabled: true, audioContextFactory: () => context as unknown as AudioContext });
+  controller.setPaused(true);
+  const preview = controller.previewCollectionSound();
+  controller.cancelPreview();
+  release();
+  assert.equal(await preview, false, 'cancellation invalidates a preview still waiting for resume');
+  assert.equal(context.sources.length, 0);
+  assert.equal(context.state, 'suspended');
+  controller.dispose();
+});

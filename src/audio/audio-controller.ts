@@ -1,10 +1,12 @@
 import type { GameEvent } from '../game/session';
 
 export type AudioStatus = 'unsupported' | 'locked' | 'ready' | 'muted' | 'paused' | 'failed' | 'disposed';
+export type CollectionSound = 'coin' | 'sparkle';
 
 export type AudioControllerOptions = Readonly<{
   enabled?: boolean;
   roundId?: number;
+  collectionSound?: CollectionSound;
   audioContextFactory?: () => AudioContext;
 }>;
 
@@ -24,10 +26,13 @@ export class AudioController {
   private paused = false;
   private disposed = false;
   private roundId: number;
+  private collectionSound: CollectionSound;
   private context: AudioContext | undefined;
   private statusValue: AudioStatus;
   private generation = 0;
+  private previewGeneration = 0;
   private voices = new Set<Voice>();
+  private previewVoice: Voice | undefined;
   private seenEvents = new WeakSet<object>();
   private collectedRings = new Set<number>();
   private victoryPlayed = false;
@@ -35,11 +40,17 @@ export class AudioController {
   constructor(options: AudioControllerOptions = {}) {
     this.enabled = options.enabled ?? false;
     this.roundId = options.roundId ?? 0;
+    this.collectionSound = options.collectionSound ?? 'coin';
     this.factory = options.audioContextFactory ?? defaultAudioContextFactory();
     this.statusValue = this.enabled ? (this.factory ? 'locked' : 'unsupported') : 'muted';
   }
 
   get status(): AudioStatus { return this.statusValue; }
+
+  setCollectionSound(value: CollectionSound): void {
+    if (this.disposed || (value !== 'coin' && value !== 'sparkle')) return;
+    this.collectionSound = value;
+  }
 
   /** Call directly from a user gesture (for example, start, pump, or sound toggle). */
   async activate(): Promise<boolean> {
@@ -65,6 +76,38 @@ export class AudioController {
     }
   }
 
+  /** Explicit audition for a user gesture; it can run while physics is paused in settings. */
+  async previewCollectionSound(): Promise<boolean> {
+    if (this.disposed || !this.enabled || !this.factory) return false;
+    this.stopPreviewVoice();
+    const generation = ++this.previewGeneration;
+    try {
+      this.context ??= this.factory();
+      await this.context.resume();
+      if (generation !== this.previewGeneration || !this.enabled || this.disposed) {
+        if (!this.enabled || this.paused || this.disposed) this.suspendContext();
+        return false;
+      }
+      if (this.context.state !== 'running') {
+        if (!this.paused) this.statusValue = 'failed';
+        return false;
+      }
+      if (!this.paused) this.statusValue = 'ready';
+      this.playCollection(true, true);
+      return true;
+    } catch {
+      if (generation === this.previewGeneration && !this.paused) this.statusValue = 'failed';
+      return false;
+    }
+  }
+
+  /** Cancel an audition on settings close, page hiding, or any other UI lifecycle edge. */
+  cancelPreview(): void {
+    if (this.disposed) return;
+    this.previewGeneration++;
+    this.stopPreviewVoice();
+  }
+
   /** Accepts only events for the current round. No effects are queued while locked or muted. */
   handle(event: GameEvent): void {
     if (this.disposed || event.roundId !== this.roundId || this.seenEvents.has(event)) return;
@@ -75,7 +118,7 @@ export class AudioController {
     } else if (event.type === 'ring-collected') {
       if (this.collectedRings.has(event.ringId)) return;
       this.collectedRings.add(event.ringId);
-      this.playWaterDrop();
+      this.playCollection();
     } else if (event.type === 'victory' && !this.victoryPlayed) {
       this.victoryPlayed = true;
       this.playCelebration();
@@ -160,11 +203,19 @@ export class AudioController {
     ]);
   }
 
-  private playWaterDrop(): void {
-    this.voice([
-      { frequency: 520, endFrequency: 760, type: 'sine', start: 0, duration: 0.16, volume: 0.025 },
-      { frequency: 390, endFrequency: 310, type: 'sine', start: 0.12, duration: 0.2, volume: 0.018 },
-    ]);
+  private playCollection(allowPaused = false, preview = false): void {
+    const coin = [
+      { frequency: 988, endFrequency: 1318.5, type: 'triangle' as const, start: 0, duration: 0.19, volume: 0.035 },
+      { frequency: 1318.5, endFrequency: 1760, type: 'sine' as const, start: 0.035, duration: 0.23, volume: 0.026 },
+      { frequency: 1976, endFrequency: 1568, type: 'sine' as const, start: 0.075, duration: 0.25, volume: 0.014 },
+    ];
+    const sparkle = [
+      { frequency: 1568, endFrequency: 2093, type: 'sine' as const, start: 0, duration: 0.17, volume: 0.026 },
+      { frequency: 2349, endFrequency: 3136, type: 'sine' as const, start: 0.045, duration: 0.18, volume: 0.021 },
+      { frequency: 2794, endFrequency: 2349, type: 'triangle' as const, start: 0.095, duration: 0.24, volume: 0.016 },
+      { frequency: 3520, endFrequency: 3136, type: 'sine' as const, start: 0.14, duration: 0.2, volume: 0.011 },
+    ];
+    this.voice(this.collectionSound === 'coin' ? coin : sparkle, allowPaused, true, preview);
   }
 
   private playCelebration(): void {
@@ -175,11 +226,15 @@ export class AudioController {
     ]);
   }
 
-  private voice(notes: readonly { frequency: number; endFrequency: number; type: OscillatorType; start: number; duration: number; volume: number }[]): void {
+  private voice(notes: readonly { frequency: number; endFrequency: number; type: OscillatorType; start: number; duration: number; volume: number }[], allowPaused = false, reward = false, preview = false): void {
     const context = this.context;
-    if (!context || !this.canPlay()) return;
+    if (!context || (allowPaused ? !this.canPreview() : !this.canPlay())) return;
+    // Collection events can arrive close together. Drop excess reward voices rather
+    // than stacking a queue or summing enough tones to clip.
+    if (reward && !preview && this.voices.size >= 4) return;
     const voice: Voice = { nodes: [], gains: [] };
     this.voices.add(voice);
+    if (preview) this.previewVoice = voice;
     let endedCount = 0;
     for (const note of notes) {
       const oscillator = context.createOscillator();
@@ -199,14 +254,41 @@ export class AudioController {
         oscillator.disconnect();
         gain.disconnect();
         endedCount++;
-        if (endedCount === voice.nodes.length) this.voices.delete(voice);
+        if (endedCount === voice.nodes.length) {
+          this.voices.delete(voice);
+          if (this.previewVoice === voice) this.previewVoice = undefined;
+          if (this.paused && this.voices.size === 0) this.suspendContext();
+        }
       };
       oscillator.start(at);
       oscillator.stop(at + note.duration + 0.01);
     }
   }
 
+  private canPreview(): boolean {
+    return this.enabled && !this.disposed && this.statusValue !== 'failed' && this.context?.state === 'running';
+  }
+
+  private stopPreviewVoice(): void {
+    const voice = this.previewVoice;
+    if (!voice) return;
+    this.previewVoice = undefined;
+    this.voices.delete(voice);
+    for (const gain of voice.gains) {
+      try { gain.gain.cancelScheduledValues(0); gain.gain.value = 0; } catch { /* browser may already have ended it */ }
+      gain.disconnect();
+    }
+    for (const node of voice.nodes) {
+      node.onended = null;
+      try { node.stop(); } catch { /* it may already have ended */ }
+      node.disconnect();
+    }
+    if (this.paused && this.voices.size === 0) this.suspendContext();
+  }
+
   private stopVoices(): void {
+    this.previewGeneration++;
+    this.previewVoice = undefined;
     for (const voice of this.voices) {
       for (const gain of voice.gains) {
         try { gain.gain.cancelScheduledValues(0); gain.gain.value = 0; } catch { /* browser may already have ended it */ }
