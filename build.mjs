@@ -3,7 +3,7 @@ import {mkdir,readFile,writeFile,copyFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 await mkdir('dist',{recursive:true});
 await build({entryPoints:['src/main.ts'],bundle:true,format:'esm',target:'es2022',outfile:'dist/app.js',minify:true,sourcemap:true});
-const assets=['assets/themes/ocean-reef-v2-9767a3f999.png','assets/themes/capybara-pond-v2-195c088f92.png'];
+const assets=['assets/themes/ocean-reef-v2-9767a3f999.png','assets/themes/capybara-pond-v2-195c088f92.png','assets/themes/space-nebula-v2-25760af803.png'];
 await mkdir('dist/assets/themes',{recursive:true});
 for(const file of assets)await copyFile('public/'+file,'dist/'+file);
 const styles=['style.css','player.css','celebration.css'];

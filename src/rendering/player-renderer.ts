@@ -333,7 +333,7 @@ export class PlayerRenderer {
     this.addSeaweed(ocean, 5.75, -5.9, 0x5cba9a);
 
     const space = this.makeDecorationGroup('space');
-    this.addPoints(space, this.seededPoints(443, 190, 25, 23), 0xf5efff, 0.96, 0.78);
+    this.addPoints(space, this.seededPoints(443, 90, 25, 23), 0xf5efff, 0.13, 0.46);
     const planet = new THREE.Mesh(new THREE.SphereGeometry(0.82, 32, 20), this.standard(0x866fe0, 0.48, 0.16));
     planet.position.set(6.15, 4.5, -2.35);
     this.trackMesh(planet);
