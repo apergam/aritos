@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { THEMES, theme, type ThemeId } from '../src/themes';
+import { fixedCameraPosition } from '../src/rendering/player-renderer';
 
 test('all supported themes provide complete player palettes and inline mascot art', () => {
   const expected: Record<ThemeId, string> = { ocean: 'octopus', space: 'astronaut', capybaras: 'capybara' };
@@ -23,4 +24,11 @@ test('theme definitions and their palettes are immutable shared values', () => {
   assert.equal(Object.isFrozen(THEMES), true);
   assert.equal(Object.isFrozen(theme('ocean')), true);
   assert.equal(Object.isFrozen(theme('ocean').colors.rings), true);
+});
+
+test('fixed camera keeps the accepted seven-tenths-of-a-degree front elevation', () => {
+  const position = fixedCameraPosition(25);
+  const elevation = Math.atan2(position.y, position.z) * 180 / Math.PI;
+  assert.equal(position.x, 0);
+  assert.ok(Math.abs(elevation - 0.7) < 1e-10);
 });

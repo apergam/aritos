@@ -6,6 +6,12 @@ import { theme, type ThemeId } from '../themes';
 export type RenderQuality = 'high' | 'reduced';
 export type PlayerRendererOptions = Readonly<{ model: ToyModelId; theme: ThemeId; quality?: RenderQuality }>;
 
+/** Fixed front view uses the accepted 0.7 degree elevation. */
+export function fixedCameraPosition(distance: number): Readonly<{ x: number; y: number; z: number }> {
+  const elevation = THREE.MathUtils.degToRad(0.7);
+  return Object.freeze({ x: 0, y: distance * Math.sin(elevation), z: distance * Math.cos(elevation) });
+}
+
 type LivePulse = { side: PumpSide; started: number; seed: number };
 
 /**
@@ -28,7 +34,7 @@ export class PlayerRenderer {
   private readonly tankMaterials: Record<string, THREE.MeshPhysicalMaterial> = {};
   private readonly themeColors: Array<{ material: THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial; key: keyof ReturnType<typeof theme>['colors'] }> = [];
   private readonly outlets: Array<{ side: PumpSide; mesh: THREE.Mesh }> = [];
-  private readonly backgroundDecor: THREE.Points[] = [];
+  private readonly themeDecor = new Map<ThemeId, THREE.Group>();
   private currentTheme: ThemeId;
   private currentModel: ToyModelId;
   private quality: RenderQuality;
@@ -126,7 +132,9 @@ export class PlayerRenderer {
     }
     for (const entry of this.themeColors) entry.material.color.setHex(colors[entry.key] as number);
     for (const bubble of this.bubbles) (bubble.material as THREE.MeshBasicMaterial).color.setHex(colors.bubble);
-    for (const point of this.backgroundDecor) (point.material as THREE.PointsMaterial).color.setHex(colors.decoration);
+    for (const [themeId, group] of this.themeDecor) {
+      group.visible = themeId === id;
+    }
     for (const [id, ring] of this.rings) {
       ring.material.color.setHex(colors.rings[Math.abs(id) % colors.rings.length]);
     }
@@ -162,8 +170,8 @@ export class PlayerRenderer {
     const vertical = 14.8 / (2 * Math.tan(fov / 2));
     const horizontal = 10.7 / (2 * Math.tan(fov / 2) * this.camera.aspect);
     const distance = Math.max(21.5, vertical, horizontal);
-    const elevation = 0.7;
-    this.camera.position.set(0, distance * Math.sin(elevation), distance * Math.cos(elevation));
+    const position = fixedCameraPosition(distance);
+    this.camera.position.set(position.x, position.y, position.z);
     this.camera.lookAt(0, 0, 0);
     this.camera.updateProjectionMatrix();
   }
@@ -240,7 +248,8 @@ export class PlayerRenderer {
       this.cylinder(this.tankGroup, 0.79, 0.85, TOY_PHYSICS.base.footHeight, 32, baseMat, [peg.x, footY, peg.z]);
       const baseTop = this.standard(colors.housingEdge, 0.3, 0.18);
       this.bindThemeColor(baseTop, 'housingEdge');
-      this.cylinder(this.tankGroup, 0.54, 0.7, 0.085, 32, baseTop, [peg.x, TOY_PHYSICS.base.topY + 0.045, peg.z]);
+      const capHeight = 0.04;
+      this.cylinder(this.tankGroup, 0.54, 0.7, capHeight, 32, baseTop, [peg.x, TOY_PHYSICS.base.topY - capHeight / 2, peg.z]);
       const pegMat = this.standard(colors.peg, 0.2, 0.42);
       this.bindThemeColor(pegMat, 'peg');
       const length = TOY_PHYSICS.pegTipY - TOY_PHYSICS.base.topY;
@@ -315,24 +324,112 @@ export class PlayerRenderer {
   }
 
   private createDecorations(): void {
-    const points: number[] = [];
-    let seed = this.currentTheme === 'space' ? 443 : this.currentTheme === 'capybaras' ? 190 : 71;
-    const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-    for (let i = 0; i < 180; i++) {
-      const x = (random() - 0.5) * 25;
-      const y = (random() - 0.5) * 23;
-      if (Math.abs(x) < 5.1 && Math.abs(y) < 6.7) continue;
-      points.push(x, y, -2.1);
+    const ocean = this.makeDecorationGroup('ocean');
+    this.addPoints(ocean, this.seededPoints(79, 48, 24, 22), 0xefffff, 0.16, 0.65);
+    for (let wave = 0; wave < 3; wave++) {
+      const vertices: THREE.Vector3[] = [];
+      for (let i = 0; i <= 40; i++) {
+        const x = -8 + i * 0.4;
+        vertices.push(new THREE.Vector3(x, 6.8 + wave * 0.28 + Math.sin(i * 0.25 + wave) * 0.09, -2.4));
+      }
+      this.addLine(ocean, vertices, 0xb8fff5, 0.38);
     }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-    const material = new THREE.PointsMaterial({ color: theme(this.currentTheme).colors.decoration, size: this.currentTheme === 'space' ? 0.12 : 0.18, transparent: true, opacity: 0.74, sizeAttenuation: true });
-    this.geometries.add(geometry);
-    this.materials.add(material);
-    const decor = new THREE.Points(geometry, material);
-    decor.renderOrder = -2;
-    this.scene.add(decor);
-    this.backgroundDecor.push(decor);
+    this.addSeaweed(ocean, -5.7, -5.8, 0x5cba9a);
+    this.addSeaweed(ocean, 5.75, -5.9, 0x5cba9a);
+
+    const space = this.makeDecorationGroup('space');
+    this.addPoints(space, this.seededPoints(443, 190, 25, 23), 0xf5efff, 0.96, 0.78);
+    const planet = new THREE.Mesh(new THREE.SphereGeometry(0.82, 32, 20), this.standard(0x866fe0, 0.48, 0.16));
+    planet.position.set(6.15, 4.5, -2.35);
+    this.trackMesh(planet);
+    space.add(planet);
+    const planetRing = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.055, 8, 64), this.standard(0xf5c56f, 0.34, 0.35));
+    planetRing.position.copy(planet.position);
+    planetRing.rotation.set(0.56, 0.14, 0.26);
+    this.trackMesh(planetRing);
+    space.add(planetRing);
+    for (const [x, y] of [[-6.3, 4.4], [6.7, -2.3], [-6.7, -2.1]] as const) this.addStar(space, x, y);
+
+    const capybaras = this.makeDecorationGroup('capybaras');
+    this.addPoints(capybaras, this.seededPoints(190, 55, 24, 21), 0xfff5da, 0.17, 0.52);
+    this.addReeds(capybaras, -5.75, -5.9);
+    this.addReeds(capybaras, 5.75, -5.9);
+    this.addLilyPad(capybaras, -5.85, -6.05);
+    this.addLilyPad(capybaras, 5.85, -6.05);
+  }
+
+  private makeDecorationGroup(id: ThemeId): THREE.Group {
+    const group = new THREE.Group();
+    group.visible = id === this.currentTheme;
+    group.renderOrder = -2;
+    this.themeDecor.set(id, group);
+    this.scene.add(group);
+    return group;
+  }
+
+  private seededPoints(seed: number, count: number, width: number, height: number): THREE.Vector3[] {
+    const positions: THREE.Vector3[] = [];
+    const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    while (positions.length < count) {
+      const x = (random() - 0.5) * width;
+      const y = (random() - 0.5) * height;
+      if (Math.abs(x) < 5.05 && Math.abs(y) < 6.5) continue;
+      positions.push(new THREE.Vector3(x, y, -2.4));
+    }
+    return positions;
+  }
+
+  private addPoints(group: THREE.Group, points: THREE.Vector3[], color: number, size: number, opacity: number): void {
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.PointsMaterial({ color, size, transparent: true, opacity, sizeAttenuation: true, depthWrite: false });
+    this.geometries.add(geometry); this.materials.add(material);
+    group.add(new THREE.Points(geometry, material));
+  }
+
+  private addLine(group: THREE.Group, points: THREE.Vector3[], color: number, opacity = 0.8): void {
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity, depthWrite: false });
+    this.geometries.add(geometry); this.materials.add(material);
+    group.add(new THREE.Line(geometry, material));
+  }
+
+  private addSeaweed(group: THREE.Group, x: number, y: number, color: number): void {
+    for (let stem = -1; stem <= 1; stem++) {
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= 12; i++) points.push(new THREE.Vector3(x + stem * 0.15 + Math.sin(i * 0.35 + stem) * 0.17, y + i * 0.15, -2.0));
+      this.addLine(group, points, color, 0.86);
+    }
+  }
+
+  private addStar(group: THREE.Group, x: number, y: number): void {
+    this.addLine(group, [new THREE.Vector3(x - 0.16, y, -2.15), new THREE.Vector3(x + 0.16, y, -2.15)], 0xf5efff);
+    this.addLine(group, [new THREE.Vector3(x, y - 0.16, -2.15), new THREE.Vector3(x, y + 0.16, -2.15)], 0xf5efff);
+  }
+
+  private addReeds(group: THREE.Group, x: number, y: number): void {
+    for (let stalk = -2; stalk <= 2; stalk++) {
+      const start = new THREE.Vector3(x + stalk * 0.12, y, -2.05);
+      const tip = new THREE.Vector3(x + stalk * 0.23 + (stalk % 2) * 0.1, y + 1.15 + Math.abs(stalk) * 0.12, -2.05);
+      this.addLine(group, [start, tip], 0x688b4e, 0.92);
+      for (const side of [-1, 1]) {
+        const mid = start.clone().lerp(tip, 0.45 + (side + 1) * 0.12);
+        const leaf = mid.clone().add(new THREE.Vector3(side * 0.36, 0.18, 0));
+        this.addLine(group, [mid, leaf], 0x85a75b, 0.9);
+      }
+    }
+  }
+
+  private addLilyPad(group: THREE.Group, x: number, y: number): void {
+    const pad = new THREE.Mesh(new THREE.CircleGeometry(0.36, 24, 0.38, Math.PI * 1.72), this.standard(0x789956, 0.42, 0));
+    pad.position.set(x, y, -2.02);
+    this.trackMesh(pad);
+    group.add(pad);
+  }
+
+  private trackMesh(mesh: THREE.Mesh): void {
+    this.geometries.add(mesh.geometry);
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const material of materials) this.materials.add(material);
   }
 
   private rebuildButtons(button: number, edge: number): void {
