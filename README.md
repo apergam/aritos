@@ -12,6 +12,12 @@ Las 16 pruebas originales preservan el setup aceptado. La integración del 20 de
 
 The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T08 and T10–T12 have integrated implementation/evidence. T09 audio is integrated with automated lifecycle checks; subjective browser/device audition remains in review. T06 completed its free baseline, independently of unavailable physical devices. See the board and release report for exact evidence; no paid subscription or billing activation is allowed. Player-facing text remains in Spanish.
 
+## Backlog de pulido
+
+El usuario aprobó la primera versión visual el 20 de octubre. Se registraron [ocho tareas T13–T20](docs/tasks/README.md#polish-backlog--recorded-october-20) para sus siete ideas: ancho, sonido de recompensa, música por tema, ilustraciones traseras, aros temáticos, veinte aros, stickers y estacas en otras posiciones. Están planeadas, sin iniciar; los cambios físicos se compararán en el laboratorio. La música amplía el alcance anterior de solo efectos; ver [la decisión](docs/requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026).
+
+Se añadieron [T21–T23](docs/tasks/README.md#pressure-and-arcade-backlog--recorded-october-20): presión variable en el POC, dos powerups con mascota acuática y un enemigo que añade uno o dos aros llamativos con música de villano. Quedan planeados como experimentos separados; ver [alcance y reglas pendientes](docs/requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026).
+
 ## Ejecutar y construir
 
 Requiere Node.js 22+ y pnpm 11.25.0.

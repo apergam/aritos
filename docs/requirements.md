@@ -208,10 +208,20 @@ Reviewing library documentation does not replace these tests. No criterion is co
 | --- | --- |
 | BL-01 | Time-trial mode. |
 | BL-02 | A mode where a threaded ring disappears and accumulates progress. Keep it separate from classic mode. |
-| BL-03 | Configurable number of rings per round. |
+| BL-03 | Configurable number of rings per round; the next bounded experiment compares twelve with about twenty (T18). |
 | BL-04 | A customization editor mixing theme colors, backgrounds, and other elements. |
 | BL-05 | Physically shake the device to agitate the water. |
 | BL-06 | Web app installation and opening without a connection. |
+| BL-07 | Narrower toy / less horizontal travel comparison (T13). |
+| BL-08 | More rewarding collection sound: coin-like or sparkling (T14). |
+| BL-09 | Theme-specific, reusable looping background music (T15). |
+| BL-10 | Illustrated inserts on the rear plastic for each theme (T16). |
+| BL-11 | Theme-specific ring colors/materials/decorations (T17). |
+| BL-12 | Earned stickers that can be placed on the toy (T19). |
+| BL-13 | Laboratory experiments with raised/offset pegs and bases (T20). |
+| BL-14 | Variable pump pressure/intensity POC, with honest hardware capability detection and practical fallback (T21). |
+| BL-15 | Aquatic mascot powerups: thread a floor ring, or position it above a peg without insertion (T22). |
+| BL-16 | Villain encounter adding one or two red/bright physical rings, accompanied by villain music (T23). |
 
 The first release excludes a custom physics engine, accounts, multiplayer, and a game-session server. A scientific fluid simulation is not part of the defined product requirements either. Section 13 records the subsequent promotion of BL-02 into the POC.
 
@@ -285,3 +295,42 @@ Use automated tests, desktop viewport/touch/sensor emulation and practical local
 Record each result as automated, desktop/emulator or actual-device evidence, with pass/fail/not-run outcomes. Physical calibration/inversion, independent simultaneous touches, real browser permissions and sustained mobile FPS remain unaccepted until tested on suitable actual hardware. The RF/RT/CA criteria remain intact; this changes execution order and access policy, not what has been proved. T12 may produce a readiness report with explicit not-run criteria, without claiming full mobile acceptance.
 
 This documentation update starts no new workers or implementation; work resumes when the user returns in the next session.
+
+
+## 16. First-version feedback and polish backlog — October 20, 2026
+
+The user praised the integrated first version and requested recording a polish backlog. This is user feedback on the version, not proof of acoustic quality, full mobile compatibility or completion of every acceptance criterion. Existing physical-device gaps and T09 listening review remain explicit. This request adds planned work; it does not authorize starting these implementation tasks now.
+
+| User idea | Planned task | Scope / decision still needed |
+| --- | --- | --- |
+| A narrower toy to reduce long horizontal travel and repetitive waiting | [T13](tasks/T13-narrower-tank-poc.md) | Compare measured widths in the lab before selecting a new default. |
+| More exciting disappearing-ring sound | [T14](tasks/T14-collection-reward-sound.md) | Audition coin-like and sparkling collection cues; preserve actual-event semantics. |
+| Looping music matching each theme | [T15](tasks/T15-theme-music.md) | Locally included loops with documented reuse/distribution rights and seamless playback; no track selected yet. |
+| A themed picture on the rear plastic | [T16](tasks/T16-themed-rear-inserts.md) | Underwater scene, capybara habitat, ships/planets; preserve visibility through the transparent toy. |
+| Themed rings or different ring colors | [T17](tasks/T17-themed-rings.md) | Start with appearance; physical hole/dimensions remain consistent. |
+| More rings, perhaps twenty | [T18](tasks/T18-twenty-rings-poc.md), existing BL-03 | Compare twelve and twenty, including classic capacity and performance; no new default yet. |
+| Reward a sticker that the player can position on their toy | [T19](tasks/T19-sticker-rewards-poc.md) | Explore unlock rule, placement and local decorative persistence; reward cadence remains undecided. |
+| Pegs/bases in positions other than the floor | [T20](tasks/T20-alternate-peg-poc.md) | New lab variants with explicit attachment and physical base contact; select after comparison. |
+
+For the future music iteration, this request supersedes the earlier “without background music” scope in RF-43 and CA-19. Those entries and the first-version evidence remain historical references; mute, user activation and offline-after-load still apply. The music task must record actual asset provenance and licensing instead of treating “free” or “royalty-free” as a complete asset record. No paid purchases or subscriptions are requested.
+
+T19 is a bounded extension to the earlier no-editor scope (RF-36), focused on earned stickers rather than a complete customization editor. New width/count/peg experiments do not silently replace the accepted 75 / 0.50 setup, depth 1.8, twelve rings and floor bases. Theme art and ring colors remain independent of mechanics. Task cards define comparison and handoff evidence; the board is the status source. No new workers were launched by this backlog update.
+
+
+## 17. Variable pressure and arcade experiments — October 20, 2026
+
+The user requested three further backlog additions, not immediate implementation:
+
+| Idea | Planned task | Scope / open decisions |
+| --- | --- | --- |
+| Variable pumping pressure like the force of a real button press | [T21](tasks/T21-variable-pressure-poc.md) | Lab comparison of fixed and variable strength; establish supported pressure inputs or clearly labeled approximations, mapping and timing. |
+| An aquatic helper mascot assists with the last few rings | [T22](tasks/T22-mascot-powerups-poc.md) | Compare taking a floor ring onto a peg versus positioning it above the peg without insertion. Availability, charges, trigger and movement method remain undecided. |
+| A villain appears with villain music and adds one or two conspicuous rings | [T23](tasks/T23-villain-extra-rings-poc.md) | Bounded lab encounter with physical spawning and explicit objective updates; automatic timing/frequency and balance remain undecided. |
+
+T21 retains a fixed-strength baseline and one pulse per intentional activation. It investigates force measurement versus an accessible approximation; ordinary input is not assumed to measure physical force. A charging/release control, if compared, must document its activation timing rather than silently changing RF-11 behavior.
+
+T22/T23 introduce optional arcade experiments beyond the unassisted first version. T22 is a potential explicit exception to RF-15's no-automatic-threading scope: any scripted placement or awarded completion must be identified as assistance, confined to the experiment, and never presented as proof of natural physical threading. The “above the peg” variant does not itself award progress. The existing classic and collect paths retain their normal physics and contact criteria outside an explicitly documented assist exception.
+
+T23 explicitly extends the initial/fixed-count assumptions in RF-04, classic victory criteria and section 13 for its experimental round only. Successfully added rings increase the objective; already collected progress is preserved. Classic stability restarts after adding rings. Failed spawns do not change the objective, and a completed round cannot be reopened by an encounter. Exact limits and ordering are part of the task's evidence, not changes already implemented in the current session contract.
+
+Keep normal play and its accepted setup available unchanged. Compare pressure, powerups and enemies separately before combining them with width/count/peg changes. No new worker or code change is started by recording these ideas, and no paid asset/service or economy is requested.

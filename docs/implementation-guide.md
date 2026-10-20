@@ -45,7 +45,7 @@ Preserve both rule modes when evolving the accepted POC. The collect behavior in
 
 T06 does not block UI, themes, audio, celebration or integration. Use existing automated checks, browser viewport/touch/sensor emulation and practical local emulators; optional physical checks use free quota or borrowed/user-owned devices. No paid subscription, billing activation or overage is authorized. T06 completion requires evidence for its free baseline, with unavailable physical checks explicitly not run. This does not waive mobile product criteria or equate emulation with real-device acceptance.
 
-T01–T05 are integrated. T07, T08 and T09 are ready for assignment in the next session; T06 can run alongside them. No new agents or implementation are started by this documentation update. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
+T01–T08 and T10–T12 are integrated; T09 implementation is integrated and remains in review for subjective listening. The first version received positive user feedback on October 20. T13–T20 are planned polish cards recorded at the user’s request; no new agents or implementation are started by this documentation update. Read requirements section 16 for the music-scope amendment and lab-only geometry experiments. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
 
 ## Module boundaries and shared contracts
 
@@ -126,7 +126,15 @@ These are ownership links, not claims that requirements are already satisfied. M
 | T11 | RF-03, RF-37–RF-45; RT-04, RT-10–RT-14; CA-11–CA-12, CA-16–CA-20. |
 | T12 | RF-01–RF-45; RT-01–RT-14; CA-01–CA-21, plus section 13. |
 
-BL-02 is already implemented in the POC and must be preserved. BL-01 and BL-03–BL-06 remain outside these tasks: no timer, ring-count editor, customization editor, shake feature, installable PWA, or cold offline launch. Runtime offline-after-load is required and is distinct from PWA installation/cold offline loading.
+BL-02 is implemented and must be preserved. The original T01–T12 iteration excludes BL-01 and BL-03–BL-06. The new T13–T20 polish cards cover BL-07–BL-13 and a bounded twelve-versus-twenty experiment under BL-03; they do not add a general count editor, time trial, broad customization editor, shake feature or PWA. Stickers are a bounded extension to the earlier no-editor scope. Music explicitly extends the first version's effects-only scope; keep historical T09 evidence intact. Runtime offline-after-load remains distinct from installation/cold offline startup.
+
+For the next polish iteration, assign only cards explicitly selected for implementation. Prefer separate width, count and peg experiments so player feedback can identify which variable improved play. Do not silently adopt candidates in the normal player. T14/T15 touch audio and T16/T17 touch themes/rendering: serialize overlapping ownership or establish explicit file boundaries before dispatch. The integration owner coordinates cross-module changes and records new exported contracts; each card must deliver its evidence and unresolved choices, not merely code.
+
+## Pressure and arcade experiments
+
+[Requirements section 17](requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026) and T21–T23 add planned lab work for variable pressure, two mascot assists and villain encounters. No agents or implementation are started by this addition. T21 must distinguish genuine pressure input from a fallback and preserve a bounded single pulse. T22 documents any scripted assistance as an explicit experiment instead of silently changing unassisted threading. T23 owns an experimental dynamic objective: successful added rings change totals, failed spawns do not, and completed rounds stay completed.
+
+Coordinate shared pump-command, body-spawning, session-event and count contracts before coding. T18's initial count comparison does not automatically satisfy T23's dynamic-spawn requirements. Compare one mechanic at a time; music/art hooks do not justify parallel edits to shared composition. Preserve the accepted baseline and historical validation claims.
 
 ## Verification and definition of done
 

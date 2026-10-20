@@ -4,6 +4,8 @@ Dependencies: T03, T05. T06 supplies parallel validation feedback and is not a p
 
 Read [AGENTS.md](../../AGENTS.md), [requirements](../requirements.md), the [guide](../implementation-guide.md), and `docs/module-contracts.md`. Follow shared verification/handoff rules. Audio implementation may proceed alongside T06; mobile audio acceptance must still be based on actual device evidence.
 
+Planning note (October 20): this card preserves the first-version effects-only scope. The new collection cue is tracked in [T14](T14-collection-reward-sound.md), and the user’s later request for theme music is tracked in [T15](T15-theme-music.md) / requirements section 16. T09 remains in review for subjective listening; the new scope does not erase that pending observation.
+
 ## Outcome and ownership
 
 Own `src/audio/`, audio assets under `public/assets/audio/` if needed, and focused lifecycle tests. The POC currently has no game audio. Consume round events and preference updates; expose an audio controller and asset manifest for T11 rather than editing UI or composition.
