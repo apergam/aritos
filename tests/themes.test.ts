@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { REAR_INSERT_ASSETS, THEMES, theme, type ThemeId } from '../src/themes';
 import { fixedCameraPosition } from '../src/rendering/player-renderer';
 
@@ -26,11 +27,18 @@ test('theme definitions and their palettes are immutable shared values', () => {
   assert.equal(Object.isFrozen(theme('ocean').colors.rings), true);
 });
 
-test('every theme bundles a self-contained SVG rear insert for offline use', () => {
+test('every theme supplies a bundled rear illustration without external resources', () => {
   const themeIds = Object.keys(THEMES) as ThemeId[];
   assert.deepEqual(Object.keys(REAR_INSERT_ASSETS).sort(), themeIds.sort());
   for (const id of themeIds) {
     const asset = REAR_INSERT_ASSETS[id];
+    if (asset.mimeType === 'image/png') {
+      assert.match(asset.source, /^\.\/assets\/themes\/[\w.-]+\.png$/);
+      const bytes = readFileSync(new URL('../public/' + asset.source, import.meta.url));
+      assert.deepEqual([...bytes.subarray(0,8)], [137,80,78,71,13,10,26,10]);
+      assert.ok(bytes.readUInt32BE(16) >= 1000 && bytes.readUInt32BE(20) >= 1400);
+      continue;
+    }
     assert.equal(asset.mimeType, 'image/svg+xml');
     assert.match(asset.source, /^data:image\/svg\+xml,/);
     const source = decodeURIComponent(asset.source.slice('data:image/svg+xml,'.length));

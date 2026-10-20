@@ -2,44 +2,10 @@ import type { ThemeAsset, ThemeId } from './types';
 
 const svg = (content: string) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400" viewBox="0 0 1000 1400">${content}</svg>`)}`;
 
-/** Original, bundled vector scenes for the molded rear panel of the toy. */
+/** Bundled rear illustrations for the molded rear panel of the toy. */
 export const REAR_INSERTS: Readonly<Record<ThemeId, string>> = Object.freeze({
-  ocean: svg(`
-    <defs>
-      <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#8ce8df" stop-opacity=".14"/><stop offset="1" stop-color="#167e91" stop-opacity=".55"/></linearGradient>
-      <radialGradient id="clear"><stop stop-color="#b9fff0" stop-opacity=".03"/><stop offset=".62" stop-color="#b9fff0" stop-opacity=".04"/><stop offset="1" stop-color="#b9fff0" stop-opacity=".55"/></radialGradient>
-      <linearGradient id="coral"><stop stop-color="#ffb46c"/><stop offset="1" stop-color="#e66f65"/></linearGradient>
-    </defs>
-    <path fill="url(#sea)" d="M0 0h1000v1400H0z"/><path fill="url(#clear)" d="M0 0h1000v1400H0z"/>
-    <g opacity=".56" fill="none" stroke-linecap="round">
-      <path stroke="#ffe29a" stroke-width="12" d="M42 1180q130-34 270 4M706 1270q130-42 252-4M63 1270q115-25 208 8"/>
-      <path stroke="#3baf9a" stroke-width="20" d="M38 1320q30-125 7-245m15 150q48-94 112-112m-123 79q-52-93-30-142m857 296q-15-125 10-234m-8 142q-61-93-126-107m131 65q45-90 34-136"/>
-      <path stroke="#65c7ad" stroke-width="12" d="M109 1395q25-154 95-224m-2 173q67-69 121-68m548 122q-8-137-86-225m4 165q-58-57-114-62"/>
-    </g>
-    <g fill="#ff9d73" opacity=".84"><path d="M0 1370q64-58 113-6 30-92 82-63 42-89 85-32l29 131H0zm1000-8q-48-65-97-10-20-84-75-65-35-89-81-28l-27 141h280z"/></g>
-    <g fill="#e8d88e" opacity=".68"><path d="M0 1394q87-40 178-8t180 2v12H0m642-8q100-46 178-4t180 1v17H642"/></g>
-    <g fill="none" stroke="#f5cf75" stroke-width="12" opacity=".8"><path d="M80 430q28-90 66 0-38 94-66 0zm68 3q24-77 54 0-30 78-54 0zM837 682q30-96 69 0-39 91-69 0zm53 6q24-76 51 0-27 74-51 0z"/></g>
-    <g fill="#f29a6e" opacity=".72"><path d="M112 566q-35-50-68-4 33 42 68 4l47 21-46 20q-26 39-59 3 22-48 58-23zM820 930q-31-47-65-3 31 40 65 3l47 18-45 22q-24 37-58 4 20-46 56-24z"/></g>
-    <g fill="none" stroke="#d8fff1" stroke-width="9" opacity=".45"><circle cx="154" cy="760" r="12"/><circle cx="188" cy="690" r="7"/><circle cx="851" cy="510" r="11"/><circle cx="810" cy="468" r="6"/><circle cx="105" cy="905" r="7"/><circle cx="890" cy="1070" r="8"/></g>
-  `),
-  capybaras: svg(`
-    <defs>
-      <linearGradient id="habitat" x2="0" y2="1"><stop stop-color="#e6d69e" stop-opacity=".1"/><stop offset=".7" stop-color="#9ec78a" stop-opacity=".17"/><stop offset="1" stop-color="#6b9c73" stop-opacity=".55"/></linearGradient>
-      <radialGradient id="clear"><stop stop-color="#f5f0d5" stop-opacity=".02"/><stop offset=".6" stop-color="#f5f0d5" stop-opacity=".04"/><stop offset="1" stop-color="#f5f0d5" stop-opacity=".5"/></radialGradient>
-    </defs>
-    <path fill="url(#habitat)" d="M0 0h1000v1400H0z"/><path fill="url(#clear)" d="M0 0h1000v1400H0z"/>
-    <g opacity=".66" stroke-linecap="round" fill="none">
-      <path stroke="#537b4d" stroke-width="18" d="M35 1180q17-255-12-465m28 322q64-154 132-179m-152 96q-68-134-35-202m899 487q-24-236 14-476m-6 313q-64-145-141-164m150 81q55-124 41-198"/>
-      <path stroke="#7b9f58" stroke-width="12" d="M110 1395q7-222 78-370m-7 240q64-76 124-81m548 211q-10-203-82-357m7 234q-68-75-124-82"/>
-    </g>
-    <g fill="#7ca95b" opacity=".62"><ellipse cx="115" cy="1240" rx="72" ry="24" transform="rotate(-23 115 1240)"/><ellipse cx="851" cy="1278" rx="80" ry="26" transform="rotate(24 851 1278)"/><ellipse cx="60" cy="1090" rx="58" ry="19" transform="rotate(28 60 1090)"/><ellipse cx="938" cy="1103" rx="58" ry="19" transform="rotate(-28 938 1103)"/></g>
-    <g opacity=".82">
-      <g transform="translate(24 806)"><ellipse cx="94" cy="113" rx="98" ry="63" fill="#a66f4d"/><path d="M23 92q-5-74 59-85 70-9 83 63l42 25-46 35H77z" fill="#bd855d"/><ellipse cx="197" cy="102" rx="35" ry="25" fill="#d5a176"/><ellipse cx="224" cy="105" rx="11" ry="8" fill="#4b4439"/><circle cx="126" cy="75" r="6" fill="#352d28"/><path d="M69 40q-17-24-27 1m78-15q20-30 28-2" fill="#885b42" stroke="#885b42" stroke-width="13" stroke-linecap="round"/><path d="M52 163v37m120-37v37" stroke="#80543b" stroke-width="17" stroke-linecap="round"/></g>
-      <g transform="translate(740 1000) scale(.76)"><ellipse cx="94" cy="113" rx="98" ry="63" fill="#9d684a"/><path d="M23 92q-5-74 59-85 70-9 83 63l42 25-46 35H77z" fill="#b9815b"/><ellipse cx="197" cy="102" rx="35" ry="25" fill="#d5a176"/><ellipse cx="224" cy="105" rx="11" ry="8" fill="#4b4439"/><circle cx="126" cy="75" r="6" fill="#352d28"/><path d="M69 40q-17-24-27 1m78-15q20-30 28-2" fill="#885b42" stroke="#885b42" stroke-width="13" stroke-linecap="round"/><path d="M52 163v37m120-37v37" stroke="#80543b" stroke-width="17" stroke-linecap="round"/></g>
-    </g>
-    <g fill="none" stroke="#6b9da0" stroke-width="10" opacity=".5"><path d="M0 1260q105-40 205 0t204 0m391 0q105-40 200 0"/><path d="M0 1310q90-25 166 1m578 4q111-35 256 0"/></g>
-    <g fill="#f1df9f" opacity=".65"><path d="M128 730q30-60 60 0-30 56-60 0zm755-240q24-50 49 0-25 46-49 0zM168 610q20-40 40 0-20 38-40 0z"/></g>
-  `),
+  ocean: './assets/themes/ocean-reef-v2-9767a3f999.png',
+  capybaras: './assets/themes/capybara-pond-v2-195c088f92.png',
   space: svg(`
     <defs>
       <linearGradient id="nebula" x2="1" y2="1"><stop stop-color="#8e7be2" stop-opacity=".12"/><stop offset="1" stop-color="#28346f" stop-opacity=".54"/></linearGradient>
@@ -60,5 +26,5 @@ export const REAR_INSERTS: Readonly<Record<ThemeId, string>> = Object.freeze({
 });
 
 export const REAR_INSERT_ASSETS: Readonly<Record<ThemeId, ThemeAsset>> = Object.freeze(
-  Object.fromEntries(Object.entries(REAR_INSERTS).map(([id, source]) => [id, Object.freeze({ mimeType: 'image/svg+xml' as const, source })])) as Record<ThemeId, ThemeAsset>,
+  Object.fromEntries(Object.entries(REAR_INSERTS).map(([id, source]) => [id, Object.freeze({ mimeType: id !== 'space' ? 'image/png' as const : 'image/svg+xml' as const, source })])) as Record<ThemeId, ThemeAsset>,
 );

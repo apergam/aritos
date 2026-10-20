@@ -354,7 +354,7 @@ export class PlayerRenderer {
   }
 
   /**
-   * Bundled SVG scenes sit on the inner face of the rear acrylic wall. They
+   * Bundled illustrations sit on the inner face of the rear acrylic wall. They
    * remain behind the water and every physical ring, with open center space
    * preserving contrast around holes and peg tips.
    */

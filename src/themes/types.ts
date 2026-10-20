@@ -1,7 +1,7 @@
 export type ThemeId = 'ocean' | 'space' | 'capybaras';
 export type MascotId = 'octopus' | 'astronaut' | 'capybara';
 
-export type ThemeAsset = Readonly<{ mimeType: 'image/svg+xml'; source: string }>;
+export type ThemeAsset = Readonly<{ mimeType: 'image/svg+xml' | 'image/png'; source: string }>;
 
 export type ThemeDefinition = Readonly<{
   id: ThemeId;
@@ -24,6 +24,6 @@ export type ThemeDefinition = Readonly<{
     bubble: number;
     decoration: number;
   }>;
-  /** Inline source is available to T10/T11 without a post-startup network request. */
+  /** Mascot source is available to T10/T11 without a post-startup network request. */
   assets: Readonly<{ mascot: ThemeAsset }>;
 }>;
