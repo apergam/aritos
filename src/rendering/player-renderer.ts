@@ -2,9 +2,30 @@ import * as THREE from 'three';
 import type { SessionSnapshot } from '../game/session';
 import { TOY_PHYSICS, toyModel, type PumpSide, type ToyModelId } from '../models/toy-model';
 import { REAR_INSERT_ASSETS, theme, type ThemeId } from '../themes';
+import { applyRingAppearance } from '../themes/ring-appearance';
 
 export type RenderQuality = 'high' | 'reduced';
 export type PlayerRendererOptions = Readonly<{ model: ToyModelId; theme: ThemeId; quality?: RenderQuality }>;
+export type ToySurfaceBounds = Readonly<{ left: number; top: number; width: number; height: number }>;
+
+/** Project the accepted front tank face into CSS pixels relative to its viewport. */
+export function projectToySurfaceBounds(camera: THREE.Camera, width: number, height: number): ToySurfaceBounds {
+  if (width <= 0 || height <= 0) return Object.freeze({ left: 0, top: 0, width: 0, height: 0 });
+  const tank = TOY_PHYSICS.tank;
+  const halfWidth = tank.x + 0.08;
+  const halfHeight = tank.y + 0.16;
+  const frontZ = tank.z + 0.0875;
+  camera.updateMatrixWorld();
+  const corners = [
+    new THREE.Vector3(-halfWidth, -halfHeight, frontZ), new THREE.Vector3(-halfWidth, halfHeight, frontZ),
+    new THREE.Vector3(halfWidth, -halfHeight, frontZ), new THREE.Vector3(halfWidth, halfHeight, frontZ),
+  ].map(point => point.project(camera));
+  const xs = corners.map(point => (point.x + 1) * width / 2);
+  const ys = corners.map(point => (1 - point.y) * height / 2);
+  const left = Math.max(0, Math.min(...xs)), right = Math.min(width, Math.max(...xs));
+  const top = Math.max(0, Math.min(...ys)), bottom = Math.min(height, Math.max(...ys));
+  return Object.freeze({ left, top, width: right - left, height: bottom - top });
+}
 
 /** Fixed front view uses the accepted 0.7 degree elevation. */
 export function fixedCameraPosition(distance: number): Readonly<{ x: number; y: number; z: number }> {
@@ -24,7 +45,7 @@ export class PlayerRenderer {
   readonly renderer: THREE.WebGLRenderer;
 
   private readonly ringGeometry = new THREE.TorusGeometry(TOY_PHYSICS.ring.radius, TOY_PHYSICS.ring.tube, 16, 48);
-  private readonly rings = new Map<number, THREE.Mesh<THREE.TorusGeometry, THREE.MeshStandardMaterial>>();
+  private readonly rings = new Map<number, THREE.Mesh<THREE.TorusGeometry, THREE.MeshPhysicalMaterial>>();
   private readonly geometries = new Set<THREE.BufferGeometry>([this.ringGeometry]);
   private readonly materials = new Set<THREE.Material>();
   private readonly bubbles: THREE.Mesh[] = [];
@@ -93,27 +114,22 @@ export class PlayerRenderer {
         this.rings.delete(id);
       }
     }
-    const palette = theme(this.currentTheme).colors.rings;
     for (const pose of snapshot.rings) {
       let mesh = this.rings.get(pose.id);
       if (!mesh) {
-        const material = new THREE.MeshStandardMaterial({
-          color: palette[Math.abs(pose.id) % palette.length], roughness: 0.22, metalness: 0.28,
-          emissive: 0x000000, emissiveIntensity: 0.28,
-        });
+        const material = new THREE.MeshPhysicalMaterial();
+        applyRingAppearance(material, this.currentTheme, pose.id, pose.threaded);
         mesh = new THREE.Mesh(this.ringGeometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.rings.set(pose.id, mesh);
         this.materials.add(material);
         this.scene.add(mesh);
-      } else {
-        mesh.material.color.setHex(palette[Math.abs(pose.id) % palette.length]);
       }
+      applyRingAppearance(mesh.material, this.currentTheme, pose.id, pose.threaded);
+      mesh.userData.threaded = pose.threaded;
       mesh.position.set(pose.position.x, pose.position.y, pose.position.z);
       mesh.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w);
-      mesh.material.emissive.setHex(pose.threaded ? theme(this.currentTheme).colors.peg : 0x000000);
-      mesh.material.emissiveIntensity = pose.threaded ? 0.24 : 0;
     }
     this.animateBubbles(now);
     this.renderer.render(this.scene, this.camera);
@@ -141,9 +157,7 @@ export class PlayerRenderer {
       group.visible = themeId === id;
     }
     for (const [themeId, insert] of this.rearInserts) insert.visible = themeId === id;
-    for (const [id, ring] of this.rings) {
-      ring.material.color.setHex(colors.rings[Math.abs(id) % colors.rings.length]);
-    }
+    for (const [id, ring] of this.rings) applyRingAppearance(ring.material, this.currentTheme, id, Boolean(ring.userData.threaded));
   }
 
   /** Model changes only select the matching visual jet outlets. */
@@ -178,6 +192,11 @@ export class PlayerRenderer {
     this.camera.position.set(position.x, position.y, position.z);
     this.camera.lookAt(0, 0, 0);
     this.camera.updateProjectionMatrix();
+  }
+
+  /** Front tank face in viewport-container CSS pixels for toy-bound overlays. */
+  toySurfaceBounds(): ToySurfaceBounds {
+    return projectToySurfaceBounds(this.camera, this.container.clientWidth, this.container.clientHeight);
   }
 
   dispose(): void {

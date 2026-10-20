@@ -1,5 +1,7 @@
 import type { MascotId, ThemeDefinition, ThemeId } from './types';
 export { REAR_INSERT_ASSETS } from './rear-inserts';
+export { applyRingAppearance, RING_FINISHES } from './ring-appearance';
+export type { RingFinish } from './ring-appearance';
 export type { MascotId, ThemeAsset, ThemeDefinition, ThemeId } from './types';
 
 const svg = (mascot: MascotId, body: string) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${mascot}">${body}</svg>`)}`;
