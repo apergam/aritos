@@ -81,6 +81,28 @@ export class PocControls {
       if (!element) continue;
       this.originalTouchAction.set(element, element.style.touchAction);
       element.style.touchAction = 'none';
+      const keyboardKeys = new Set<string>();
+      let suppressKeyboardClick = false;
+      const keyDown = (event: KeyboardEvent) => {
+        if (event.key !== ' ' && event.key !== 'Enter') return;
+        event.preventDefault();
+        if (event.repeat || keyboardKeys.has(event.key)) return;
+        keyboardKeys.add(event.key);
+        actions.pump(side);
+        // Ignore a browser-synthesized click for this same key activation.
+        suppressKeyboardClick = true;
+      };
+      const keyUp = (event: KeyboardEvent) => {
+        if (!keyboardKeys.delete(event.key)) return;
+        queueMicrotask(() => { suppressKeyboardClick = false; });
+      };
+      const click = (event: MouseEvent) => {
+        // Pointer activation already fired on pointerdown. detail=0 covers assistive
+        // technology and programmatic activation that has no pointer event.
+        if (event.detail !== 0 || suppressKeyboardClick) return;
+        event.preventDefault();
+        actions.pump(side);
+      };
       const pointerDown = (event: PointerEvent) => {
         if (event.button !== 0 || this.pointers.has(event.pointerId)) return;
         event.preventDefault();
@@ -89,7 +111,15 @@ export class PocControls {
         try { element.setPointerCapture(event.pointerId); } catch { /* Window-level release handlers remain available. */ }
       };
       element.addEventListener('pointerdown', pointerDown);
-      this.cleanup.push(() => element.removeEventListener('pointerdown', pointerDown));
+      element.addEventListener('keydown', keyDown);
+      element.addEventListener('keyup', keyUp);
+      element.addEventListener('click', click);
+      this.cleanup.push(
+        () => element.removeEventListener('pointerdown', pointerDown),
+        () => element.removeEventListener('keydown', keyDown),
+        () => element.removeEventListener('keyup', keyUp),
+        () => element.removeEventListener('click', click),
+      );
     }
   }
 
@@ -154,6 +184,7 @@ export class PocMotionControls {
   private active = false;
   private stateValue: MotionControlState = 'manual';
   private invalidData = false;
+  private consecutiveInvalidEvents = 0;
   private disposed = false;
   private requestGeneration = 0;
   private roll = 0;
@@ -181,7 +212,8 @@ export class PocMotionControls {
     const generation = ++this.requestGeneration;
     const C = (this.target as Window & typeof globalThis).DeviceOrientationEvent as (typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> }) | undefined;
     if (!C) { this.active = false; this.setState('unavailable'); return; }
-    this.active = false; this.invalidData = false; this.setState('waiting');
+    this.active = false; this.invalidData = false; this.consecutiveInvalidEvents = 0;
+    clearTimeout(this.timer); this.timer = undefined; this.setState('waiting');
     try {
       if (C.requestPermission && await C.requestPermission() !== 'granted') {
         if (this.isCurrent(generation)) this.setState('denied');
@@ -189,13 +221,7 @@ export class PocMotionControls {
       }
       if (!this.isCurrent(generation)) return;
       this.active = true;
-      clearTimeout(this.timer);
-      this.timer = setTimeout(() => {
-        if (!this.disposed && generation === this.requestGeneration && this.stateValue === 'waiting') {
-          this.active = false;
-          this.setState(this.invalidData ? 'unusable-data' : 'unavailable');
-        }
-      }, this.elements.sensorTimeoutMs ?? 3000);
+      this.armSensorWatchdog(generation);
       if (this.raw) this.calibrateToDown(this.raw);
     } catch {
       if (this.isCurrent(generation)) { this.active = false; this.setState('denied'); }
@@ -214,7 +240,8 @@ export class PocMotionControls {
   invert(): void { this.setManual(180, 0); }
   setManual(roll: number, pitch: number): void {
     if (this.disposed) return;
-    this.active = false; clearTimeout(this.timer); this.roll = roll; this.pitch = pitch;
+    ++this.requestGeneration;
+    this.active = false; clearTimeout(this.timer); this.timer = undefined; this.roll = roll; this.pitch = pitch;
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch * Math.PI / 180, 0, roll * Math.PI / 180, 'XYZ'));
     this.gravity.copy(DOWN).multiplyScalar(3).applyQuaternion(q);
     this.elements.rollLabel.textContent = `${Math.round(roll)}°`;
@@ -238,17 +265,25 @@ export class PocMotionControls {
   private onOrientation = (event: DeviceOrientationEvent): void => {
     const { beta, gamma } = event;
     if (beta === null || gamma === null || !Number.isFinite(beta) || !Number.isFinite(gamma)) {
-      if (this.active) this.invalidData = true;
+      if (this.active) {
+        this.invalidData = true;
+        this.consecutiveInvalidEvents++;
+        if (this.consecutiveInvalidEvents >= 3) {
+          this.active = false; clearTimeout(this.timer); this.timer = undefined;
+          this.setState('unusable-data');
+        } else this.armSensorWatchdog(this.requestGeneration);
+      }
       return;
     }
     this.lastAngles = { beta, gamma };
     this.raw = this.rawForScreen(beta, gamma);
     if (!this.active || this.disposed) return;
+    this.invalidData = false; this.consecutiveInvalidEvents = 0;
     if (this.stateValue === 'waiting') this.calibrateToDown(this.raw);
-    clearTimeout(this.timer); this.timer = undefined;
     this.gravity.copy(calibratedGravity(this.raw, this.calibration));
     this.elements.button.textContent = 'Movimiento activo ✓';
     this.setState('usable');
+    this.armSensorWatchdog(this.requestGeneration);
     this.elements.onGravity?.(this.gravity.clone());
   };
   private onScreenOrientationChange = (): void => {
@@ -267,6 +302,15 @@ export class PocMotionControls {
     return gravityFromOrientation(beta, gamma, angle);
   }
   private calibrateToDown(raw: THREE.Vector3): void { this.calibration.setFromUnitVectors(raw, DOWN); }
+  private armSensorWatchdog(generation: number): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.timer = undefined;
+      if (!this.isCurrent(generation) || !this.active) return;
+      this.active = false;
+      this.setState(this.invalidData ? 'unusable-data' : 'unavailable');
+    }, this.elements.sensorTimeoutMs ?? 3000);
+  }
   private setState(state: MotionControlState): void {
     this.stateValue = state;
     this.elements.status.textContent = SENSOR_MESSAGES[state];

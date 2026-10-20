@@ -56,6 +56,27 @@ test('pump controls emit one pulse per pointer/key press and support simultaneou
   assert.equal(pumps.length, 5);
 });
 
+test('focused pump buttons support Space, Enter, and assistive clicks without duplicate pulses', async () => {
+  const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
+  const left = htmlElement();
+  const pumps: PumpSide[] = [];
+  const controls = new PocControls({ model: () => 'two-button', paused: () => false, pump: side => pumps.push(side), togglePause() {}, setManualTilt() {} }, { left }, target as unknown as Window);
+
+  (left as any).emit('keydown', { key: ' ', repeat: false });
+  (left as any).emit('keydown', { key: ' ', repeat: true });
+  (left as any).emit('click', { detail: 0 }); // Browser-synthesized click for the same key press.
+  assert.deepEqual(pumps, ['left']);
+  (left as any).emit('keyup', { key: ' ' });
+  (left as any).emit('keydown', { key: 'Enter', repeat: false });
+  (left as any).emit('click', { detail: 0 });
+  await Promise.resolve();
+  assert.deepEqual(pumps, ['left', 'left']);
+  (left as any).emit('click', { detail: 0 }); // Assistive technology activation.
+  (left as any).emit('click', { detail: 1 }); // Pointer click; pointerdown already handled it.
+  assert.deepEqual(pumps, ['left', 'left', 'left']);
+  controls.dispose();
+});
+
 test('editing controls retain keyboard input and held orientation keys release on blur/hidden', () => {
   const target = Object.assign(new FakeTarget(), { document: new FakeDocument() });
   const tilts: Array<[number, number]> = [];
@@ -133,4 +154,39 @@ test('usable sensor calibration and screen remapping preserve gravity; disposal 
   await pending;
   assert.equal(delayed.state, 'waiting');
   assert.equal(delayedTarget.count('deviceorientation'), 0);
+});
+
+test('manual tilt cancels pending sensor permission; an activated stream watchdog reports lost data', async () => {
+  let resolvePermission!: (value: string) => void;
+  const pendingTarget = new FakeTarget();
+  const pending = new PocMotionControls(motionOptions(pendingTarget, () => new Promise(resolve => { resolvePermission = resolve; })));
+  const activating = pending.enable();
+  pending.invert();
+  resolvePermission('granted');
+  await activating;
+  assert.equal(pending.state, 'manual');
+  assert.equal(pending.sensorMode, false);
+  assert.ok(pending.gravity.distanceTo(new THREE.Vector3(0, 3, 0)) < 1e-8);
+  pending.dispose();
+
+  const quietTarget = new FakeTarget();
+  const quiet = new PocMotionControls(motionOptions(quietTarget, undefined, 8));
+  await quiet.enable();
+  quietTarget.emit('deviceorientation', { beta: 35, gamma: 12 });
+  assert.equal(quiet.state, 'usable');
+  await new Promise(resolve => setTimeout(resolve, 14));
+  assert.equal(quiet.state, 'unavailable');
+  assert.equal(quiet.sensorMode, false);
+  quiet.dispose();
+
+  const invalidTarget = new FakeTarget();
+  const invalid = new PocMotionControls(motionOptions(invalidTarget, undefined, 100));
+  await invalid.enable();
+  invalidTarget.emit('deviceorientation', { beta: 35, gamma: 12 });
+  invalidTarget.emit('deviceorientation', { beta: null, gamma: null });
+  invalidTarget.emit('deviceorientation', { beta: NaN, gamma: NaN });
+  invalidTarget.emit('deviceorientation', { beta: null, gamma: null });
+  assert.equal(invalid.state, 'unusable-data');
+  assert.equal(invalid.sensorMode, false);
+  invalid.dispose();
 });
