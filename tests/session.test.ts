@@ -184,3 +184,30 @@ test('fresh stack rounds repeat the same physical outcome after immediate restar
   assert.deepEqual(victories, [1,2]);
  } finally { session.dispose(); }
 });
+
+test('classic requires uninterrupted active time and cannot celebrate twice before restart', async () => {
+ await initPhysics();
+ const session = new GameSession({ scene: 'stack', mode: 'classic' });
+ const victories: number[] = [];
+ session.subscribe(event => { if (event.type === 'victory') victories.push(event.roundId); });
+ const step = (ticks:number) => { for(let i=0;i<ticks;i++)session.step(); };
+ try {
+  session.simulation.setGravity({ x:0, y:0, z:0 });
+  step(120); assert.equal(session.snapshot().won, false);
+  session.dispatch({type:'pause',reason:'menu',paused:true});
+  const active=session.snapshot().activeSeconds; step(360);
+  assert.equal(session.snapshot().activeSeconds,active); assert.deepEqual(victories,[]);
+  session.dispatch({type:'pause',reason:'menu',paused:false});
+  const ring=session.simulation.rings[0]!, position={...ring.body.translation()};
+  // Fixture placement makes the loss/rethreading instant so the timer is isolated.
+  ring.body.setTranslation({x:3.4,y:0,z:0},true); step(1);
+  ring.body.setTranslation(position,true); ring.body.setLinvel({x:0,y:0,z:0},true);
+  step(120); assert.deepEqual(victories,[],'the first second cannot carry across a lost ring');
+  step(130); assert.deepEqual(victories,[0]);
+  ring.body.setTranslation({x:3.4,y:0,z:0},true); step(1);
+  ring.body.setTranslation(position,true); ring.body.setLinvel({x:0,y:0,z:0},true);
+  step(260); assert.deepEqual(victories,[0],'rethreading after victory must not celebrate again');
+  session.dispatch({type:'restart'}); session.simulation.setGravity({x:0,y:0,z:0});
+  step(260); assert.deepEqual(victories,[0,1]);
+ } finally { session.dispose(); }
+});

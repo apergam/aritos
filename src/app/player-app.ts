@@ -1,0 +1,150 @@
+import { GameSession, type PauseReason } from '../game/session';
+import { DT, initPhysics, type Scene } from '../physics';
+import { PocControls, PocMotionControls } from '../input/poc-controls';
+import { createPreferenceStore, type PlayerPreferences } from '../platform/preferences';
+import { mountPlayerUI } from '../ui/player-view';
+import { PlayerRenderer } from '../rendering/player-renderer';
+import { theme } from '../themes';
+import { createAudioController } from '../audio/audio-controller';
+import { createCelebration } from '../celebration/celebration-controller';
+
+/** Owns app composition and teardown; physical rules stay in GameSession. */
+export async function startPlayer(root: HTMLElement, options: { labScene?: Scene } = {}) {
+ await initPhysics();
+ const store = createPreferenceStore();
+ let preferences = store.load();
+ const session = new GameSession({ model: preferences.model, mode: 'collect', scene: options.labScene ?? 'free' });
+ session.dispatch({ type: 'pause', reason: 'menu', paused: true });
+ let started = false, disposed = false, pageSuspended = false;
+ let accumulator = 0, last = performance.now(), animationFrame = 0;
+ let feedback = '', feedbackUntil = 0, victory = '', victoryUntil = 0;
+ const cleanup: Array<() => void> = [];
+ const pressedTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
+ const listen = (target: EventTarget, event: string, action: EventListener) => {
+  target.addEventListener(event, action); cleanup.push(() => target.removeEventListener(event, action));
+ };
+ const resetClock = () => { accumulator = 0; last = performance.now(); };
+ const audio = createAudioController({ enabled: preferences.sound, roundId: 0 });
+ let view: ReturnType<typeof mountPlayerUI>;
+ let renderer: PlayerRenderer;
+ let celebration: ReturnType<typeof createCelebration>;
+ let motion: PocMotionControls;
+ let controls: PocControls;
+ const syncPause = () => {
+  audio.setPaused(session.isPaused); celebration?.setPaused(session.isPaused);
+  resetClock();
+ };
+ const pause = (reason: PauseReason, paused: boolean) => {
+  session.dispatch({ type: 'pause', reason, paused }); syncPause();
+  // An already unlocked context can resume after closing a menu or returning to the page.
+  if (!session.isPaused && started) void audio.activate();
+ };
+ const save = (changes: Partial<PlayerPreferences>) => {
+  const previous = preferences;
+  preferences = Object.freeze({ ...preferences, ...changes });
+  store.save(preferences);
+  if (preferences.theme !== previous.theme) {
+   renderer?.setTheme(preferences.theme); celebration?.setTheme(preferences.theme);
+  }
+  const ui = theme(preferences.theme).ui;
+  for (const [name, value] of Object.entries({ accent: ui.accent, 'accent-text': ui.accentText, ink: ui.text, muted: ui.muted })) root.style.setProperty('--' + name, value);
+  audio.setEnabled(preferences.sound);
+  if (preferences.sound && !session.isPaused) void audio.activate();
+ };
+ const manualTilt = (roll: number, pitch: number) => {
+  motion.setManual(roll, pitch);
+  if (preferences.control !== 'manual') save({ control: 'manual' });
+ };
+ const center = () => { motion.center(); controls.resetTilt(0, 0, false); };
+ const freshRound = (model = preferences.model, mode = session.snapshot().mode) => {
+  session.startRound({ model, mode, scene: options.labScene ?? 'free' });
+  started = true;
+  audio.setRound(session.snapshot().roundId); celebration.setRound(session.snapshot().roundId);
+  renderer.setModel(model);
+  feedback = ''; victory = ''; feedbackUntil = 0; victoryUntil = 0;
+  for (const [element, timer] of pressedTimers) { clearTimeout(timer); element.classList.remove('pressed'); }
+  pressedTimers.clear();
+  center(); smoothGravity.copy(motion.gravity);
+  pause('document-hidden', document.hidden || pageSuspended);
+  renderer.resize();
+ };
+ view = mountPlayerUI(root, preferences, {
+  onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); },
+  onPreferenceChange: changes => save(changes),
+  onPause: pause,
+  onRecenter: center,
+  onRestart: () => freshRound(),
+ });
+ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ renderer = new PlayerRenderer(view.refs.viewport, { model: preferences.model, theme: preferences.theme, quality: reduced ? 'reduced' : 'high' });
+ celebration = createCelebration(view.refs.viewport, { theme: preferences.theme, roundId: 0, quality: reduced ? 'reduced' : 'high' });
+ motion = new PocMotionControls({ ...view.refs.motion, onGravity: () => {
+  if (motion.sensorMode && preferences.control !== 'motion') save({ control: 'motion' });
+ } });
+ const smoothGravity = motion.gravity.clone();
+ controls = new PocControls({
+  model: () => session.snapshot().model,
+  paused: () => !started || session.isPaused || document.hidden,
+  pump: side => {
+   if (!started || document.hidden || session.isPaused) return;
+   void audio.activate(); session.dispatch({ type: 'pump', side });
+  },
+  togglePause: () => { if (started) pause('manual', !session.pauseReasons.includes('manual')); },
+  setManualTilt: manualTilt,
+ }, view.refs.controls);
+ for (const element of [view.refs.motion.rollValue, view.refs.motion.pitchValue]) listen(element, 'input', () => {
+  const roll = Number(view.refs.motion.rollValue.value), pitch = Number(view.refs.motion.pitchValue.value);
+  manualTilt(roll, pitch); controls.syncTilt(roll, pitch);
+ });
+ listen(view.refs.invert, 'click', () => { manualTilt(180, 0); controls.resetTilt(180, 0, false); });
+ cleanup.push(session.subscribe(event => {
+  if (event.roundId !== session.snapshot().roundId) return;
+  audio.handle(event); celebration.handle(event);
+  if (event.type === 'pump') {
+   renderer.pulse(event.side);
+   const element = view.refs.controls[event.side]; clearTimeout(pressedTimers.get(element)); element.classList.add('pressed');
+   pressedTimers.set(element, setTimeout(() => { element.classList.remove('pressed'); pressedTimers.delete(element); }, 140));
+  } else if (event.type === 'ring-collected') {
+   feedback = '+1 aro guardado'; feedbackUntil = performance.now() + 1100;
+  } else {
+   victory = event.mode === 'collect' ? '¡Todos guardados! Lo lograste.' : '¡Todos ensartados! Lo lograste.';
+   victoryUntil = performance.now() + 4000;
+  }
+ }));
+ const resizeObserver = new ResizeObserver(() => renderer.resize()); resizeObserver.observe(view.refs.viewport);
+ const updateVisibility = () => pause('document-hidden', document.hidden || pageSuspended);
+ listen(document, 'visibilitychange', updateVisibility); updateVisibility(); save({});
+ function frame(now: number) {
+  if (disposed || pageSuspended) return;
+  animationFrame = requestAnimationFrame(frame);
+  const elapsed = Math.max(0, Math.min((now - last) / 1000, .1)); last = now;
+  if (document.hidden) return;
+  if (started && !session.isPaused) {
+   controls.update(elapsed);
+   smoothGravity.lerp(motion.gravity, 1 - Math.exp(-elapsed * 9));
+   if (smoothGravity.length() < .05) smoothGravity.copy(motion.gravity);
+   session.dispatch({ type: 'orient', gravity: smoothGravity.clone().normalize().multiplyScalar(3) });
+   accumulator += elapsed; let steps = 0;
+   while (accumulator >= DT && steps < 12) { session.step(); accumulator -= DT; steps++; }
+   if (steps === 12) accumulator = 0;
+  } else accumulator = 0;
+  const snapshot = session.snapshot();
+  view.update(snapshot, preferences, { paused: session.isPaused, motionState: motion.state, motionMessage: motion.capabilityMessage,
+   feedback: now < feedbackUntil ? feedback : '', victory: now < victoryUntil ? victory : '' });
+  if (started) renderer.render(snapshot);
+ }
+ function dispose() {
+  if (disposed) return; disposed = true; cancelAnimationFrame(animationFrame); resizeObserver.disconnect();
+  cleanup.splice(0).forEach(remove => remove()); pressedTimers.forEach(clearTimeout); pressedTimers.clear();
+  controls.dispose(); motion.dispose(); celebration.dispose(); audio.dispose(); renderer.dispose(); session.dispose(); view.dispose();
+ }
+ listen(window, 'pagehide', ((event: PageTransitionEvent) => {
+  if (!event.persisted) { dispose(); return; }
+  pageSuspended = true; cancelAnimationFrame(animationFrame); updateVisibility();
+ }) as EventListener);
+ listen(window, 'pageshow', ((event: PageTransitionEvent) => {
+  if (event.persisted && !disposed) { pageSuspended = false; updateVisibility(); renderer.resize(); animationFrame = requestAnimationFrame(frame); }
+ }) as EventListener);
+ animationFrame = requestAnimationFrame(frame);
+ return { dispose };
+}

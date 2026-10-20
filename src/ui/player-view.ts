@@ -71,7 +71,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
       </section>
       <section class="game-screen" id="game-screen" aria-label="Partida" hidden>
         <div class="game-topline"><div><p class="eyebrow" id="round-label">RETO CLÁSICO</p><p class="progress-copy"><strong id="count">0 / 12</strong><span id="count-label">AROS GUARDADOS</span></p></div><button class="compact-button" id="game-help-open" type="button" aria-haspopup="dialog">? <span>Ayuda</span></button></div>
-        <div class="toy-stage" id="toy-stage"><div class="stage-glow" aria-hidden="true"></div><div class="viewport" id="viewport" aria-label="Juguete de agua en 3D"></div><div class="stage-status" id="player-status" aria-live="polite"></div></div>
+        <div class="toy-stage" id="toy-stage"><div class="stage-glow" aria-hidden="true"></div><div class="viewport" id="viewport" aria-label="Juguete de agua en 3D"></div><div class="stage-status" id="player-status" aria-live="polite"></div><div class="feedback-toast" id="feedback-toast" role="status" hidden></div></div>
         <div class="pump-deck" aria-label="Botones de bombeo">
           <button class="pump-button pump-side" id="pump-left" type="button" aria-label="Bombear lado izquierdo"><span class="pump-icon" aria-hidden="true">↗</span><span>Bombear</span></button>
           <button class="pump-button pump-center" id="pump-center" type="button" aria-label="Bombear"><span class="pump-icon" aria-hidden="true">↑</span><span>Bombear</span></button>
@@ -87,7 +87,6 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
           <div class="motion-row"><span id="sensor-status" aria-live="polite">Control manual activo. Puedes usar movimiento si tu dispositivo lo permite.</span><button class="outline-button" id="sensor" type="button">Usar movimiento</button></div>
           <button class="text-button small center-button" id="upright" type="button">◎ Centrar inclinación</button>
         </section>
-        <div class="feedback-toast" id="feedback-toast" role="status" hidden></div>
       </section>
       <dialog class="player-dialog" id="settings-dialog" aria-labelledby="settings-title">
         <form method="dialog" class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">TU PARTIDA</p><h2 id="settings-title">Ajustes</h2></div><button class="icon-button dialog-close" value="close" aria-label="Cerrar ajustes">×</button></div>
@@ -167,7 +166,10 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     handlers.onStart(prefsFromChoices(), mode);
     $('#pump-left').hidden = draftModel !== 'two-button'; $('#pump-right').hidden = draftModel !== 'two-button'; $('#pump-center').hidden = draftModel !== 'single-button';
   });
-  $('#settings-open').addEventListener('click', () => { handlers.onPause('menu', true); settings.showModal(); });
+  $('#settings-open').addEventListener('click', () => {
+    for (const id of ['pause-toggle','controls-open','rule-change','model-change','restart-open']) $<HTMLButtonElement>('#'+id).disabled = !started;
+    handlers.onPause('menu', true); settings.showModal();
+  });
   settings.addEventListener('close', () => { if (!disposed) handlers.onPause('menu', !started); });
   $('#pause-toggle').addEventListener('click', () => handlers.onPause('manual', !latestSnapshot?.paused.includes('manual')));
   $('#sound-toggle').addEventListener('click', () => setPreference({ sound: !currentPreferences.sound }));
@@ -183,6 +185,10 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   $('#restart-confirm').addEventListener('click', () => { restart.close(); handlers.onPause('restart-confirmation', false); handlers.onRestart(); });
   restart.addEventListener('cancel', () => { if (!disposed) handlers.onPause('restart-confirmation', false); });
   const openHelp = () => {
+    const helpMode = started ? latestSnapshot?.mode ?? mode : mode;
+    $('.help-steps li:nth-child(3) small').textContent = helpMode === 'collect'
+      ? 'Guía cada aro hasta una estaca. Al llegar a la base queda guardado durante esta partida.'
+      : 'Guía todos los aros hasta las estacas y mantenlos ensartados dos segundos. Pueden volver a salir.';
     handlers.onPause('menu', true); help.showModal();
     scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#help-title').focus(); });
   };
