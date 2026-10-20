@@ -17,6 +17,7 @@ export type PlayerUIHandlers = Readonly<{
   onPause: (reason: PauseReason, paused: boolean) => void;
   onRecenter: () => void;
   onRestart: () => void;
+  onDecorate: () => void;
   onPreviewSound: () => Promise<boolean>;
 }>;
 
@@ -96,6 +97,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
           <button class="setting-row" id="sound-toggle" type="button" aria-pressed="${initialPreferences.sound}"><span class="setting-icon">♫</span><span><b>Sonido general</b><small id="sound-copy">${initialPreferences.sound ? 'Activados' : 'Silenciados'}</small></span><span class="toggle-indicator" aria-hidden="true"></span></button>
           <button class="setting-row" id="music-toggle" type="button" aria-pressed="${initialPreferences.music}"><span class="setting-icon">♪</span><span><b>Música del tema</b><small id="music-copy"></small></span><span class="toggle-indicator" aria-hidden="true"></span></button>
           <div class="setting-section reward-setting"><label for="collection-sound"><b>Al guardar un aro</b></label><div class="reward-controls"><select id="collection-sound" aria-label="Sonido al guardar un aro"><option value="coin">Monedita</option><option value="sparkle">Chispas</option></select><button class="compact-button" id="preview-sound" type="button">Escuchar</button></div><small id="preview-sound-status" role="status">Elige tu sonido de recompensa.</small></div>
+          <button class="setting-row" id="stickers-open" type="button"><span class="setting-icon">✦</span><span><b>Decorar juguete</b><small>Gana stickers al completar rondas</small></span><span class="setting-arrow">›</span></button>
           <button class="setting-row" id="controls-open" type="button"><span class="setting-icon">↗</span><span><b>Controles e inclinación</b><small>Movimiento del dispositivo o ajuste manual</small></span><span class="setting-arrow">›</span></button>
           <button class="setting-row" id="rule-change" type="button"><span class="setting-icon">◎</span><span><b>Cambiar modo de juego</b><small>Guardar al llegar o jugar en modo clásico</small></span><span class="setting-arrow">›</span></button>
           <button class="setting-row" id="model-change" type="button"><span class="setting-icon">▣</span><span><b>Cambiar juguete</b><small id="model-copy">${MODEL_NAMES[initialPreferences.model]}</small></span><span class="setting-arrow">›</span></button>
@@ -174,7 +176,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     $('#pump-left').hidden = draftModel !== 'two-button'; $('#pump-right').hidden = draftModel !== 'two-button'; $('#pump-center').hidden = draftModel !== 'single-button';
   });
   $('#settings-open').addEventListener('click', () => {
-    for (const id of ['pause-toggle','controls-open','rule-change','model-change','restart-open']) $<HTMLButtonElement>('#'+id).disabled = !started;
+    for (const id of ['stickers-open','pause-toggle','controls-open','rule-change','model-change','restart-open']) $<HTMLButtonElement>('#'+id).disabled = !started;
     handlers.onPause('menu', true); settings.showModal();
   });
   settings.addEventListener('close', () => { if (!disposed) handlers.onPause('menu', !started); });
@@ -189,6 +191,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     const played = await handlers.onPreviewSound();
     if (!disposed) $('#preview-sound-status').textContent = played ? 'Muestra de ' + (currentPreferences.collectionSound === 'coin' ? 'monedita.' : 'chispas.') : 'No se pudo activar el audio. Puedes seguir jugando.';
   });
+  $('#stickers-open').addEventListener('click', () => { handlers.onDecorate(); settings.close(); });
   $('#controls-open').addEventListener('click', () => { settings.close(); scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#tilt-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); refs.motion.button.focus(); }); });
   const returnToSetup = (includeModel: boolean) => {
     if (!includeModel || !modelDraftDirty) { draftModel = activeModel; modelDraftDirty = false; syncPrefs(); }

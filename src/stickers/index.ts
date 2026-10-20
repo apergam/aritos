@@ -24,9 +24,9 @@ export type StickerFeature = Readonly<{
 
 export const STICKER_STORAGE_KEY = 'aritos.stickers.v1';
 export const DEFAULT_STICKERS: readonly StickerDefinition[] = Object.freeze([
-  Object.freeze({ id: 'ocean-octopus', label: 'Pulpo', alt: 'Sticker de pulpo', src: '', theme: 'ocean' }),
-  Object.freeze({ id: 'space-rocket', label: 'Cohete', alt: 'Sticker de cohete', src: '', theme: 'space' }),
-  Object.freeze({ id: 'capybara-capy', label: 'Capibara', alt: 'Sticker de capibara', src: '', theme: 'capybaras' }),
+  Object.freeze({ id: 'ocean-octopus', label: 'Pulpo', alt: 'Sticker de pulpo', src: './assets/stickers/ocean-octopus-3ee08e881c.png', theme: 'ocean' }),
+  Object.freeze({ id: 'space-rocket', label: 'Cohete', alt: 'Sticker de cohete', src: './assets/stickers/space-rocket-e7184c9a22.png', theme: 'space' }),
+  Object.freeze({ id: 'capybara-capy', label: 'Capibara', alt: 'Sticker de capibara', src: './assets/stickers/capybara-capy-d01bdb98ab.png', theme: 'capybaras' }),
 ]);
 
 const isFiniteUnit = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;

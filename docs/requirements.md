@@ -351,3 +351,12 @@ The user reported that changing theme appeared to leave the same music. Tests co
 ## 20. Matched illustrated rear panels — October 20, 2026
 
 The user approved the replacement ocean and capybara rear illustrations and requested the same quality for space. T16 now supplies three locally bundled generated PNG panels, with quiet center space for readable rings/pegs. Mascots remain SVG; art changes do not change physical state, models, rules or music. The matched space candidate and provenance are recorded in [the art report](validation/art-refresh.md). This acceptance is visual feedback on ocean/capybaras, not mobile or acoustic validation.
+
+
+## 19. Selected themed rings and earned stickers — October 20, 2026
+
+The user selected T17 and T19 for implementation, followed by a feasibility review of T23 enemies. The integration owner selected this smallest reward rule for the candidate: the first genuine completed normal-player round in each theme unlocks that theme's one sticker (octopus, spaceship, capybara), with no currency, purchases or accounts. Rewards are global to this browser and usable across themes and both models. Repeat victories do not create duplicate stickers. Changing the theme of an already rewarded round does not award another.
+
+Up to three stickers (one instance per unlocked design) can be placed, moved or removed on the toy front. Editing pauses physics and pumping. Normalized positions and unlocks persist locally across reloads; unavailable/malformed storage falls back safely. Restart resets only the round. Controlled previews use an explicitly nonpersistent sandbox and neither read nor write normal rewards. The existing game rules and physical ring hole/dimensions remain unchanged.
+
+T17 compares the existing distinct theme palettes with glossy ocean, metallic space and satin capybara finishes, applied in place to stable ring meshes. It introduces no protrusions or collision changes. Both visual candidates await user feedback. T23 review does not authorize automatic enemies in normal play.

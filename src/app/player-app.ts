@@ -7,6 +7,7 @@ import { PlayerRenderer } from '../rendering/player-renderer';
 import { theme } from '../themes';
 import { createAudioController } from '../audio/audio-controller';
 import { createMusicController } from '../audio/theme-music';
+import { createStickerFeature, DEFAULT_STICKERS, type StickerFeature } from '../stickers';
 import { createCelebration } from '../celebration/celebration-controller';
 
 /** Owns app composition and teardown; physical rules stay in GameSession. */
@@ -32,6 +33,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  let celebration: ReturnType<typeof createCelebration>;
  let motion: PocMotionControls;
  let controls: PocControls;
+ let stickers: StickerFeature | undefined;
  const syncPause = () => {
   audio.cancelPreview();
   audio.setPaused(session.isPaused); music.setPaused(session.isPaused); celebration?.setPaused(session.isPaused);
@@ -48,6 +50,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   store.save(preferences);
   if (preferences.theme !== previous.theme) {
    renderer?.setTheme(preferences.theme); celebration?.setTheme(preferences.theme); music.setTheme(preferences.theme);
+   stickers?.setRound(session.snapshot().roundId, preferences.theme);
   }
   const ui = theme(preferences.theme).ui;
   for (const [name, value] of Object.entries({ accent: ui.accent, 'accent-text': ui.accentText, ink: ui.text, muted: ui.muted })) root.style.setProperty('--' + name, value);
@@ -62,16 +65,18 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  };
  const center = () => { motion.center(); controls.resetTilt(0, 0, false); };
  const freshRound = (model = preferences.model, mode = session.snapshot().mode) => {
+  stickers?.close();
   session.startRound({ model, mode, scene: options.labScene ?? 'free' });
   started = true;
   audio.setRound(session.snapshot().roundId); celebration.setRound(session.snapshot().roundId);
   renderer.setModel(model);
+  stickers?.setRound(session.snapshot().roundId, preferences.theme);
   feedback = ''; victory = ''; feedbackUntil = 0; victoryUntil = 0;
   for (const [element, timer] of pressedTimers) { clearTimeout(timer); element.classList.remove('pressed'); }
   pressedTimers.clear();
   center(); smoothGravity.copy(motion.gravity);
   pause('document-hidden', document.hidden || pageSuspended);
-  renderer.resize();
+  renderer.resize(); stickers?.refresh();
  };
  view = mountPlayerUI(root, preferences, {
   onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); void music.activate(); },
@@ -79,10 +84,12 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   onPause: pause,
   onRecenter: center,
   onRestart: () => freshRound(),
+  onDecorate: () => { if (started) stickers?.open(); },
   onPreviewSound: () => document.hidden || pageSuspended ? Promise.resolve(false) : audio.previewCollectionSound(),
  });
  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  renderer = new PlayerRenderer(view.refs.viewport, { model: preferences.model, theme: preferences.theme, quality: reduced ? 'reduced' : 'high' });
+ stickers = createStickerFeature(view.refs.viewport, { catalog: DEFAULT_STICKERS, getSurface: () => renderer.toySurfaceBounds(), onEditingChange: editing => pause('decoration', editing), eligible: !options.labScene });
  celebration = createCelebration(view.refs.viewport, { theme: preferences.theme, roundId: 0, quality: reduced ? 'reduced' : 'high' });
  motion = new PocMotionControls({ ...view.refs.motion, onGravity: () => {
   if (motion.sensorMode && preferences.control !== 'motion') save({ control: 'motion' });
@@ -105,7 +112,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  listen(view.refs.invert, 'click', () => { manualTilt(180, 0); controls.resetTilt(180, 0, false); });
  cleanup.push(session.subscribe(event => {
   if (event.roundId !== session.snapshot().roundId) return;
-  audio.handle(event); celebration.handle(event);
+  audio.handle(event); celebration.handle(event); stickers?.handle(event);
   if (event.type === 'pump') {
    renderer.pulse(event.side);
    const element = view.refs.controls[event.side]; clearTimeout(pressedTimers.get(element)); element.classList.add('pressed');
@@ -117,8 +124,8 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
    victoryUntil = performance.now() + 4000;
   }
  }));
- const resizeObserver = new ResizeObserver(() => renderer.resize()); resizeObserver.observe(view.refs.viewport);
- const updateVisibility = () => pause('document-hidden', document.hidden || pageSuspended);
+ const resizeObserver = new ResizeObserver(() => { renderer.resize(); stickers?.refresh(); }); resizeObserver.observe(view.refs.viewport);
+ const updateVisibility = () => { pause('document-hidden', document.hidden || pageSuspended); if (document.hidden || pageSuspended) stickers?.close(); };
  listen(document, 'visibilitychange', updateVisibility); updateVisibility(); save({});
  function frame(now: number) {
   if (disposed || pageSuspended) return;
@@ -142,7 +149,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  function dispose() {
   if (disposed) return; disposed = true; cancelAnimationFrame(animationFrame); resizeObserver.disconnect();
   cleanup.splice(0).forEach(remove => remove()); pressedTimers.forEach(clearTimeout); pressedTimers.clear();
-  controls.dispose(); motion.dispose(); celebration.dispose(); audio.dispose(); music.dispose(); renderer.dispose(); session.dispose(); view.dispose();
+  stickers?.dispose(); controls.dispose(); motion.dispose(); celebration.dispose(); audio.dispose(); music.dispose(); renderer.dispose(); session.dispose(); view.dispose();
  }
  listen(window, 'pagehide', ((event: PageTransitionEvent) => {
   if (!event.persisted) { dispose(); return; }

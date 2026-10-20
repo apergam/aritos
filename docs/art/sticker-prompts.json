@@ -1,0 +1,19 @@
+{
+  "tool": "image_gen.imagegen",
+  "mode": "generation",
+  "transparent_background": true,
+  "prompts": [
+    {
+      "id": "ocean-octopus",
+      "prompt": "Use case: illustration-story. Asset type: a single premium die-cut reward sticker for a cozy water ring-toss game. Square composition, centered isolated subject with generous padding, one continuous neat cream-white sticker contour around the subject and TRANSPARENT outside the contour. Beautiful hand-painted storybook rendering, softly dimensional volumes, detailed but clean silhouette, friendly and collectible, matching richly painted coral reef/wetland/space game backgrounds. High readability when the sticker is only 50 pixels tall. No text, labels, logo, watermark, background scene, rectangular backing, multiple panels or extra unrelated props. Subject: one adorable anatomically coherent coral-orange octopus with a rounded mantle, small expressive dark eyes, a gentle smile and eight short softly curled arms with subtle cream suckers; warm peach highlights and tiny turquoise reflected light, three-quarter view. Charming sea creature rather than generic geometric blob."
+    },
+    {
+      "id": "space-rocket",
+      "prompt": "Use case: illustration-story. Asset type: a single premium die-cut reward sticker for a cozy water ring-toss game. Square composition, centered isolated subject with generous padding, one continuous neat cream-white sticker contour around the subject and TRANSPARENT outside the contour. Beautiful hand-painted storybook rendering, softly dimensional volumes, detailed but clean silhouette, friendly and collectible, matching richly painted coral reef/wetland/space game backgrounds. High readability when the sticker is only 50 pixels tall. No text, labels, logo, watermark, background scene, rectangular backing, multiple panels or extra unrelated props. Subject: one elegant cute white/silver explorer spaceship, nose angled slightly upward to the right, a dark blue-violet cockpit window with warm golden interior light, compact side fins, twin small engine ports with a short soft cyan thrust glow included within the sticker silhouette. Believable little spacecraft with painterly metal details, not a branded ship."
+    },
+    {
+      "id": "capybara-capy",
+      "prompt": "Use case: illustration-story. Asset type: a single premium die-cut reward sticker for a cozy water ring-toss game. Square composition, centered isolated subject with generous padding, one continuous neat cream-white sticker contour around the subject and TRANSPARENT outside the contour. Beautiful hand-painted storybook rendering, softly dimensional volumes, detailed but clean silhouette, friendly and collectible, matching richly painted coral reef/wetland/space game backgrounds. High readability when the sticker is only 50 pixels tall. No text, labels, logo, watermark, background scene, rectangular backing, multiple panels or extra unrelated props. Subject: one recognizable calm capybara sitting in three-quarter view facing slightly right, large long barrel body, tawny cinnamon fur with gentle hand-painted texture, small high rounded ears, small relaxed dark eyes, a long broad blunt squared-off muzzle integrated into the head with broad nostrils, short sturdy legs and feet tucked underneath, no visible tail. Sleepy friendly expression. Anatomically capybara, not dog, bear, pig or hedgehog, and no long pointy projecting nose."
+    }
+  ]
+}

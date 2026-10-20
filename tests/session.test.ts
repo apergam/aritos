@@ -211,3 +211,22 @@ test('classic requires uninterrupted active time and cannot celebrate twice befo
   step(260); assert.deepEqual(victories,[0,1]);
  } finally { session.dispose(); }
 });
+
+
+test('decoration pause hands off from menu and preserves manual/hidden pauses', async () => {
+ await initPhysics();
+ const session = new GameSession({ scene: 'drop' });
+ try {
+  session.dispatch({ type: 'pause', reason: 'menu', paused: true });
+  session.dispatch({ type: 'pause', reason: 'decoration', paused: true });
+  session.dispatch({ type: 'pause', reason: 'menu', paused: false });
+  const before = session.snapshot();
+  session.dispatch({ type: 'pump', side: 'left' }); session.step();
+  assert.deepEqual(session.snapshot().rings, before.rings);
+  assert.equal(session.simulation.pulses.length, 0);
+  session.dispatch({ type: 'pause', reason: 'manual', paused: true });
+  session.dispatch({ type: 'pause', reason: 'document-hidden', paused: true });
+  session.dispatch({ type: 'pause', reason: 'decoration', paused: false });
+  assert.deepEqual(session.pauseReasons, ['manual', 'document-hidden']);
+ } finally { session.dispose(); }
+});

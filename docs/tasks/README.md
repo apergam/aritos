@@ -23,7 +23,7 @@ For an assignment, provide the agent with exactly one task path and the prompt f
 
 ## Polish backlog — recorded October 20
 
-These eight cards capture the user's seven ideas; sound effects and music are separate assignments. The user selected T14, T15 and T16 for the current polish iteration; all other cards remain planned. T14 and T16 ran in parallel, followed by T15 on the integrated audio base. All three are now integrated; the two audio cards await subjective listening. Geometry experiments are deferred to the next round. Run geometry experiments separately before combining candidates. T14/T15 share audio ownership and T16/T17 share theme/rendering ownership, so serialize each pair or explicitly separate files/contracts before parallel work.
+These eight cards capture the user's seven ideas; sound effects and music are separate assignments. The user selected T14, T15 and T16 for the current polish iteration; T17 and T19 were subsequently selected for the current iteration; other cards remain planned. T14 and T16 ran in parallel, followed by T15 on the integrated audio base. All three are now integrated; the two audio cards await subjective listening. Geometry experiments are deferred to the next round. Run geometry experiments separately before combining candidates. T14/T15 share audio ownership and T16/T17 share theme/rendering ownership, so serialize each pair or explicitly separate files/contracts before parallel work.
 
 | ID | Task | Dependencies | Status | Owner | Evidence / next decision |
 | --- | --- | --- | --- | --- | --- |
@@ -31,9 +31,9 @@ These eight cards capture the user's seven ideas; sound effects and music are se
 | T14 | [Improve collection reward sound](T14-collection-reward-sound.md) | T09 implementation, T11 | review | /root/t14_reward | `272cbdd`, `29a3972`, integration `c25218a`; two saved cues + browser samples; [evidence](../validation/polish-audio-art.md); user audition pending |
 | T15 | [Add theme music loops](T15-theme-music.md) | T09 implementation, T08, T11 | review | /root/t15_music | `ff51cab`, integration `c25218a`, contrast fix `76c890a`; original local loops, seven lifecycle/sample tests; [evidence](../validation/polish-audio-art.md); listening/mix review pending |
 | T16 | [Illustrate rear plastic inserts](T16-themed-rear-inserts.md) | T08, T11 | review | Parent | Original worker implementation `45a9b69`, `a01ac11`; replacement illustrated scenes `11ab2c9`, matched space `d0c5503`; ocean/capybaras accepted by user; [current evidence](../validation/art-refresh.md); space visual feedback pending |
-| T17 | [Explore themed rings](T17-themed-rings.md) | T08, T11 | planned | Unassigned | Palette/decorative comparison; recheck with T16 art |
+| T17 | [Explore themed rings](T17-themed-rings.md) | T08, T11 | in-progress | /root/t17_rings + Parent | `e43a0b5`; integrated material finishes, browser review in progress |
 | T18 | [Compare twelve and twenty rings](T18-twenty-rings-poc.md) | T04, T03, T11 | planned | Unassigned | Existing BL-03; capacity, activity and performance comparison |
-| T19 | [Prototype earned stickers](T19-sticker-rewards-poc.md) | T03, T05, T08, T11 | planned | Unassigned | Define reward rule, placement and local persistence |
+| T19 | [Prototype earned stickers](T19-sticker-rewards-poc.md) | T03, T05, T08, T11 | in-progress | /root/t19_stickers + Parent | `5f6c343`; integration and pointer/mobile review in progress; reward rule in requirements §19 |
 | T20 | [Prototype alternate peg positions](T20-alternate-peg-poc.md) | T04, T03, T11 | planned | Unassigned | Raised/offset lab variants with matched physical bases |
 
 The older deferred ideas also remain: BL-01 time trial, BL-04 broader customization editor, BL-05 physical shaking and BL-06 installation/cold offline launch. BL-02 collection is implemented; BL-03 now has the bounded T18 experiment. These older ideas have no implementation card/assignment yet.

@@ -1,7 +1,7 @@
 import { Simulation, type GameMode, type PumpSide, type Scene, type Vec } from '../physics';
 import { toyModel, type ToyModelId } from '../models/toy-model';
 
-export type PauseReason = 'manual' | 'menu' | 'document-hidden' | 'restart-confirmation';
+export type PauseReason = 'manual' | 'menu' | 'document-hidden' | 'restart-confirmation' | 'decoration';
 export type RingPose = Readonly<{ id: number; position: Vec; rotation: Readonly<{ x: number; y: number; z: number; w: number }>; threaded: boolean }>;
 export type SessionSnapshot = Readonly<{
   roundId: number; scene: Scene; model: ToyModelId; mode: GameMode;
