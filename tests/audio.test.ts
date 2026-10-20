@@ -212,3 +212,25 @@ test('preview cancellation handles a hidden transition while pause is already ac
   assert.equal(context.state, 'suspended');
   controller.dispose();
 });
+
+test('an older delayed preview does not suspend a newer audition', async () => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const context = new FakeContext();
+  context.resumeGate = gate;
+  const controller = createAudioController({ enabled: true, audioContextFactory: () => context as unknown as AudioContext });
+  controller.setPaused(true);
+
+  const older = controller.previewCollectionSound();
+  const newer = controller.previewCollectionSound();
+  release();
+  assert.equal(await older, false, 'the superseded audition is ignored');
+  assert.equal(await newer, true);
+  assert.equal(context.sources.length, 3);
+  assert.equal(context.state, 'running', 'the stale activation must leave the newer preview context running');
+
+  for (const source of context.sources) source.onended?.();
+  await Promise.resolve();
+  assert.equal(context.state, 'suspended', 'the context suspends after the active audition ends');
+  controller.dispose();
+});

@@ -31,6 +31,7 @@ export class AudioController {
   private statusValue: AudioStatus;
   private generation = 0;
   private previewGeneration = 0;
+  private previewPending = false;
   private voices = new Set<Voice>();
   private previewVoice: Voice | undefined;
   private seenEvents = new WeakSet<object>();
@@ -81,13 +82,15 @@ export class AudioController {
     if (this.disposed || !this.enabled || !this.factory) return false;
     this.stopPreviewVoice();
     const generation = ++this.previewGeneration;
+    this.previewPending = true;
     try {
       this.context ??= this.factory();
       await this.context.resume();
       if (generation !== this.previewGeneration || !this.enabled || this.disposed) {
-        if (!this.enabled || this.paused || this.disposed) this.suspendContext();
+        this.suspendIfPreviewIdle();
         return false;
       }
+      this.previewPending = false;
       if (this.context.state !== 'running') {
         if (!this.paused) this.statusValue = 'failed';
         return false;
@@ -96,7 +99,11 @@ export class AudioController {
       this.playCollection(true, true);
       return true;
     } catch {
-      if (generation === this.previewGeneration && !this.paused) this.statusValue = 'failed';
+      if (generation === this.previewGeneration) {
+        this.previewPending = false;
+        if (!this.paused) this.statusValue = 'failed';
+      }
+      this.suspendIfPreviewIdle();
       return false;
     }
   }
@@ -105,6 +112,7 @@ export class AudioController {
   cancelPreview(): void {
     if (this.disposed) return;
     this.previewGeneration++;
+    this.previewPending = false;
     this.stopPreviewVoice();
   }
 
@@ -286,8 +294,15 @@ export class AudioController {
     if (this.paused && this.voices.size === 0) this.suspendContext();
   }
 
+  private suspendIfPreviewIdle(): void {
+    if ((!this.enabled || this.paused || this.disposed) && !this.previewPending && !this.previewVoice) {
+      this.suspendContext();
+    }
+  }
+
   private stopVoices(): void {
     this.previewGeneration++;
+    this.previewPending = false;
     this.previewVoice = undefined;
     for (const voice of this.voices) {
       for (const gain of voice.gains) {
