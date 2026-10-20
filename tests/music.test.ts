@@ -83,7 +83,8 @@ test('constructor and muted activation are silent; first gesture synthesizes all
   assert.ok(context);
   assert.equal(context.buffers.length, 3, 'all theme loops are available after one explicit activation');
   assert.equal(context.buffers[0]?.sampleRate, 24_000, 'buffers cap synthesis work and memory at a modest sample rate');
-  assert.equal(context.buffers[0]?.length, 460_800, 'each loop is finite at 19.2 seconds');
+  assert.equal(context.buffers[0]?.length, Math.round(THEME_MUSIC_MANIFEST.tracks.ocean.durationSeconds * 24_000));
+  assert.equal(new Set(context.buffers.map(buffer => buffer.length)).size, 3, 'each theme has its own phrase duration');
   assert.equal(context.sources.length, 1);
   assert.equal(context.sources[0]?.loop, true);
   assert.equal(controller.status, 'ready');
@@ -122,14 +123,14 @@ test('pause, resume, mute and rapid theme switches retain one source and preserv
   controller.setTheme('space');
   assert.equal(context.sources.length, 2);
   assert.equal(context.sources[0]?.stopped, true);
-  assert.equal(context.sources[1]?.offset, 5);
+  assert.equal(context.sources[1]?.offset, 0, 'a newly chosen theme begins its own phrase');
 
   context.currentTime = 8;
   controller.setTheme('capybaras');
   controller.setTheme('ocean');
   assert.equal(context.sources.length, 4);
   assert.equal(context.sources[2]?.stopped, true);
-  assert.equal(context.sources[3]?.offset, 8, 'theme changes retain the musical offset');
+  assert.equal(context.sources[3]?.offset, 0, 'another theme replaces the previous phrase');
 
   context.currentTime = 10;
   controller.setPaused(true);
@@ -138,7 +139,7 @@ test('pause, resume, mute and rapid theme switches retain one source and preserv
   controller.setPaused(false);
   assert.equal(await controller.activate(), true);
   assert.equal(context.sources.length, 5);
-  assert.equal(context.sources[4]?.offset, 10, 'resume continues from the paused position');
+  assert.equal(context.sources[4]?.offset, 2, 'resume continues from the paused position');
 
   context.currentTime = 12;
   controller.setEnabled(false);
@@ -148,7 +149,7 @@ test('pause, resume, mute and rapid theme switches retain one source and preserv
   assert.equal(context.sources.length, 5, 'unmute alone does not start music');
   await controller.activate();
   assert.equal(context.sources.length, 6);
-  assert.equal(context.sources[5]?.offset, 12, 'mute retains position for explicit reactivation');
+  assert.equal(context.sources[5]?.offset, 4, 'mute retains position for explicit reactivation');
   controller.dispose();
   assert.equal(context.closed, true);
   assert.equal(controller.status, 'disposed');
@@ -187,4 +188,37 @@ test('mute and disposal invalidate a pending activation before any source can st
   assert.equal(context.state, 'suspended');
   controller.dispose();
   assert.equal(context.closed, true);
+});
+
+
+test('settings pause and resume select the buffer for each newly chosen theme', async () => {
+  const { controller, contexts } = setup({ enabled: true, theme: 'ocean' });
+  await controller.activate();
+  const context = contexts[0]!;
+  for (const [theme, bufferIndex] of [['space', 1], ['capybaras', 2], ['ocean', 0]] as const) {
+    controller.setPaused(true);
+    controller.setTheme(theme);
+    controller.setPaused(false);
+    await controller.activate();
+    assert.equal(context.sources.at(-1)?.buffer, context.buffers[bufferIndex], 'resuming settings must play the selected theme');
+    assert.equal(context.sources.filter(source => !source.stopped).length, 1);
+  }
+  controller.dispose();
+});
+
+test('theme openings do not reuse the same normalized sample pattern', async () => {
+  const { controller, contexts } = setup({ enabled: true });
+  await controller.activate();
+  const buffers = contexts[0]!.buffers;
+  const length = Math.floor(buffers[0]!.sampleRate * 0.25);
+  for (let a = 0; a < buffers.length; a++) for (let b = a + 1; b < buffers.length; b++) {
+    let dot = 0, energyA = 0, energyB = 0;
+    for (let i = 0; i < length; i++) {
+      const x = buffers[a]!.channel[i]!, y = buffers[b]!.channel[i]!;
+      dot += x * y; energyA += x * x; energyB += y * y;
+    }
+    const similarity = Math.abs(dot / Math.sqrt(energyA * energyB));
+    assert.ok(similarity < 0.95, `theme ${a}/${b} opening similarity ${similarity.toFixed(4)} must be below 0.95`);
+  }
+  controller.dispose();
 });

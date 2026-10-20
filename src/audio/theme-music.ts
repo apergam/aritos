@@ -8,29 +8,29 @@ export type MusicControllerOptions = Readonly<{
   audioContextFactory?: () => AudioContext;
 }>;
 
-const BPM = 100;
-const BEATS_PER_BAR = 4;
 const BARS = 8;
-const LOOP_SECONDS = BARS * BEATS_PER_BAR * 60 / BPM;
 const OUTPUT_GAIN = 0.075;
 const EDGE_FADE_SECONDS = 0.025;
 
-type Score = Readonly<{ melody: readonly number[]; bass: readonly number[]; chord: readonly number[]; step: number }>;
+type Score = Readonly<{ melody: readonly number[]; bass: readonly number[]; chord: readonly number[]; step: number; bpm: number; meter: number; root: number; voice: 'bell' | 'synth' | 'wood' }>;
 
 // Original, project-authored note patterns. Equal temperament pitches use A4=440 Hz.
-// The loop is 8 bars at 100 BPM (19.2 seconds); the repeated harmony resolves at its seam.
+// Each theme has its own meter, tempo, register and instrument; eight bars resolve at the loop seam.
 const SCORES: Readonly<Record<ThemeId, Score>> = Object.freeze({
   ocean: Object.freeze({
+    bpm: 76, meter: 3, root: 65, voice: 'bell',
     melody: Object.freeze([0, 7, 4, 2, 9, 7, 4, 2, 0, 7, 11, 9, 7, 4, 2, 4, 0, 7, 4, 2, 9, 7, 4, 2, 0, 7, 11, 9, 7, 4, 2, 0]),
     bass: Object.freeze([0, 0, 5, 5, 3, 3, 5, 5]), chord: Object.freeze([0, 5, 3, 5]), step: 0.5,
   }),
   space: Object.freeze({
+    bpm: 112, meter: 4, root: 57, voice: 'synth',
     melody: Object.freeze([0, 4, 7, 11, 14, 11, 7, 4, 2, 5, 9, 14, 16, 14, 9, 5, 0, 4, 7, 11, 14, 11, 7, 4, 2, 5, 9, 14, 16, 14, 9, 5]),
     bass: Object.freeze([0, 0, 2, 2, 5, 5, 2, 2]), chord: Object.freeze([0, 2, 5, 2]), step: 0.5,
   }),
   capybaras: Object.freeze({
+    bpm: 96, meter: 4, root: 60, voice: 'wood',
     melody: Object.freeze([0, 3, 7, 10, 7, 3, 5, 7, 0, 3, 7, 12, 10, 7, 5, 3, 0, 3, 7, 10, 7, 3, 5, 7, 0, 3, 7, 12, 10, 7, 3, 0]),
-    bass: Object.freeze([0, 0, 3, 3, 5, 5, 3, 3]), chord: Object.freeze([0, 3, 5, 3]), step: 0.25,
+    bass: Object.freeze([0, 0, 3, 3, 5, 5, 3, 3]), chord: Object.freeze([0, 3, 5, 3]), step: 0.5,
   }),
 });
 
@@ -40,8 +40,11 @@ export const THEME_MUSIC_MANIFEST = Object.freeze({
   themes: Object.freeze(['ocean', 'space', 'capybaras'] as const),
   preloadRequired: false,
   bars: BARS,
-  bpm: BPM,
-  durationSeconds: LOOP_SECONDS,
+  tracks: Object.freeze({
+    ocean: Object.freeze({ title: 'Brisa de coral', bpm: SCORES.ocean.bpm, meter: SCORES.ocean.meter, durationSeconds: loopSeconds(SCORES.ocean) }),
+    space: Object.freeze({ title: 'Órbita de cristal', bpm: SCORES.space.bpm, meter: SCORES.space.meter, durationSeconds: loopSeconds(SCORES.space) }),
+    capybaras: Object.freeze({ title: 'Paseo por la laguna', bpm: SCORES.capybaras.bpm, meter: SCORES.capybaras.meter, durationSeconds: loopSeconds(SCORES.capybaras) }),
+  }),
   source: 'Original note scores and waveform synthesis in src/audio/theme-music.ts; no external recording or license dependency.',
 });
 
@@ -112,7 +115,8 @@ export class MusicController {
 
   setTheme(theme: ThemeId): void {
     if (this.disposed || !isTheme(theme) || this.theme === theme) return;
-    this.captureOffset();
+    // A new theme starts its own phrase, making the change immediately recognizable.
+    this.offset = 0;
     this.theme = theme;
     if (this.enabled && !this.paused && this.context?.state === 'running' && this.statusValue === 'ready') {
       this.startSource(theme, this.offset);
@@ -167,13 +171,13 @@ export class MusicController {
     source.loop = true;
     source.connect(this.gain);
     this.source = source;
-    this.offset = wrap(offset, LOOP_SECONDS);
+    this.offset = wrap(offset, loopSeconds(SCORES[theme]));
     this.sourceStartedAt = context.currentTime;
     source.start(0, this.offset);
   }
 
   private captureOffset(): void {
-    if (this.source && this.context) this.offset = wrap(this.offset + this.context.currentTime - this.sourceStartedAt, LOOP_SECONDS);
+    if (this.source && this.context) this.offset = wrap(this.offset + this.context.currentTime - this.sourceStartedAt, loopSeconds(SCORES[this.theme]));
   }
 
   private stopSource(): void {
@@ -207,13 +211,13 @@ export function createMusicController(options: MusicControllerOptions = {}): Mus
 }
 
 function synthesizeLoop(context: AudioContext, score: Score): AudioBuffer {
-  // A 24 kHz mono buffer holds the three themes in roughly 5.3 MB at 19.2 s each,
-  // while retaining enough bandwidth for the synthesized melody and bell partials.
+  // Finite 24 kHz mono buffers bound CPU/memory while retaining melody harmonics.
+  const duration = loopSeconds(score);
   const sampleRate = Math.min(context.sampleRate || 44_100, 24_000);
-  const frameCount = Math.round(LOOP_SECONDS * sampleRate);
+  const frameCount = Math.round(duration * sampleRate);
   const buffer = context.createBuffer(1, frameCount, sampleRate);
   const samples = buffer.getChannelData(0);
-  const beatSeconds = 60 / BPM;
+  const beatSeconds = 60 / score.bpm;
   for (let frame = 0; frame < frameCount; frame++) {
     const time = frame / sampleRate;
     const beat = time / beatSeconds;
@@ -222,23 +226,22 @@ function synthesizeLoop(context: AudioContext, score: Score): AudioBuffer {
     const melodyIndex = Math.floor(melodyPosition);
     const melodyFraction = melodyPosition - melodyIndex;
     const melodyPitch = score.melody[melodyIndex % score.melody.length] ?? 0;
-    const melodyHz = midiFrequency(60 + melodyPitch);
-    const melodyEnv = pluckEnvelope(melodyFraction, score.step);
-    value += score.step === 0.25
-      ? Math.sin(2 * Math.PI * melodyHz * time) * melodyEnv * 0.14
-      : bell(melodyHz, time) * melodyEnv * 0.13;
+    const melodyHz = midiFrequency(score.root + melodyPitch);
+    const melodyEnv = pluckEnvelope(melodyFraction, score.voice);
+    const noteTime = melodyFraction * score.step * beatSeconds;
+    value += instrument(score.voice, melodyHz, noteTime) * melodyEnv * 0.15;
 
-    const beatInBar = beat % BEATS_PER_BAR;
-    const barRelease = boundaryRelease(beatInBar, BEATS_PER_BAR, 0.08);
-    const chord = score.chord[Math.floor(beat / BEATS_PER_BAR) % score.chord.length] ?? 0;
-    const chordHz = midiFrequency(48 + chord);
-    value += (Math.sin(2 * Math.PI * chordHz * time) + 0.35 * Math.sin(4 * Math.PI * chordHz * time)) * (0.035 + 0.018 * Math.sin(2 * Math.PI * beatInBar / BEATS_PER_BAR)) * 0.42 * barRelease;
+    const beatInBar = beat % score.meter;
+    const barRelease = boundaryRelease(beatInBar, score.meter, 0.08);
+    const chord = score.chord[Math.floor(beat / score.meter) % score.chord.length] ?? 0;
+    const chordHz = midiFrequency(score.root - 12 + chord);
+    value += (Math.sin(2 * Math.PI * chordHz * time) + 0.35 * Math.sin(4 * Math.PI * chordHz * time)) * (0.035 + 0.018 * Math.sin(2 * Math.PI * beatInBar / score.meter)) * 0.42 * barRelease;
 
-    const bassNote = score.bass[Math.floor(beat / BEATS_PER_BAR) % score.bass.length] ?? 0;
-    const bassHz = midiFrequency(36 + bassNote);
-    value += Math.sin(2 * Math.PI * bassHz * time) * (0.05 + 0.025 * Math.sin(2 * Math.PI * beatInBar / BEATS_PER_BAR)) * 0.38 * barRelease;
+    const bassNote = score.bass[Math.floor(beat / score.meter) % score.bass.length] ?? 0;
+    const bassHz = midiFrequency(score.root - 24 + bassNote);
+    value += Math.sin(2 * Math.PI * bassHz * time) * (0.05 + 0.025 * Math.sin(2 * Math.PI * beatInBar / score.meter)) * 0.38 * barRelease;
 
-    const edge = Math.min(1, time / EDGE_FADE_SECONDS, (LOOP_SECONDS - time) / EDGE_FADE_SECONDS);
+    const edge = Math.min(1, time / EDGE_FADE_SECONDS, (duration - time) / EDGE_FADE_SECONDS);
     // This short cosine fade makes the finite buffer meet itself at zero amplitude.
     const smoothEdge = edge <= 0 ? 0 : 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, edge));
     samples[frame] = Math.max(-0.8, Math.min(0.8, value * smoothEdge));
@@ -248,8 +251,8 @@ function synthesizeLoop(context: AudioContext, score: Score): AudioBuffer {
   return buffer;
 }
 
-function pluckEnvelope(fraction: number, step: number): number {
-  const decay = Math.exp(-fraction * (step === 0.25 ? 7 : 3.8));
+function pluckEnvelope(fraction: number, voice: Score['voice']): number {
+  const decay = Math.exp(-fraction * (voice === 'wood' ? 7 : voice === 'bell' ? 3.8 : 1.8));
   const attack = Math.min(1, fraction * 28);
   const release = boundaryRelease(fraction, 1, 0.12);
   return decay * attack * release;
@@ -261,10 +264,15 @@ function boundaryRelease(position: number, period: number, fadeWidth: number): n
   return 0.5 - 0.5 * Math.cos(Math.PI * progress);
 }
 
-function bell(frequency: number, time: number): number {
+function instrument(voice: Score['voice'], frequency: number, time: number): number {
   const phase = 2 * Math.PI * frequency * time;
-  return (Math.sin(phase) + 0.42 * Math.sin(phase * 2.756) + 0.2 * Math.sin(phase * 5.404)) / 1.62;
+  if (voice === 'bell') return (Math.sin(phase) + 0.42 * Math.sin(phase * 2.756) + 0.2 * Math.sin(phase * 5.404)) / 1.62;
+  if (voice === 'synth') return (Math.sin(phase + 1.3 * Math.sin(phase * 2)) + 0.3 * Math.sin(phase * 0.5)) / 1.3;
+  return (Math.sin(phase) + 0.5 * Math.sin(phase * 2) * Math.exp(-time * 18) + 0.2 * Math.sin(phase * 3) * Math.exp(-time * 28)) / 1.7;
 }
+
+function loopSeconds(score: Score): number { return BARS * score.meter * 60 / score.bpm; }
+
 
 function midiFrequency(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12);
