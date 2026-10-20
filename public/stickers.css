@@ -55,7 +55,7 @@
 .sticker-panel .sticker-hint { min-height: 1.3em; margin: 2px 0; color: #40566a; }
 .sticker-panel .sticker-help { grid-column: 1 / -1; grid-row: 5; margin: 0; }
 .sticker-panel .sticker-footer { position: sticky; bottom: 0; z-index: 1; display: flex; justify-content: flex-end; gap: 6px; grid-column: 1 / -1; grid-row: 6; padding-top: 5px; background: #f7fbff; }
-.sticker-list { display: grid; align-content: start; gap: 3px; grid-column: 1 / -1; grid-row: 4; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.sticker-list { align-self: stretch; height: 100%; display: grid; align-content: start; gap: 3px; grid-column: 1 / -1; grid-row: 4; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .sticker-row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 7px; min-height: 34px; border-top: 1px solid #d5e0e9; }
 .sticker-row span { min-width: 0; }
 .sticker-thumb { width: 28px; height: 28px; object-fit: contain; }
@@ -83,4 +83,8 @@
 .sticker-toast[hidden] { display: none; }
 @media (max-height: 700px) {
   .sticker-panel { height: min(34vh, 220px); max-height: min(34vh, 220px); padding: 8px; }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+  .sticker-panel { height: min(72vh, 280px); max-height: min(72vh, 280px); }
 }

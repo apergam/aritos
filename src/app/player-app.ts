@@ -81,7 +81,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  view = mountPlayerUI(root, preferences, {
   onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); void music.activate(); },
   onPreferenceChange: changes => save(changes),
-  onPause: pause,
+  onPause: (reason, paused) => { pause(reason, paused); if (reason === 'menu' && paused) stickers?.close(); },
   onRecenter: center,
   onRestart: () => freshRound(),
   onDecorate: () => { if (started) stickers?.open(); },

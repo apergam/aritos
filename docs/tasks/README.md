@@ -31,9 +31,9 @@ These eight cards capture the user's seven ideas; sound effects and music are se
 | T14 | [Improve collection reward sound](T14-collection-reward-sound.md) | T09 implementation, T11 | review | /root/t14_reward | `272cbdd`, `29a3972`, integration `c25218a`; two saved cues + browser samples; [evidence](../validation/polish-audio-art.md); user audition pending |
 | T15 | [Add theme music loops](T15-theme-music.md) | T09 implementation, T08, T11 | review | /root/t15_music | `ff51cab`, integration `c25218a`, contrast fix `76c890a`; original local loops, seven lifecycle/sample tests; [evidence](../validation/polish-audio-art.md); listening/mix review pending |
 | T16 | [Illustrate rear plastic inserts](T16-themed-rear-inserts.md) | T08, T11 | review | Parent | Original worker implementation `45a9b69`, `a01ac11`; replacement illustrated scenes `11ab2c9`, matched space `d0c5503`; ocean/capybaras accepted by user; [current evidence](../validation/art-refresh.md); space visual feedback pending |
-| T17 | [Explore themed rings](T17-themed-rings.md) | T08, T11 | in-progress | /root/t17_rings + Parent | `e43a0b5`; integrated material finishes, browser review in progress |
+| T17 | [Explore themed rings](T17-themed-rings.md) | T08, T11 | review | /root/t17_rings + Parent | `e43a0b5`; integrated finishes, both models/all themes; [evidence](../validation/themed-rings-stickers.md); user visual feedback pending |
 | T18 | [Compare twelve and twenty rings](T18-twenty-rings-poc.md) | T04, T03, T11 | planned | Unassigned | Existing BL-03; capacity, activity and performance comparison |
-| T19 | [Prototype earned stickers](T19-sticker-rewards-poc.md) | T03, T05, T08, T11 | in-progress | /root/t19_stickers + Parent | `5f6c343`; integration and pointer/mobile review in progress; reward rule in requirements §19 |
+| T19 | [Prototype earned stickers](T19-sticker-rewards-poc.md) | T03, T05, T08, T11 | review | /root/t19_stickers + Parent | `5f6c343`, `edc6c4a`, `5fec360`, `b0434df`, `1993b56`; [integrated candidate](../validation/themed-rings-stickers.md), requirements §19; user reward/placement feedback pending |
 | T20 | [Prototype alternate peg positions](T20-alternate-peg-poc.md) | T04, T03, T11 | planned | Unassigned | Raised/offset lab variants with matched physical bases |
 
 The older deferred ideas also remain: BL-01 time trial, BL-04 broader customization editor, BL-05 physical shaking and BL-06 installation/cold offline launch. BL-02 collection is implemented; BL-03 now has the bounded T18 experiment. These older ideas have no implementation card/assignment yet.
@@ -46,8 +46,10 @@ Three additional lab experiments are planned. T22 contains the two requested pow
 | --- | --- | --- | --- | --- | --- |
 | T21 | [Prototype variable pump pressure](T21-variable-pressure-poc.md) | T02, T04, T11 | planned | Unassigned | Fixed versus variable strength; genuine pressure versus accessible fallback and pulse timing |
 | T22 | [Explore mascot powerups](T22-mascot-powerups-poc.md) | T03, T08, T10, T11 | planned | Unassigned | Thread a floor ring or release above peg; assisted rules, availability and charges undecided |
-| T23 | [Explore villain encounters](T23-villain-extra-rings-poc.md) | T03, T04, T08, T09 implementation, T11; coordinate T15 | planned | Unassigned | Villain music/mascot, one/two bright added rings, safe spawning and updated objective |
+| T23 | [Explore villain encounters](T23-villain-extra-rings-poc.md) | T03, T04, T08, T09 implementation, T11; coordinate T15 | planned | Unassigned | [Feasibility reviewed](../validation/enemy-feasibility.md); propose one manual atomic encounter, max 14; capacity untested; implementation remains planned |
 
 ## Next review
+
+Current selected T17/T19 candidate: build **a23155cf**, 78 tests, [evidence](../validation/themed-rings-stickers.md); both await user feedback. T23 was reviewed only. The following paragraph records the preceding polish baseline.
 
 The October 20 implementation and selected polish are available locally (build `a3889036`, 66 tests). The user praised the first version before this polish; the user subsequently reported that theme music sounded alike; the corrected candidate differentiates instrumentation/tempo and awaits listening feedback. Remaining review: listen to the synthesized effects in the actual browser/device and collect specific feedback on the planned comparisons; run real Android/iOS sensors, independent fingers and sustained FPS checks when free hardware access is available. T12 is a completed readiness audit, not a declaration that not-run mobile criteria passed. No paid service, cloud session or deployment was created.

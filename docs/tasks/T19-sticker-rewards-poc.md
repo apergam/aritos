@@ -2,11 +2,11 @@
 
 Dependencies: T03, T05, T08, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user selected this card for implementation on October 20; see the board and integration evidence.
 
 ## Outcome and ownership
 
-Explore awarding a decorative sticker that the player can place on their toy. Own a new sticker feature with clearly defined placement/persistence interfaces; coordinate session events, UI, renderer and preferences through the integration owner. The unlock schedule is not yet decided.
+Explore awarding a decorative sticker that the player can place on their toy. Own a new sticker feature with clearly defined placement/persistence interfaces; coordinate session events, UI, renderer and preferences through the integration owner. The candidate grants one sticker for the first normal-player victory in each theme; unlocks and placements are global within this browser. See requirements section 19.
 
 ## Work and acceptance
 
@@ -22,3 +22,8 @@ Explore awarding a decorative sticker that the player can place on their toy. Ow
 Exercise a genuine victory, duplicate/restarted events, reload, malformed/unavailable storage, theme/model switches and placement in portrait/landscape. Test pointer cancellation and placement versus pump inputs. Record open reward decisions and user feedback; run code checks after implementation.
 
 Coverage: BL-12; requirements section 16 is a bounded extension to RF-36 and RF-44; keep RF-37 and no-account scope.
+
+
+## Integrated candidate
+
+See [T17/T19 evidence](../validation/themed-rings-stickers.md) for the current implementation, checks and remaining user/device review.

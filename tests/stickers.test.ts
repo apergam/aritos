@@ -236,3 +236,28 @@ test('throwing storage falls back safely and disposed features ignore late victo
   feature.dispose(); feature.setRound(10, 'ocean'); feature.handle(stickerVictory(10));
   assert.equal(writes, 1, 'late events after teardown cannot write');
 }));
+
+
+test('removing and replacing decorations retains separate thumbnail and placed images', () => withFakeBrowser((document, win) => {
+ const storage = createStorage(JSON.stringify({ version: 1, data: { unlocked: ['capybara-capy'], placements: [{ id: 'capybara-capy', x: .5, y: .5 }] } }));
+ const host = document.createElement('div'); document.body.append(host);
+ const feature = createStickerFeature(host as unknown as HTMLElement, { catalog: DEFAULT_STICKERS, getSurface: surface, onEditingChange: () => {}, storage });
+ feature.open();
+ const overlay = host.children[0]!;
+ const placed = overlay.children[0]!;
+ const image = placed.children[0]!;
+ const panel = document.body.querySelector('.sticker-panel')!;
+ const rows = panel.querySelector('.sticker-list')!.children;
+ assert.equal(rows[2]!.children.length, 3);
+ assert.notEqual(rows[2]!.children[0], image);
+ placed.listeners.get('click')![0]!({});
+ const key = win.listeners.get('keydown')![0]!;
+ key({ key: 'Delete', preventDefault() {}, stopImmediatePropagation() {} });
+ assert.equal(overlay.children.length, 0);
+ assert.equal(rows[2]!.children.length, 3, 'a full-size image must never be prepended into the catalog row');
+ rows[2]!.children[2]!.listeners.get('click')![0]!({});
+ key({ key: 'Enter', preventDefault() {}, stopImmediatePropagation() {} });
+ assert.equal(overlay.children[0]!.children[0], image, 'replacement reuses the decoded image without a new request');
+ assert.equal(rows[2]!.children.length, 3);
+ feature.dispose();
+}));

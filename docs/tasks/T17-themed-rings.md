@@ -2,7 +2,7 @@
 
 Dependencies: T08, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user selected this card for implementation on October 20; see the board and integration evidence.
 
 ## Outcome and ownership
 
@@ -21,3 +21,8 @@ Explore ring colors and decorative designs that match each theme. Start with pal
 Check screenshots and theme switches with moving/threaded rings, including before/after physical-state comparison. Run code checks if rendering changes; do not add tests that merely restate palette constants. Verify reduced graphics and resource disposal remain functional.
 
 Coverage: BL-11; RF-03, RF-08, RF-34–RF-37; CA-11–CA-12.
+
+
+## Integrated candidate
+
+See [T17/T19 evidence](../validation/themed-rings-stickers.md) for the current implementation, checks and remaining user/device review.

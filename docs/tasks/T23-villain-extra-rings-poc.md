@@ -25,3 +25,8 @@ Own an isolated encounter controller and lab variant; coordinate dynamic body cr
 Test successful/failed/duplicate spawns, unique identities, body/total invariants, classic interval reset, spawn-at-victory ordering, pause/background, restart and stale encounters. Exercise strongest pump/inversion against added bodies and check classic capacity for the bounded maximum. Run typecheck/tests/build and browser visual/audio review; record rights for the cue/art and any unavailable acoustic/device checks.
 
 Coverage: BL-16; requirements section 17; explicit experimental extension to RF-04, RF-25–RF-31 and section 13.
+
+
+## Feasibility review — October 20
+
+The user requested a review after T17/T19. [Feasibility findings](../validation/enemy-feasibility.md) propose one manual lab encounter, maximum two added rings (14 total), atomic +2 spawning and no late-game automatic punishment. Existing addRing is not a safe encounter API; capacity and fairness remain untested. Implementation is still planned.

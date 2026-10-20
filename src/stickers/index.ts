@@ -134,7 +134,9 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
     const row = document.createElement('div'); row.className = 'sticker-row';
     const preview = document.createElement('img'); preview.className = 'sticker-thumb'; preview.alt = '';
     if (item.src) { preview.decoding = 'async'; preview.src = item.src; }
-    previews.set(item.id, preview);
+    const retained = document.createElement('img');
+    if (item.src) { retained.decoding = 'async'; retained.src = item.src; }
+    previews.set(item.id, retained);
     const status = document.createElement('span');
     const action = document.createElement('button'); action.type = 'button';
     row.append(preview, status, action); list.append(row);
@@ -165,8 +167,6 @@ export function createStickerFeature(host: HTMLElement, options: StickerFeatureO
       if (didClamp) { data = { ...data, placements: clampedPlacements }; persist(); }
       const present = new Set(data.placements.map(p => p.id));
       for (const [id, button] of buttons) if (!present.has(id)) {
-        const preview = previews.get(id), row = rows.get(id)?.row;
-        if (preview && row) row.prepend(preview);
         button.remove(); buttons.delete(id);
       }
       for (const placement of data.placements) {
