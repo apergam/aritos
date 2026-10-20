@@ -102,3 +102,8 @@ Tras jugar el POC, el usuario eligió fuerza de bombeo **75** y resistencia del 
 El usuario dio por completo y aceptado el POC con el setup elegido: fuerza 75, resistencia 0.50 y modo inicial Guardar al llegar a la base. Quedan aceptados para este prototipo la profundidad reducida, las bases sobre el piso, la ubicación de botones, el bombeo lateral y la regla de progreso acumulado. Las anotaciones anteriores que pedían validación subjetiva del usuario quedan cubiertas por esta aceptación del POC; no constituyen una promesa de dificultad equilibrada para toda la versión completa.
 
 Validación técnica final del fuente: 16 pruebas, TypeScript y build superados con ese setup. Las pruebas de sensores y rendimiento en móviles reales continúan pendientes y no se declaran superadas al cerrar este POC.
+
+
+## Integración posterior al POC — 19 de octubre de 2026
+
+T01–T05 separaron módulos, reforzaron controles y ciclo de partida, centralizaron los modelos y añadieron preferencias seguras. Se conserva el setup aceptado. La suite integrada pasa 42 pruebas, TypeScript y build; el detalle y las limitaciones están en [el informe de integración](validation/integration-t01-t05.md). Las entradas anteriores son evidencia histórica, no el número actual de pruebas. T06 sigue pendiente de dispositivos reales; el usuario descartó pagar acceso a un servicio móvil para este experimento.

@@ -1,6 +1,6 @@
 # Aritos — instrucciones para Codex
 
-Lee primero README.md, docs/requirements.md y POC_REPORT.md.
+Lee primero README.md, docs/requirements.md y docs/POC_REPORT.md.
 
 ## Objetivo actual
 El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 2026. Conservar el resultado y acordar el alcance de la siguiente iteración antes de desarrollar el juego completo. TypeScript, Rapier 3D y Three.js. Usar motor existente; crear uno propio queda fuera del alcance.
@@ -20,10 +20,17 @@ El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 202
 
 ## Verificación
 Node.js 22+ y pnpm 11.25.0. Ejecutar pnpm install, pnpm typecheck, pnpm test y pnpm build.
-El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. La suite actual tiene 16 pruebas, superadas con el setup aceptado. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
+El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. Tras T01–T05 la suite actual tiene 42 pruebas superadas; ver docs/validation/integration-t01-t05.md. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
 No afirmar que se validaron sensores, controles táctiles, FPS o apariencia sin probarlos en navegador/dispositivo real.
 
 ## Pendientes prioritarios
-Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de POC_REPORT.md y usar el diagnóstico exportado.
+T01–T05 están integradas y verificadas. T06 sigue pendiente por falta de dispositivos; el usuario descartó pagar un servicio móvil para este experimento. No contratar acceso ni dar por superada la validación. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
 
 Esta es una copia portátil del fuente. No contiene credenciales ni la identidad del alojamiento original. No publicar ni reemplazar el sitio alojado como parte de la validación local.
+
+
+## Implementation planning
+
+The English product specification is `docs/requirements.md`; player-facing copy remains Spanish. For future implementation assignments, read `docs/implementation-guide.md` and exactly the assigned card under `docs/tasks/`. Track ownership and status in `docs/tasks/README.md`. Preserve the accepted POC and follow the dependency/mobile-validation gates. A prepared plan is not authorization to start tasks or agents, and completing one assigned card does not authorize taking another.
+
+User-selected worker configuration: `gpt-6-luna`, reasoning effort `high`. Use it for assigned subagents; do not substitute models silently.

@@ -1,255 +1,276 @@
-# Aritos de agua — Hoja de requisitos
-Versión 1.0 · 18 de octubre de 2026
+# Water Ring Toy — Requirements
 
-Definición de producto obtenida mediante la entrevista grill-me. Nombre de trabajo, sin branding definitivo. Este documento define la primera versión; no implica que el juego ya esté implementado o probado.
+Version 1.0 · October 18, 2026
 
-## 1. Objetivo
-Recrear en un navegador la experiencia del juguete de agua: presionar botones para impulsar aros, inclinar el depósito y ensartarlos en estacas. Debe sentirse como un objeto físico con profundidad, agua y piezas con volumen, manteniendo una dificultad entretenida.
+Product definition established through the grill-me interview. Working title; final branding has not been selected. This document defines the first release; it does not imply that the game has already been implemented or tested.
 
-La inclinación y el ensartado físico en 3D son fundamentales desde la primera versión. La sensación de agua será aproximada; no se requiere una simulación científica del fluido.
+English translation prepared after the POC was accepted on October 19, 2026. Requirement IDs and product decisions are preserved. Sections 6–7 describe the original feasibility stage; sections 13–14 record the subsequent implementation and acceptance. The game interface remains in Spanish.
 
-## 2. Alcance de la primera versión
-- Juego clásico individual, sin límite de tiempo ni vidas.
-- Navegador, principalmente para teléfonos y tablets; soporte funcional en computadora.
-- Pantalla vertical y horizontal, conservando la partida al cambiar orientación.
-- Dos modelos de juguete predefinidos: un botón central o dos botones laterales.
-- Dos estacas y doce aros por partida.
-- Temas océano, espacio y capibaras, compatibles con ambos modelos.
-- Física 3D, cámara frontal fija, bombeo e inclinación.
-- Sonidos discretos, pausa, ayuda, reinicio y preferencias locales.
-- Celebración temática con mascota bailando y confeti.
-- Acceso mediante enlace, sin cuentas ni servidor de partidas.
+## 1. Goal
 
-## 3. Flujo de uso
-1. Abrir el enlace y cargar los recursos necesarios.
-2. Elegir un modelo de juguete y un tema. Recuperar preferencias cuando existan; si no hay preferencias de modelo, ofrecer dos botones como selección inicial.
-3. Mostrar una ayuda breve en español: bombear, inclinar y ensartar.
-4. Ofrecer activación del control por movimiento. Solicitar permiso solo cuando el navegador lo requiera y desde una interacción explícita. Si no hay datos utilizables o se deniega, permitir jugar mediante controles alternativos.
-5. Jugar sin temporizador. Se pueden alternar bombeos e inclinación o utilizarlos simultáneamente.
-6. Abrir ajustes para pausar y cambiar tema, sonido o control, centrar la inclinación o reiniciar.
-7. Celebrar al completar el objetivo y permitir continuar jugando o reiniciar.
-8. Para cambiar de modelo, salir de la partida y seleccionar otro. No cambiar su número de botones durante una partida.
+Recreate the water toy experience in a browser: press buttons to propel rings, tilt the tank, and thread rings onto pegs. It should feel like a physical object with depth, water, and solid pieces, while offering an enjoyable challenge.
 
-## 4. Requisitos funcionales
+Tilting and physical 3D threading are essential from the first release. The water effect is an approximation; a scientific fluid simulation is not required.
 
-### 4.1. Modelos, depósito y aros
-| ID | Requisito |
+## 2. First-release scope
+
+- Single-player classic game, with no time limit or lives.
+- Browser-based, primarily for phones and tablets, with functional desktop support.
+- Portrait and landscape layouts, preserving the current round when orientation changes.
+- Two predefined toy models: one central button or two side buttons.
+- Two pegs and twelve rings per round.
+- Ocean, space, and capybara themes, compatible with both models.
+- 3D physics, a fixed front camera, pumping, and tilting.
+- Subtle sound effects, pause, help, restart, and local preferences.
+- A themed celebration with a dancing mascot and confetti.
+- Access through a link, without accounts or a game-session server.
+
+## 3. User flow
+
+1. Open the link and load the required resources.
+2. Choose a toy model and a theme. Restore preferences when available; if there is no model preference, initially offer the two-button model.
+3. Show brief help in Spanish: pump, tilt, and thread the rings.
+4. Offer motion control. Request permission only when the browser requires it and only from an explicit user interaction. If permission is denied or usable data is unavailable, allow play using alternative controls.
+5. Play without a timer. Pumping and tilting can alternate or happen simultaneously.
+6. Open settings to pause and change theme, sound, or control mode, recenter the tilt, or restart.
+7. Celebrate when the objective is completed, then allow continued play or restart.
+8. To change models, leave the round and select another model. Do not change its number of buttons during a round.
+
+## 4. Functional requirements
+
+### 4.1. Models, tank, and rings
+
+| ID | Requirement |
 | --- | --- |
-| RF-01 | Cada modelo define un número fijo de botones y la distribución de sus chorros. |
-| RF-02 | El modelo de un botón utiliza bombeo central; el de dos botones utiliza un chorro asociado a cada lado. |
-| RF-03 | Cambiar de tema no modifica el modelo ni su mecánica. |
-| RF-04 | Cada partida contiene doce aros y dos estacas. No hay restricciones de color ni reparto obligatorio entre estacas. |
-| RF-05 | La geometría y capacidad de las estacas deben permitir completar el objetivo con los doce aros. |
-| RF-06 | El depósito es poco profundo, cerrado y tridimensional. Los aros permanecen dentro, incluso al invertirlo. |
-| RF-07 | Los aros se trasladan y rotan libremente en tres dimensiones, con colisiones entre ellos, las estacas y las paredes del depósito. |
-| RF-08 | El agujero de cada aro existe también en su representación de colisión, no solamente en el dibujo. |
-| RF-09 | Ensartar requiere que la estaca atraviese el agujero. Una coincidencia visual o una intersección con el exterior del aro no basta. |
-| RF-10 | Un aro ensartado sigue siendo un cuerpo físico: permanece visible y puede salir por bombeo o inclinación. No se fija mediante un bloqueo artificial. |
+| RF-01 | Each model defines a fixed number of buttons and the layout of its jets. |
+| RF-02 | The one-button model uses a central pump; the two-button model uses a jet associated with each side. |
+| RF-03 | Changing themes does not change the model or its mechanics. |
+| RF-04 | Each round contains twelve rings and two pegs. There are no color restrictions or required distribution between pegs. |
+| RF-05 | Peg geometry and capacity must allow the objective to be completed with all twelve rings. |
+| RF-06 | The tank is shallow, enclosed, and three-dimensional. Rings stay inside it, including when it is inverted. |
+| RF-07 | Rings translate and rotate freely in three dimensions, colliding with each other, the pegs, and the tank walls. |
+| RF-08 | The hole in each ring exists in its collision representation, not only in its visual geometry. |
+| RF-09 | Threading requires a peg to pass through the hole. Screen-space overlap or intersection with the outside of a ring is insufficient. |
+| RF-10 | A threaded ring remains a physical body: it stays visible and can come off through pumping or tilting. It is not held by an artificial lock. |
 
-### 4.2. Bombeo y sensación de agua
-| ID | Requisito |
+### 4.2. Pumping and the water effect
+
+| ID | Requirement |
 | --- | --- |
-| RF-11 | Cada pulsación genera un solo impulso de bombeo. Mantener presionado no genera impulsos repetidos ni un chorro continuo. |
-| RF-12 | En el modelo de dos botones se admite pulsarlos simultáneamente mediante multitáctil y entradas equivalentes en computadora. |
-| RF-13 | Cada chorro afecta a los aros según su ubicación; no levanta todos los aros con un desplazamiento idéntico. |
-| RF-14 | El movimiento debe transmitir resistencia del agua: frenado, caída lenta, giros y respuesta gradual a los impulsos. |
-| RF-15 | Se permite ayuda discreta para facilitar el ensartado, sin teletransportar aros, ignorar colisiones, bloquearlos en estacas ni otorgar progreso automáticamente. |
-| RF-16 | La geometría de las estacas y la atenuación local del chorro deben dar cierta estabilidad a los aros ensartados, manteniendo posible su extracción. |
+| RF-11 | Each press produces one pump pulse. Holding a button does not repeat pulses or produce a continuous jet. |
+| RF-12 | The two-button model supports simultaneous presses through multitouch and equivalent desktop inputs. |
+| RF-13 | Each jet affects rings according to their location; it does not lift every ring with an identical displacement. |
+| RF-14 | Motion conveys water resistance: deceleration, slow falling, rotation, and a gradual response to pulses. |
+| RF-15 | Subtle assistance may make threading easier, without teleporting rings, ignoring collisions, locking rings onto pegs, or automatically awarding progress. |
+| RF-16 | Peg geometry and local jet attenuation provide some stability for threaded rings while still allowing their removal. |
 
-### 4.3. Inclinación y entradas
-| ID | Requisito |
+### 4.3. Tilting and inputs
+
+| ID | Requirement |
 | --- | --- |
-| RF-17 | El control principal en dispositivos compatibles utiliza orientación física, incluyendo inclinación lateral y hacia adelante/atrás. |
-| RF-18 | Se permite poner el juguete de lado o boca abajo. La dirección efectiva de la gravedad responde en tres dimensiones. |
-| RF-19 | La acción “centrar” permite definir una postura cómoda de referencia; debe conservar la posibilidad de inclinar e invertir posteriormente el juguete. |
-| RF-20 | Debe existir una alternativa táctil que permita las mismas orientaciones de juego, incluida la inversión. No basta con ofrecer izquierda/derecha. |
-| RF-21 | En computadora se ofrecen bombeo mediante botones y teclado, y orientación mediante teclado o un control equivalente. Los atajos se muestran en la ayuda. |
-| RF-22 | La negativa de permisos, ausencia de sensores o ausencia de eventos utilizables no impide jugar. Se indica cómo utilizar el control alternativo. |
-| RF-23 | Al cambiar entre vertical y horizontal, adaptar la correspondencia de controles y mantener los aros y su estado, sin aplicar impulsos espurios. |
-| RF-24 | El bombeo y la orientación alternativa deben poder utilizarse simultáneamente. Los gestos del juego no deben provocar desplazamiento accidental de la página. |
+| RF-17 | The main control on compatible devices uses physical orientation, including sideways and forward/backward tilt. |
+| RF-18 | The toy can be placed on its side or upside down. The effective gravity direction responds in three dimensions. |
+| RF-19 | Recenter defines a comfortable reference posture while preserving the ability to tilt and invert the toy afterward. |
+| RF-20 | A touch alternative supports the same play orientations, including inversion. Left/right controls alone are insufficient. |
+| RF-21 | Desktop supports pumping through buttons and keyboard, and orientation through keyboard or an equivalent control. Help displays the shortcuts. |
+| RF-22 | Denied permission, missing sensors, or missing usable events do not prevent play. Explain how to use the alternative controls. |
+| RF-23 | When switching between portrait and landscape, adapt the control mapping and preserve the rings and their state without introducing spurious impulses. |
+| RF-24 | Pumping and alternative orientation controls work simultaneously. Game gestures must not accidentally scroll the page. |
 
-### 4.4. Victoria y celebración
-| ID | Requisito |
+### 4.4. Victory and celebration
+
+| ID | Requirement |
 | --- | --- |
-| RF-25 | El objetivo es mantener los doce aros ensartados simultáneamente durante dos segundos continuos de simulación activa. |
-| RF-26 | Si un aro sale antes de completar ese intervalo, se reinicia la comprobación de estabilidad. La pausa no acumula tiempo de victoria. |
-| RF-27 | Al completar el objetivo aparece una mascota bailando y confeti. La celebración no bloquea controles ni tapa los aros de forma que impida jugar. |
-| RF-28 | Mascotas por tema: pulpo en océano, astronauta en espacio y capibara en capibaras. |
-| RF-29 | El confeti y la celebración se retiran automáticamente. La duración concreta se ajusta durante el acabado visual. |
-| RF-30 | La celebración ocurre una sola vez por partida, aunque después salgan aros y vuelvan a ensartarse. |
-| RF-31 | Tras la victoria se puede seguir jugando o reiniciar. Reiniciar permite volver a celebrar en la nueva partida. |
+| RF-25 | The objective is to keep all twelve rings threaded simultaneously for two continuous seconds of active simulation. |
+| RF-26 | If a ring comes off before that interval completes, restart the stability check. Paused time does not count toward victory. |
+| RF-27 | Completing the objective displays a dancing mascot and confetti. The celebration neither blocks controls nor obscures the rings enough to prevent play. |
+| RF-28 | Theme mascots are an octopus for ocean, an astronaut for space, and a capybara for capybaras. |
+| RF-29 | Confetti and celebration effects disappear automatically. Their exact duration is tuned during visual polish. |
+| RF-30 | Celebration occurs once per round, even if rings subsequently come off and are threaded again. |
+| RF-31 | Play may continue after victory, or the player may restart. Restart enables a new celebration in the new round. |
 
-### 4.5. Temas y apariencia
-| ID | Requisito |
+### 4.5. Themes and appearance
+
+| ID | Requirement |
 | --- | --- |
-| RF-32 | La apariencia representa un juguete físico: carcasa transparente, depósito con agua, botones y aros con volumen. |
-| RF-33 | Se incluyen tres temas completos: océano, espacio y capibaras. |
-| RF-34 | Cada tema funciona con los dos modelos de juguete. |
-| RF-35 | Desde la definición de temas en código deben poder configurarse temática, colores de carcasa y botones, fondo, paleta de aros y mascota. |
-| RF-36 | El jugador elige temas completos. No se incluye un editor libre de colores o fondos en la primera versión. |
-| RF-37 | Cambiar de tema conserva el estado físico y el progreso. No recrea la partida ni cambia geometrías de colisión, fuerzas o dificultad. |
-| RF-38 | La cámara frontal es fija respecto al juguete; no se incluye navegación libre de cámara. Debe poder apreciarse la profundidad al girar los aros. |
+| RF-32 | The appearance represents a physical toy: transparent housing, a water-filled tank, buttons, and solid rings. |
+| RF-33 | Include three complete themes: ocean, space, and capybaras. |
+| RF-34 | Each theme works with both toy models. |
+| RF-35 | Theme definitions in code configure the theme concept, housing and button colors, background, ring palette, and mascot. |
+| RF-36 | The player selects complete themes. The first release does not include a free-form color or background editor. |
+| RF-37 | Changing themes preserves physical state and progress. It does not recreate the round or change collision geometries, forces, or difficulty. |
+| RF-38 | The front camera is fixed relative to the toy; free camera navigation is not included. Ring rotation must make depth perceptible. |
 
-### 4.6. Menú, audio y persistencia
-| ID | Requisito |
+### 4.6. Menu, audio, and persistence
+
+| ID | Requirement |
 | --- | --- |
-| RF-39 | La interfaz y la ayuda inicial están en español y utilizan instrucciones breves. |
-| RF-40 | El menú permite pausar, elegir tema, activar o silenciar efectos, gestionar el modo de control, centrar la inclinación y reiniciar. |
-| RF-41 | Abrir el menú pausa la física. Reiniciar pide confirmación y permite cancelar sin perder la partida. |
-| RF-42 | Al enviar el navegador al fondo o cambiar de pestaña se pausa la simulación. Al regresar se conserva la partida, sin simular de golpe todo el tiempo transcurrido. |
-| RF-43 | Se incluyen efectos suaves de bombeo, agua y celebración, sin música de fondo. |
-| RF-44 | Se recuerdan localmente tema, modelo, sonido y preferencias de control. El funcionamiento básico no depende de que el almacenamiento esté disponible. |
-| RF-45 | Cerrar o recargar el juego inicia una partida nueva. No se persisten posiciones, velocidades ni progreso entre aperturas. |
+| RF-39 | The interface and initial help use Spanish and brief instructions. |
+| RF-40 | The menu supports pause, theme selection, enabling or muting effects, control mode management, recentering tilt, and restart. |
+| RF-41 | Opening the menu pauses physics. Restart requires confirmation and can be canceled without losing the round. |
+| RF-42 | Backgrounding the browser or changing tabs pauses simulation. Returning preserves the round without simulating all elapsed background time at once. |
+| RF-43 | Include gentle pumping, water, and celebration effects, without background music. |
+| RF-44 | Remember theme, model, sound, and control preferences locally. Basic operation must not depend on storage being available. |
+| RF-45 | Closing or reloading the game starts a new round. Do not persist positions, velocities, or progress across openings. |
 
-## 5. Requisitos técnicos y de calidad
-| ID | Requisito |
+## 5. Technical and quality requirements
+
+| ID | Requirement |
 | --- | --- |
-| RT-01 | Implementar en TypeScript. |
-| RT-02 | Usar un motor de física 3D existente. Crear un motor propio queda fuera del alcance. |
-| RT-03 | Adoptar Rapier 3D como candidato inicial para física, sujeto a la prueba de viabilidad descrita abajo. |
-| RT-04 | Separar física, reglas de partida, entradas, representación gráfica, definiciones de modelo y definiciones de tema. |
-| RT-05 | Aplicar bombeo, resistencia y efecto del agua mediante fuerzas, impulsos y parámetros del motor. No se exige resolver un fluido completo. |
-| RT-06 | Utilizar un paso de física estable, independiente de la frecuencia de dibujado, y limitar la recuperación tras pausas. |
-| RT-07 | Priorizar Chrome en Android y Safari en iPhone/iPad. Mantener controles funcionales en navegadores de computadora. |
-| RT-08 | Adaptar el diseño a teléfonos y tablets, vertical y horizontal, con botones cómodos y sin recortes de controles esenciales. |
-| RT-09 | Buscar 60 FPS y aceptar un mínimo de 30 FPS sostenidos en los dispositivos de referencia de la prueba. Registrar modelo, sistema, navegador y configuración gráfica; no extrapolar a cualquier dispositivo. |
-| RT-10 | Reducir primero reflejos, partículas y confeti cuando sea necesario para mantener la fluidez, conservando las reglas y una física estable. |
-| RT-11 | Servir por HTTPS para el acceso normal a sensores y detectar capacidades reales del navegador. La conexión inicial es necesaria para cargar el juego. |
-| RT-12 | Tras cargar todos los recursos de la partida, el juego no depende de solicitudes a un servidor. Incluir recursos de los tres temas para que cambiar de tema no requiera conexión. |
-| RT-13 | No incorporar cuentas, multijugador ni backend de partidas a la primera versión. |
-| RT-14 | Fijar versiones de dependencias al implementar y registrar las utilizadas en la prueba. |
+| RT-01 | Implement in TypeScript. |
+| RT-02 | Use an existing 3D physics engine. Building a custom engine is out of scope. |
+| RT-03 | Adopt Rapier 3D as the initial physics candidate, subject to the feasibility prototype described below. |
+| RT-04 | Separate physics, round rules, inputs, rendering, model definitions, and theme definitions. |
+| RT-05 | Apply pumping, resistance, and the water effect through engine forces, impulses, and parameters. A full fluid solver is not required. |
+| RT-06 | Use a stable physics timestep independent of drawing frequency, and limit catch-up after pauses. |
+| RT-07 | Prioritize Chrome on Android and Safari on iPhone/iPad. Keep functional controls in desktop browsers. |
+| RT-08 | Adapt the layout to phones and tablets in portrait and landscape, with comfortable buttons and no clipping of essential controls. |
+| RT-09 | Aim for 60 FPS and accept a sustained minimum of 30 FPS on the registered reference devices. Record model, operating system, browser, and graphics settings; do not extrapolate to every device. |
+| RT-10 | Reduce reflections, particles, and confetti first when needed for smooth rendering, preserving rules and stable physics. |
+| RT-11 | Serve over HTTPS for normal sensor access and detect actual browser capabilities. An initial connection is required to load the game. |
+| RT-12 | After all round resources are loaded, play does not depend on server requests. Include assets for all three themes so theme changes do not require connectivity. |
+| RT-13 | Do not add accounts, multiplayer, or a game-session backend to the first release. |
+| RT-14 | Pin dependency versions during implementation and record those used in testing. |
 
-Los dispositivos y versiones concretas de la matriz de pruebas se registrarán al preparar el prototipo, antes de aceptar rendimiento o compatibilidad. Esta es una tarea de validación técnica pendiente, no una afirmación de compatibilidad ya comprobada.
+The concrete devices and versions in the test matrix must be recorded while preparing the prototype, before accepting performance or compatibility. This is pending technical validation, not a claim of already verified compatibility.
 
-## 6. Decisión de motor y revisión de p5.js
+## 6. Engine decision and p5.js review
 
-### Conclusión
-p5.js puede representar este proyecto mediante su modo WebGL, incluyendo aros 3D con torus(), materiales, luces y cámara. Su API principal no proporciona la dinámica de cuerpos rígidos y las colisiones 3D necesarias para sustituir al motor elegido. Por ello se mantiene Rapier para física, siguiendo la autorización del usuario de utilizarlo si p5 no cubre esa función.
+### Conclusion
 
-p5.js y Rapier pueden desempeñar funciones complementarias: representación y simulación. La integración de ambos es una posibilidad de implementación que aún no se ha probado. La elección final del renderizador se resolverá en el prototipo; p5.js queda como opción viable, no como dependencia obligatoria ni como librería descartada del proyecto.
+p5.js can render this project using WebGL, including 3D rings with `torus()`, materials, lighting, and a camera. Its main API does not supply the required 3D rigid-body dynamics and collisions as a replacement for the chosen engine. Rapier therefore remains the physics candidate, following the user's authorization to use it if p5 does not cover that role.
 
-| Opción revisada | Papel y conclusión |
+p5.js and Rapier can play complementary roles: rendering and simulation. Integrating them is an implementation possibility that had not yet been tested at the time of this decision. The renderer would be selected during the prototype; p5.js remained a viable option, neither a mandatory dependency nor a rejected library.
+
+| Reviewed option | Role and conclusion |
 | --- | --- |
-| Rapier 3D | Candidato inicial de física; dispone de cuerpos rígidos, colisiones y formas compuestas. Validar con la geometría real de los aros. |
-| cannon-es | Alternativa existente; su matriz documenta limitaciones de colisión entre ciertas formas. No es la selección inicial. |
-| Ammo.js / Bullet | Alternativa existente con API derivada de Bullet. Su integración se considera menos conveniente para este alcance. |
-| p5.js | Opción de representación 3D, no sustituto completo de la física requerida. |
-| p5play | Su uso de Box2D corresponde a física 2D; no cubre la dinámica 3D acordada. |
+| Rapier 3D | Initial physics candidate, with rigid bodies, collisions, and compound shapes. Validate against actual ring geometry. |
+| cannon-es | Existing alternative; its matrix documents collision limitations between certain shapes. Not the initial choice. |
+| Ammo.js / Bullet | Existing alternative with a Bullet-derived API. Its integration was considered less convenient for this scope. |
+| p5.js | A 3D rendering option, not a complete substitute for the required physics. |
+| p5play | Its Box2D-based physics is 2D and does not meet the agreed 3D dynamics requirement. |
 
-### Aproximación inicial de colisión
-Evaluar un cuerpo rígido por aro con varias piezas convexas alrededor de su circunferencia, conservando el agujero. No convertir el aro completo en una única envolvente convexa. Rapier recomienda descomposición convexa para cuerpos móviles no convexos.
+### Initial collision approximation
 
-Esta aproximación es una hipótesis de implementación pendiente de validar. No se ha demostrado todavía que la discretización sea suficientemente suave para ensartar, apilar y retirar aros sin enganches artificiales.
+Evaluate one rigid body per ring, composed of several convex pieces around its circumference, preserving the hole. Do not turn the whole ring into one convex hull. Rapier recommends convex decomposition for moving non-convex bodies.
 
-## 7. Prototipo obligatorio antes del acabado visual
-El primer entregable de implementación debe incluir:
-- Depósito cerrado de geometría simple y cámara frontal.
-- Dos estacas y doce aros con agujeros físicos.
-- Los dos modelos de bombeo.
-- Control por orientación e interacción alternativa, incluyendo inversión.
-- Resistencia del agua aproximada y detección de ensartado.
-- Visualización de formas de colisión y medición de rendimiento para desarrollo.
+At the time of the original specification, this was an implementation hypothesis awaiting validation. It had not yet demonstrated that the discretization was smooth enough for threading, stacking, and removing rings without artificial snagging. See section 14 and `POC_REPORT.md` for subsequent results.
 
-Debe demostrar ensartado, apilado, extracción, estabilidad y fluidez. Si no supera la evaluación, ajustar geometrías, pasos, parámetros y aproximación de colisión. Si persisten problemas relevantes, evaluar otro motor existente. No resolverlos creando un motor propio o sustituyendo el ensartado por una animación predeterminada.
+## 7. Required prototype before visual polish
 
-### Criterios de aceptación
-| ID | Prueba | Resultado requerido |
+The first implementation deliverable must include:
+
+- A closed tank with simple geometry and a front camera.
+- Two pegs and twelve rings with physical holes.
+- Both pump models.
+- Orientation control and alternative interaction, including inversion.
+- Approximate water resistance and threading detection.
+- Collision-shape visualization and development performance measurements.
+
+It must demonstrate threading, stacking, removal, stability, and smooth operation. If evaluation fails, adjust geometries, timesteps, parameters, and collision approximations. If significant problems persist, evaluate another existing engine. Do not address them by creating a custom engine or replacing threading with a predetermined animation.
+
+### Acceptance criteria
+
+| ID | Test | Required result |
 | --- | --- | --- |
-| CA-01 | Soltar un aro alineado sobre una estaca y otro desalineado. | El primero puede ensartarse; el segundo choca o cae sin recibir progreso falso. |
-| CA-02 | Hacer pasar un aro delante y detrás de una estaca. | La profundidad determina el contacto; superposición en pantalla no significa ensartado. |
-| CA-03 | Apilar aros e inclinar o invertir el depósito. | Los aros pueden salir físicamente sin bloqueos artificiales. |
-| CA-04 | Bombear repetidamente y en ambos lados a la vez. | Respuesta local de chorros y multitáctil funcional; mantener pulsado no repite bombeos. |
-| CA-05 | Observar interacción entre aros y paredes durante bombeo e inversión. | No se observan escapes del depósito, atravesamientos reproducibles, vibración persistente o aros bloqueados por errores. |
-| CA-06 | Jugar una sesión continua de diez minutos con doce aros. | Sin inestabilidad acumulativa o pérdida de cuerpos. Alcanzar al menos 30 FPS sostenidos en dispositivos de referencia registrados, sin caídas prolongadas bajo ese umbral. |
-| CA-07 | Comparar juego a distintas frecuencias de dibujo. | La velocidad de simulación y duración de dos segundos de victoria se mantienen coherentes. |
-| CA-08 | Denegar permiso y probar un entorno sin datos de orientación. | Sigue siendo posible jugar, bombear e invertir mediante la alternativa. |
-| CA-09 | Cambiar de vertical a horizontal y centrar el control. | Se conserva la partida, los controles siguen accesibles y la orientación responde coherentemente. |
-| CA-10 | Probar la sensación de agua y posibilidad de completar el objetivo. | El usuario valida que bombeo, caída, giros e inclinación recuerdan al juguete y que ensartar resulta entretenido. |
+| CA-01 | Drop an aligned ring over a peg and a misaligned ring beside one. | The first can thread; the second collides or falls without receiving false progress. |
+| CA-02 | Move a ring in front of and behind a peg. | Depth determines contact; screen-space overlap does not mean threading. |
+| CA-03 | Stack rings and tilt or invert the tank. | Rings can physically come off without artificial locks. |
+| CA-04 | Pump repeatedly and on both sides simultaneously. | Jets respond locally and multitouch works; holding a button does not repeat pulses. |
+| CA-05 | Observe ring and wall interactions during pumping and inversion. | No observed escapes, reproducible tunneling, persistent vibration, or rings stuck due to errors. |
+| CA-06 | Play continuously for ten minutes with twelve rings. | No accumulating instability or lost bodies. Maintain at least 30 FPS on registered reference devices, without prolonged drops below that threshold. |
+| CA-07 | Compare play at different drawing frequencies. | Simulation speed and the two-second victory interval remain consistent. |
+| CA-08 | Deny permission and test an environment with no orientation data. | Pumping, play, and inversion remain possible through alternative controls. |
+| CA-09 | Switch between portrait and landscape and recenter control. | The round is preserved, controls remain accessible, and orientation responds coherently. |
+| CA-10 | Evaluate the water effect and the ability to complete the objective. | The user validates that pumping, falling, rotation, and tilt recall the toy and make threading enjoyable. |
 
-## 8. Aceptación de la versión completa
-| ID | Prueba | Resultado requerido |
+## 8. Full-release acceptance
+
+| ID | Test | Required result |
 | --- | --- | --- |
-| CA-11 | Ejecutar cada combinación de dos modelos y tres temas. | Las seis combinaciones funcionan con mecánica independiente de la apariencia. |
-| CA-12 | Cambiar de tema con aros ensartados y otros en movimiento. | Se mantienen cuerpos, posiciones, velocidades y progreso al reanudar. |
-| CA-13 | Mantener doce aros ensartados durante menos de dos segundos y sacar uno. | No se celebra; el intervalo se reinicia. |
-| CA-14 | Mantener doce aros ensartados dos segundos continuos activos. | Mascota correcta bailando y confeti; se puede seguir jugando. |
-| CA-15 | Sacar y reinsertar aros tras celebrar; después reiniciar. | No se repite la celebración en la misma partida; sí puede repetirse en la nueva. |
-| CA-16 | Abrir ajustes o enviar la app al fondo. | La física y el intervalo de victoria se pausan; no hay avance brusco al volver. |
-| CA-17 | Reiniciar y cancelar la confirmación. | Cancelar conserva el juego; confirmar inicia doce aros y restablece la celebración. |
-| CA-18 | Cerrar y abrir nuevamente. | Se recuperan preferencias y se inicia partida nueva sin recuperar posiciones previas. |
-| CA-19 | Silenciar, cambiar de tema y volver a abrir. | Se respeta la preferencia de sonido; no aparece música de fondo. |
-| CA-20 | Desconectar internet después de la carga completa y alternar temas. | La partida y los temas siguen funcionando con los recursos ya cargados. |
-| CA-21 | Abrir el enlace en la matriz de plataformas y orientaciones registrada. | Carga correcta, controles utilizables y verificación de sensores o alternativa según capacidades reales. |
+| CA-11 | Run every combination of two models and three themes. | All six combinations work, with mechanics independent of appearance. |
+| CA-12 | Change themes with some rings threaded and others moving. | Bodies, positions, velocities, and progress are preserved when play resumes. |
+| CA-13 | Keep twelve rings threaded for less than two seconds, then remove one. | No celebration; the interval restarts. |
+| CA-14 | Keep twelve rings threaded for two continuous active seconds. | The correct mascot dances and confetti appears; play remains possible. |
+| CA-15 | Remove and reinsert rings after celebrating, then restart. | No repeated celebration in the same round; a new round can celebrate again. |
+| CA-16 | Open settings or background the app. | Physics and the victory interval pause; returning causes no sudden catch-up. |
+| CA-17 | Request restart and cancel confirmation. | Canceling preserves the round; confirming starts twelve rings and resets celebration. |
+| CA-18 | Close and reopen the game. | Preferences are restored and a fresh round starts without restoring previous positions. |
+| CA-19 | Mute, change themes, and reopen. | The sound preference is respected; no background music is introduced. |
+| CA-20 | Disconnect after complete loading and switch themes. | Play and theme switching continue with already loaded resources. |
+| CA-21 | Open the link across the registered platform and orientation matrix. | Loading succeeds, controls are usable, and sensors or alternatives are verified according to actual capabilities. |
 
-La revisión documental de librerías no sustituye estas pruebas. Ningún criterio se declara superado por la existencia de una API.
+Reviewing library documentation does not replace these tests. No criterion is considered passed merely because an API exists.
 
-## 9. Backlog explícito
-| ID | Funcionalidad futura |
+## 9. Explicit backlog
+
+| ID | Future feature |
 | --- | --- |
-| BL-01 | Modo contrarreloj. |
-| BL-02 | Modo donde el aro ensartado desaparece y acumula progreso. Mantenerlo separado del clásico. |
-| BL-03 | Configurar el número de aros por partida. |
-| BL-04 | Editor de personalización para mezclar colores, fondos y otros elementos del tema. |
-| BL-05 | Sacudir físicamente el dispositivo para agitar el agua. |
-| BL-06 | Instalación como aplicación web y apertura sin conexión. |
+| BL-01 | Time-trial mode. |
+| BL-02 | A mode where a threaded ring disappears and accumulates progress. Keep it separate from classic mode. |
+| BL-03 | Configurable number of rings per round. |
+| BL-04 | A customization editor mixing theme colors, backgrounds, and other elements. |
+| BL-05 | Physically shake the device to agitate the water. |
+| BL-06 | Web app installation and opening without a connection. |
 
-No forman parte de esta versión un motor propio, cuentas, multijugador ni un servidor de partidas. Una simulación científica del agua tampoco es requisito del producto definido.
+The first release excludes a custom physics engine, accounts, multiplayer, and a game-session server. A scientific fluid simulation is not part of the defined product requirements either. Section 13 records the subsequent promotion of BL-02 into the POC.
 
-## 10. Orden de entrega
-1. Prototipo de física y validación de Rapier; selección del renderizador.
-2. Controles completos, ciclo de partida, pausa y victoria.
-3. Modelos de juguete, temas y preferencias.
-4. Sonido, mascotas bailando, confeti y acabados.
-5. Validación funcional, compatibilidad y rendimiento en dispositivos registrados.
+## 10. Delivery order
 
-Cada etapa conserva los criterios ya superados. No dar por resuelta la física mediante acabados visuales.
+1. Physics prototype and Rapier validation; renderer selection.
+2. Complete controls, round lifecycle, pause, and victory.
+3. Toy models, themes, and preferences.
+4. Sound, dancing mascots, confetti, and polish.
+5. Functional, compatibility, and performance validation on registered devices.
 
-## 11. Trazabilidad de decisiones
-| Preguntas de entrevista | Decisión consolidada |
+Each stage preserves previously passed criteria. Visual polish cannot substitute for resolving physics.
+
+## 11. Decision traceability
+
+| Interview questions | Consolidated decision |
 | --- | --- |
-| 1, 5, 26 | Clásico por enlace, sin cuentas; conexión inicial y partida local. Tiempo y apertura offline al backlog. |
-| 2, 6, 24 | Prioridad móvil/tablet, vertical y horizontal, Chrome Android y Safari iOS/iPadOS; computadora funcional. |
-| 3, 9, 14, 21 | Física 3D con ayuda discreta, agujeros reales, extracción posible e inversión completa. |
-| 7, 11, 16, 20 | Modelos predefinidos de uno/dos botones; un impulso por pulsación; tema independiente. La propuesta anterior de cambiar botones en ajustes quedó reemplazada. |
-| 8, 13 | Inclinación en la primera versión. La sugerencia inicial de posponerla quedó rechazada. |
-| 10 | Doce aros y dos estacas; cantidad configurable al backlog. |
-| 12, 19 | Temas intercambiables sin perder partida: océano, espacio y capibaras. Pastel quedó reemplazado. |
-| 15, 22 | Victoria tras dos segundos estables, mascota temática bailando y confeti, sin bloquear el juego. |
-| 17, 18, 23 | Preferencias locales, partida no persistida, pausa, interfaz en español y efectos sin música. |
-| 25, 27 y revisión de p5 | TypeScript, prototipo primero, motor existente. Rapier para física; p5 viable para gráficos, selección de renderizador durante prototipo. |
+| 1, 5, 26 | Classic play through a link, without accounts; initial connection and local play. Time limits and offline opening go to the backlog. |
+| 2, 6, 24 | Mobile/tablet priority; portrait and landscape; Chrome Android and Safari iOS/iPadOS; functional desktop support. |
+| 3, 9, 14, 21 | 3D physics with subtle assistance, real holes, possible removal, and full inversion. |
+| 7, 11, 16, 20 | Predefined one/two-button models; one pulse per press; themes independent of mechanics. The earlier proposal to change button count in settings was superseded. |
+| 8, 13 | Tilting in the first release. Deferring it was rejected. |
+| 10 | Twelve rings and two pegs; configurable counts go to the backlog. |
+| 12, 19 | Switchable themes without losing the round: ocean, space, and capybaras. Pastel was superseded. |
+| 15, 22 | Victory after two stable seconds, themed dancing mascot and confetti, without blocking play. |
+| 17, 18, 23 | Local preferences, no persisted round, pause, Spanish interface, and effects without music. |
+| 25, 27 and p5 review | TypeScript, prototype first, existing engine. Rapier for physics; p5 viable for rendering, with renderer selection during the prototype. |
 
-## 12. Fuentes técnicas consultadas
-Consultadas el 18 de octubre de 2026. Las decisiones de producto provienen de la entrevista; las fuentes sustentan las capacidades de las herramientas.
+## 12. Technical sources consulted
 
-- [p5.js — WebGL](https://p5js.org/reference/p5/constants/WEBGL/): representación 3D, materiales, luces y cámara.
-- [p5.js — torus](https://p5js.org/reference/p5/torus/): representación visual del aro.
-- [p5.js — referencia](https://p5js.org/reference/): alcance de su API principal.
-- [p5play — World](https://p5play.org/learn/world): simulación mediante Box2D.
-- [Box2D — Overview](https://box2d.org/documentation/): alcance de física 2D.
-- [Rapier — Getting started](https://rapier.rs/docs/user_guides/javascript/getting_started_js/): integración JavaScript/WebAssembly.
-- [Rapier — Colliders](https://rapier.rs/docs/user_guides/javascript/colliders/): geometrías y cuerpos móviles no convexos.
-- [Rapier — Rigid bodies](https://rapier.rs/docs/user_guides/javascript/rigid_bodies/): fuerzas, amortiguación y detección continua.
-- [cannon-es — documentación](https://pmndrs.github.io/cannon-es/docs/index.html): tipos de formas y matriz de colisiones.
-- [Ammo.js — repositorio oficial](https://github.com/kripken/ammo.js): integración de Bullet.
-- [W3C — Device Orientation and Motion](https://www.w3.org/TR/orientation-event/): contexto seguro, orientación y permisos.
+Consulted on October 18, 2026. Product decisions come from the interview; these sources support the tools' capabilities. They are historical references, not evidence of device compatibility.
 
+- [p5.js — WebGL](https://p5js.org/reference/p5/constants/WEBGL/): 3D rendering, materials, lighting, and camera.
+- [p5.js — torus](https://p5js.org/reference/p5/torus/): visual ring geometry.
+- [p5.js — reference](https://p5js.org/reference/): scope of its main API.
+- [p5play — World](https://p5play.org/learn/world): Box2D-based simulation.
+- [Box2D — Overview](https://box2d.org/documentation/): scope of 2D physics.
+- [Rapier — Getting started](https://rapier.rs/docs/user_guides/javascript/getting_started_js/): JavaScript/WebAssembly integration.
+- [Rapier — Colliders](https://rapier.rs/docs/user_guides/javascript/colliders/): geometries and moving non-convex bodies.
+- [Rapier — Rigid bodies](https://rapier.rs/docs/user_guides/javascript/rigid_bodies/): forces, damping, and continuous collision detection.
+- [cannon-es — documentation](https://pmndrs.github.io/cannon-es/docs/index.html): shape types and collision matrix.
+- [Ammo.js — official repository](https://github.com/kripken/ammo.js): Bullet integration.
+- [W3C — Device Orientation and Motion](https://www.w3.org/TR/orientation-event/): secure contexts, orientation, and permissions.
 
+## 13. POC iteration — October 19, 2026: accumulated progress
 
-## 13. Iteración del POC — 19 de octubre de 2026: progreso acumulado
+At the user's request, BL-02 is brought forward into the POC as a separate mode, “Guardar al llegar a la base” (collect at the base), initially selected in the laboratory. RF-10 and RF-25/RF-26 continue to describe classic mode, which remains available.
 
-A petición del usuario, BL-02 se adelanta al POC como modo independiente “Guardar al llegar a la base”, seleccionado inicialmente en el laboratorio. RF-10 y RF-25/RF-26 siguen describiendo el modo clásico, que se mantiene disponible.
+In collect mode:
 
-En el modo Guardar:
-- El aro debe ensartarse por física y tocar una base durante 0.12 segundos continuos de simulación activa antes de desaparecer.
-- Desaparecer retira tanto el cuerpo y sus colisiones como el dibujo, y suma una unidad al progreso acumulado. Bombear o invertir no resta aros ya guardados.
-- Un aro suelto sobre el piso, sobre una base sin ensartarse o superpuesto visualmente a una estaca no suma progreso.
-- El objetivo es guardar los doce aros; las escenas de diagnóstico usan su cantidad inicial como objetivo. El contador conserva ese denominador aunque queden menos cuerpos.
-- La victoria ocurre al guardar el último aro, una sola vez por partida. Reiniciar devuelve los aros y pone el progreso en cero. Cambiar de modo, modelo o escena reinicia la prueba.
-- El modo clásico conserva los aros, extracción libre y victoria tras dos segundos simultáneos; no se sustituye su regla por la de progreso acumulado.
+- A ring must thread physically and touch a pedestal for 0.12 continuous seconds of active simulation before disappearing.
+- Disappearing removes the rigid body, its colliders, and its visual mesh, adding one unit to accumulated progress. Pumping or inversion never subtracts already collected rings.
+- A loose ring on the floor, resting on a pedestal without threading, or visually overlapping a peg does not award progress.
+- The objective is to collect all twelve rings; diagnostic scenes use their initial ring count as the objective. That denominator stays fixed even as fewer bodies remain.
+- Victory occurs on collecting the last ring, once per round. Restart restores rings and clears progress. Changing mode, model, or scene restarts the experiment.
+- Classic mode retains its rings, free removal, and victory after two simultaneous stable seconds; accumulated progress does not replace its rule.
 
-La aceptación de la sensación y dificultad del nuevo modo sigue requiriendo juego libre con el usuario. El documento original de la versión clásica se conserva como referencia.
+This iteration originally still required user playtesting to accept its feel and difficulty; section 14 records the subsequent POC acceptance. The original classic specification is retained as a reference.
 
+## 14. POC completion — October 19, 2026
 
-## 14. Cierre del POC — 19 de octubre de 2026
-
-El usuario acepta el POC con fuerza 75, resistencia 0.50 y modo inicial Guardar al llegar a la base. La versión clásica sigue definida en este documento y disponible en el laboratorio. El cierre valida la experiencia del prototipo con el usuario; no equivale a aceptar toda la versión completa ni los criterios de compatibilidad/rendimiento que requieren dispositivos móviles reales. El alcance de la siguiente iteración se acordará aparte.
+The user accepts the POC with pump strength **75**, water resistance **0.50**, and collect-at-the-base as the initial mode. Classic mode remains defined in this document and available in the laboratory. Completion validates the prototype experience with the user; it does not accept the entire full release or compatibility/performance criteria requiring real mobile devices. The scope of the next implementation iteration will be agreed separately.

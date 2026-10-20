@@ -6,7 +6,11 @@ Prototipo independiente para validar la sección 7 de la hoja de requisitos. Typ
 
 Aceptado por el usuario el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. Incluye depósito de fondo 1.8, estacas apoyadas en el piso, chorros laterales bajos, botones bajo el depósito y controles de cámara exclusivos del laboratorio.
 
-Las 16 pruebas automáticas, TypeScript y build pasaron con esta configuración; también se hicieron comprobaciones en el navegador integrado. La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `POC_REPORT.md`.
+Las 16 pruebas originales preservan el setup aceptado. La integración T01–T05 supera ahora 42 pruebas, TypeScript y build, con comprobaciones adicionales en el navegador integrado; ver el [informe de integración](docs/validation/integration-t01-t05.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
+
+## Implementation planning
+
+The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T05 are integrated; T06 awaits real-device access, and the user declined paid cloud access for this experiment. Later tasks remain behind their documented gate. Player-facing text remains in Spanish.
 
 ## Ejecutar y construir
 
@@ -37,7 +41,7 @@ Servir `dist/` mediante HTTPS para probar sensores en móvil. La salida es está
 - Un impulso por pulsación. Dos botones admiten multitáctil. Espacio activa ambos, A/D activa cada lado.
 - Flechas inclinan lateralmente; W/S o arriba/abajo cambian inclinación hacia delante/atrás. Deslizadores y “Boca abajo” permiten invertir sin sensores.
 - “Usar movimiento” solicita permiso si el navegador lo necesita y calibra la postura. “Centrar” vuelve a calibrar. Sin datos o permiso, continúa el control manual.
-- P pausa. Cambiar de modelo o escena reinicia el experimento.
+- P pausa. Reiniciar o cambiar modelo/escena conserva una pausa manual activa. Recargar recuerda el modelo elegido y crea una partida nueva en modo Guardar; no restaura aros ni progreso. El acceso a sensores siempre requiere activación explícita.
 - “Ver formas de colisión” muestra los cuerpos físicos. No usar esa vista para medir rendimiento gráfico del modo normal.
 - Panel “Solo POC / Cámara”: giro horizontal, elevación, distancia y altura del punto de mira; muestra posición X/Y/Z, punto de mira y distancia efectiva. “Desde arriba · 15°” permite comparar con “Vista original” sin reiniciar la física.
 - “Copiar configuración” copia los ángulos, escala de distancia, posición, punto de mira, FOV y aspecto como JSON para elegir un futuro valor predeterminado. También se pueden seleccionar manualmente en “Valores para compartir”. La distancia se adapta a la pantalla sin restablecer el ángulo; recargar vuelve a la vista original. Estos controles son exclusivos del POC.
@@ -53,4 +57,4 @@ La detección de ensartado calcula la intersección del eje de la estaca con el 
 
 ## Validación
 
-Ver `POC_REPORT.md` y `tests/physics.test.ts`. La suite incluye la caída de un aro horizontal alineado desde cinco posiciones en todo su margen Z disponible, contención contra ambas paredes de profundidad y ausencia de solapamientos iniciales con ellas en las cuatro escenas. Las pruebas de motor en Node no acreditan FPS, permisos, tacto ni compatibilidad de un navegador/dispositivo real.
+Ver `docs/POC_REPORT.md` y `tests/physics.test.ts`. La suite incluye la caída de un aro horizontal alineado desde cinco posiciones en todo su margen Z disponible, contención contra ambas paredes de profundidad y ausencia de solapamientos iniciales con ellas en las cuatro escenas. Las pruebas de motor en Node no acreditan FPS, permisos, tacto ni compatibilidad de un navegador/dispositivo real.

@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-20T03:38:49.061Z",
+  "engine": "Rapier 0.19.3",
+  "renderer": "Three.js 0.180.0",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "pixelRatio": 2
+  },
+  "camera": {
+    "azimuth": 0,
+    "elevation": 0.7,
+    "distanceScale": 1,
+    "targetY": 0,
+    "position": {
+      "x": 0,
+      "y": 0.2701944734772923,
+      "z": 22.114618179652982
+    },
+    "target": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "distance": 22.116268724297413,
+    "fov": 37,
+    "aspect": 1.5399239543726235
+  },
+  "tankInterior": {
+    "width": 9,
+    "height": 12,
+    "depth": 1.8
+  },
+  "jets": {
+    "left": {
+      "origin": {
+        "x": -4.2,
+        "y": -5.25,
+        "z": 0
+      },
+      "direction": {
+        "x": 0.48,
+        "y": 0.8772684879784524,
+        "z": 0
+      }
+    },
+    "right": {
+      "origin": {
+        "x": 4.2,
+        "y": -5.25,
+        "z": 0
+      },
+      "direction": {
+        "x": -0.48,
+        "y": 0.8772684879784524,
+        "z": 0
+      }
+    },
+    "center": {
+      "origin": {
+        "x": 0,
+        "y": -5.7,
+        "z": 0
+      },
+      "direction": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    }
+  },
+  "pulseDuration": 0.24,
+  "roundId": 2,
+  "paused": [],
+  "scene": "free",
+  "model": 2,
+  "modelId": "two-button",
+  "gameMode": "collect",
+  "totalRings": 12,
+  "collected": 0,
+  "ringCount": 12,
+  "threaded": 0,
+  "simulationSeconds": 1208.1083333349106,
+  "fps": 60,
+  "averageFrameMs": 16.666666666666668,
+  "maxPhysicsStepMs": 169.69999999925494,
+  "averagePhysicsStepMs": 0.6063333333469927,
+  "escaped": false,
+  "sensorMode": false,
+  "sensorState": "manual",
+  "gravity": {
+    "x": 0,
+    "y": -3,
+    "z": 0
+  },
+  "strength": 75,
+  "drag": 0.5,
+  "physicsHz": 120,
+  "collidersPerRing": 20
+}
