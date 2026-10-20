@@ -1,6 +1,6 @@
 import type { ThemeAsset, ThemeId } from './types';
 
-const svg = (content: string) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400">${content}</svg>`)}`;
+const svg = (content: string) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400" viewBox="0 0 1000 1400">${content}</svg>`)}`;
 
 /** Original, bundled vector scenes for the molded rear panel of the toy. */
 export const REAR_INSERTS: Readonly<Record<ThemeId, string>> = Object.freeze({

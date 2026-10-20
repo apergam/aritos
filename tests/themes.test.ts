@@ -26,20 +26,19 @@ test('theme definitions and their palettes are immutable shared values', () => {
   assert.equal(Object.isFrozen(theme('ocean').colors.rings), true);
 });
 
-test('every theme bundles an original illustrated rear insert with open center contrast', () => {
-  const scenes: Record<ThemeId, string[]> = {
-    ocean: ['coral', 'seaweed', 'fill="#ff9d73"'],
-    capybaras: ['habitat', 'ellipse cx="94" cy="113"', 'stroke="#537b4d"'],
-    space: ['nebula', 'circle cx="151" cy="436"', 'M122 28'],
-  };
-  for (const id of Object.keys(scenes) as ThemeId[]) {
+test('every theme bundles a self-contained SVG rear insert for offline use', () => {
+  const themeIds = Object.keys(THEMES) as ThemeId[];
+  assert.deepEqual(Object.keys(REAR_INSERT_ASSETS).sort(), themeIds.sort());
+  for (const id of themeIds) {
     const asset = REAR_INSERT_ASSETS[id];
     assert.equal(asset.mimeType, 'image/svg+xml');
     assert.match(asset.source, /^data:image\/svg\+xml,/);
     const source = decodeURIComponent(asset.source.slice('data:image/svg+xml,'.length));
-    assert.match(source, /^<svg\s/);
-    for (const motif of scenes[id]) assert.ok(source.includes(motif), `${id} insert includes ${motif}`);
-    assert.match(source, /radialGradient id="clear"/);
+    assert.match(source, /^<svg\s[\s\S]*<\/svg>$/);
+    assert.match(source, /\bwidth="1000"\s+height="1400"/);
+    assert.doesNotMatch(source, /<(?:image|script|foreignObject)\b/i);
+    assert.doesNotMatch(source, /\b(?:xlink:)?href\s*=\s*["'](?!#)/i);
+    assert.doesNotMatch(source, /@import|url\(\s*["']?(?:https?:|data:|\/\/)/i);
   }
   assert.ok(Object.isFrozen(REAR_INSERT_ASSETS));
 });

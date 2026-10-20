@@ -359,7 +359,10 @@ export class PlayerRenderer {
    * preserving contrast around holes and peg tips.
    */
   private createRearInserts(): void {
-    const z = -TOY_PHYSICS.tank.z + 0.095;
+    const tank = TOY_PHYSICS.tank;
+    const z = -tank.z + 0.095;
+    const panelWidth = 2 * (tank.x - 0.15);
+    const panelHeight = 2 * (tank.y - 0.2);
     for (const id of ['ocean', 'capybaras', 'space'] as const) {
       const material = new THREE.MeshBasicMaterial({
         color: 0xffffff,
@@ -369,7 +372,7 @@ export class PlayerRenderer {
         side: THREE.DoubleSide,
         toneMapped: false,
       });
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(9.9, 13.85), material);
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(panelWidth, panelHeight), material);
       mesh.position.set(0, 0, z);
       mesh.renderOrder = 2;
       mesh.visible = id === this.currentTheme;
