@@ -89,50 +89,79 @@ test('model and mode transitions start fresh rounds; pumps follow the selected m
   } finally { session.dispose(); }
 });
 
-test('victory is once per round and a reentrant restart suppresses stale listeners/events', async () => {
+test('collect victory follows all collection events and listeners may safely dispose', async () => {
   await initPhysics();
-  const session = new GameSession({ scene: 'drop' });
+  const session = new GameSession({ scene: 'stack', mode: 'collect' });
   const received: string[] = [];
-  const originalStep = session.simulation.step.bind(session.simulation);
-  session.simulation.step = () => {
-    session.simulation.onWin?.();
-    session.simulation.onWin?.();
-  };
   session.subscribe(event => {
-    if (event.type === 'victory') {
-      received.push(`first:${event.roundId}`);
-      session.startRound({ scene: 'drop' });
-    }
+    received.push(event.type);
+    if (event.type === 'victory') session.dispose();
   });
-  session.subscribe(event => { if (event.type === 'victory') received.push(`second:${event.roundId}`); });
   try {
-    session.step();
-    assert.deepEqual(received, ['first:0']);
-    assert.equal(session.snapshot().roundId, 1);
-    // Restore the adapter before teardown; no real physics step was needed here.
-    session.simulation.step = originalStep;
+    for (let i = 0; i < 1500 && !session.simulation.won; i++) session.step();
+    assert.equal(session.simulation.won, true);
+    assert.equal(received.filter(event => event === 'ring-collected').length, 12);
+    assert.equal(received.at(-1), 'victory');
+    assert.doesNotThrow(() => session.step());
   } finally { session.dispose(); }
 });
 
-test('equivalent fixed ticks produce the same active time across render schedules', async () => {
+test('classic victory lands on the same active tick across render schedules', async () => {
   await initPhysics();
   const run = (frames: number[]) => {
-    const session = new GameSession({ scene: 'drop' });
+    const session = new GameSession({ scene: 'stack', mode: 'classic' });
+    session.simulation.setGravity({ x: 0, y: 0, z: 0 });
     let accumulator = 0;
     const dt = 1 / 120;
+    let victoryAt: number | undefined;
+    session.subscribe(event => { if (event.type === 'victory') victoryAt = session.snapshot().activeSeconds; });
     for (const frameSeconds of frames) {
       accumulator += frameSeconds;
-      while (accumulator + 1e-10 >= dt) { session.step(); accumulator -= dt; }
+      while (accumulator + 1e-10 >= dt && !session.simulation.won) { session.step(); accumulator -= dt; }
     }
-    const activeSeconds = session.snapshot().activeSeconds;
     session.dispose();
-    return activeSeconds;
+    return victoryAt;
   };
-  const evenlyScheduled = Array.from({ length: 60 }, () => 1 / 60);
+  const evenlyScheduled = Array.from({ length: 126 }, () => 1 / 60);
   const unevenWeights = [30, 4, 21, 9, 16, 20, 10, 40, 17, 13, 20, 30, 20, 15, 25, 30, 20, 30, 20, 20, 30, 30, 20, 20, 20, 20, 20, 15];
   const weightTotal = unevenWeights.reduce((a, b) => a + b, 0);
-  const unevenlyScheduled = unevenWeights.map(weight => weight / weightTotal);
-  assert.ok(Math.abs(evenlyScheduled.reduce((a, b) => a + b, 0) - 1) < 1e-9);
-  assert.ok(Math.abs(unevenlyScheduled.reduce((a, b) => a + b, 0) - 1) < 1e-9);
-  assert.equal(run(evenlyScheduled), run(unevenlyScheduled));
+  const unevenlyScheduled = unevenWeights.map(weight => 2.1 * weight / weightTotal);
+  const evenlyScheduledVictory = run(evenlyScheduled);
+  const unevenlyScheduledVictory = run(unevenlyScheduled);
+  assert.ok(evenlyScheduledVictory !== undefined && evenlyScheduledVictory >= 2 && evenlyScheduledVictory <= 2 + 1 / 120);
+  assert.equal(evenlyScheduledVictory, unevenlyScheduledVictory);
+});
+
+test('classic victory listener can restart after the physics step without stale events', async () => {
+  await initPhysics();
+  const session = new GameSession({ scene: 'stack', mode: 'classic' });
+  session.simulation.setGravity({ x: 0, y: 0, z: 0 });
+  const received: number[] = [];
+  session.subscribe(event => {
+    if (event.type === 'victory') {
+      received.push(event.roundId);
+      session.startRound({ scene: 'drop', mode: 'classic' });
+    }
+  });
+  session.subscribe(event => { if (event.type === 'victory') received.push(event.roundId); });
+  try {
+    for (let i = 0; i < 300 && session.snapshot().roundId === 0; i++) session.step();
+    assert.deepEqual(received, [0]);
+    assert.equal(session.snapshot().roundId, 1);
+    assert.equal(session.simulation.won, false);
+    assert.equal(session.snapshot().activeSeconds, 0);
+  } finally { session.dispose(); }
+});
+
+test('hidden time cannot accumulate into active simulation time', async () => {
+  await initPhysics();
+  const session = new GameSession({ scene: 'drop', mode: 'classic' });
+  try {
+    session.dispatch({ type: 'pause', reason: 'document-hidden', paused: true });
+    for (let i = 0; i < 7200; i++) session.step();
+    assert.equal(session.snapshot().activeSeconds, 0);
+    session.dispatch({ type: 'pause', reason: 'document-hidden', paused: false });
+    session.step();
+    assert.equal(session.snapshot().activeSeconds, 1 / 120);
+  } finally { session.dispose(); }
 });

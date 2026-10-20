@@ -32,6 +32,7 @@ export class GameSession {
   private pauses = new Set<PauseReason>();
   private victoryRound = -1;
   private steppingRound: number | undefined;
+  private pendingVictory: Extract<GameEvent, { type: 'victory' }> | undefined;
   private disposed = false;
 
   constructor(options: SessionOptions = {}) {
@@ -40,12 +41,13 @@ export class GameSession {
     this.simulation.mode = options.mode ?? 'collect';
     this.simulation.model = toyModel(this.model).buttonCount;
     this.simulation.onWin = () => {
-      const roundId = this.steppingRound ?? this.round;
+      const roundId = this.steppingRound;
+      if (roundId === undefined) return;
       if (roundId !== this.round) return;
       const mode = this.simulation.mode;
       if (this.victoryRound === roundId) return;
       this.victoryRound = roundId;
-      this.emit({ type: 'victory', roundId, mode });
+      this.pendingVictory = { type: 'victory', roundId, mode };
     };
     this.simulation.reset(this.scene);
   }
@@ -77,6 +79,7 @@ export class GameSession {
   startRound(options: SessionOptions = {}): void {
     if (this.disposed) return;
     this.round++; this.victoryRound = -1;
+    this.pendingVictory = undefined;
     // A completed/canceled settings flow closes with the new round. Manual pause
     // and browser visibility remain independent and continue to hold simulation.
     this.pauses.delete('menu');
@@ -94,6 +97,7 @@ export class GameSession {
     const roundId = this.round;
     const before = this.simulation.rings.map(r => r.id);
     const priorCollected = this.simulation.collected;
+    this.pendingVictory = undefined;
     this.steppingRound = roundId;
     try { this.simulation.step(); }
     finally { this.steppingRound = undefined; }
@@ -106,6 +110,12 @@ export class GameSession {
         if (this.disposed || roundId !== this.round) return;
         this.emit({ type: 'ring-collected', roundId, ringId, collected: this.simulation.collected, total: this.simulation.totalRings });
       }
+    }
+    const pendingVictory = this.pendingVictory as Extract<GameEvent, { type: 'victory' }> | undefined;
+    if (!this.disposed && roundId === this.round && pendingVictory?.roundId === roundId) {
+      const victory = pendingVictory;
+      this.pendingVictory = undefined;
+      this.emit(victory);
     }
   }
 
