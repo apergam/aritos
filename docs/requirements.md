@@ -341,3 +341,8 @@ Keep normal play and its accepted setup available unchanged. Compare pressure, p
 After recording sections 16–17, the user selected collection reward sound (T14), music (T15) and rear plastic illustrations (T16) for implementation. Geometry and arcade POCs are deferred to a later round. Workers use the requested `gpt-6-luna` / `high`; T14 and T16 ran in parallel and T15 followed the integrated audio base.
 
 This implements the section 16 music extension: original local synthesized theme loops, global mute plus a saved independent music toggle, and two saved collection cue choices with explicit audition. T16 supplies bundled original SVG rear inserts. See [the polish report](validation/polish-audio-art.md) for current checks and listening limitations. T14/T15 remain in review for acoustic feedback; no paid service, external track, physics retuning or publication was introduced.
+
+
+## 19. Theme music feedback — October 20, 2026
+
+The user reported that changing theme appeared to leave the same music. Tests confirmed correct buffer selection through the settings pause/resume path but reproduced an identical opening between ocean and space. The revised candidate differentiates tempo, meter/register and instrument for each theme, and a new theme starts at its own phrase beginning. Pause, mute and round restart preserve musical position. This refines T15's recognizability; subjective acceptance of the revised music remains open. See [the current report](validation/polish-audio-art.md).

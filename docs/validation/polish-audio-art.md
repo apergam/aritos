@@ -1,5 +1,20 @@
 # Audio and rear-plastic polish — October 20, 2026
 
+## Music contrast correction — current candidate
+
+Build **497767e7**, source **76c890a**. The user reported that music sounded the same when changing themes. A focused test of the actual settings pattern (pause → set theme → resume/activate) confirmed that each theme selects its own buffer and only one source remains active. A second regression test failed: the first 250 ms of ocean/space had normalized PCM similarity **1.0000**. This is a concrete identical-opening defect, not a measurement of perceived similarity over the whole track.
+
+The previous ocean/space candidates shared tempo, register and bell instrument. The correction gives each theme a different tempo, meter/register and instrument: ocean bell / 76 BPM / 3/4; space synth / 112 BPM / 4/4; capybaras wood pluck / 96 BPM / 4/4. Changing theme begins that track's phrase; pause/mute and round restart retain position. This makes the change easier to recognize; subjective listening remains the user's acceptance step.
+
+Both new regression tests pass, including normalized opening similarity below 0.95 for every pair. `pnpm typecheck`, `pnpm test` (**66/66**), `pnpm build` and `git diff --check` pass. The full engine soak still passes (600 simulated seconds, no escapes/NaN; 24.201 s local Node execution, not mobile FPS). Existing mute/pause/activation/one-source tests remain green. There are now seven music tests; other groups are unchanged.
+
+In the in-app browser, the new bundle was loaded, Jugar activated, and all three theme switches completed via Ajustes without restarting progress or capturing error-level console messages. This verifies UI integration, not acoustic perception. The final browser tab is the current normal player, capybaras. [Screenshot](evidence/aritos-distinct-music.png). No external tracks/assets or new dependencies were added. T15 stays in review for the user's comparison of the revised melodies.
+
+## Original polish candidate — historical evidence
+
+The rest of this report records build 3bbe1ed3 before the music-contrast correction above; its durations, 64-test count and offset policy are historical.
+
+
 Ready for local player review. Source integration: `c25218a`; content build **3bbe1ed3**. T14/T15 implementation is integrated but remains in review for subjective audition and mix/choice feedback. T16 is integrated and visually inspected. No physical-device or subjective audio acceptance is claimed; the first version's [mobile limitations](release.md) remain.
 
 ## Scope delivered
