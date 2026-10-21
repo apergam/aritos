@@ -4,7 +4,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { DT, initPhysics, type Ring } from '../src/physics.ts';
 import { GameSession } from '../src/game/session.ts';
 import { RingAssistController } from '../src/lab/experiments/assist.ts';
-import { createLabLayout } from '../src/lab/experiments/geometry.ts';
+import { PLAYER_TOY_SETTINGS } from '../src/models/selected-toy.ts';
 await initPhysics();
 
 function clearRings(session:GameSession){
@@ -13,17 +13,8 @@ function clearRings(session:GameSession){
  simulation.rings=[];simulation.totalRings=0;simulation.collected=0;simulation.won=false;
 }
 type LayoutCase='baseline'|'raised8';
-function useRaised8Physics(session:GameSession){
- const sim=session.simulation,raised=createLabLayout({pegLayout:'raised'});
- const outlet=(jet:typeof raised.jets.left,x:number)=>Object.freeze({...jet,origin:Object.freeze({...jet.origin,x})});
- sim.layout=Object.freeze({...raised,width:8,tank:Object.freeze({...raised.tank,x:4}),jets:Object.freeze({
-  ...raised.jets,left:outlet(raised.jets.left,-3.7),right:outlet(raised.jets.right,3.7),
- })});
- sim.reset('depth');
-}
 function setup(mode:'classic'|'collect'='collect',layout:LayoutCase='baseline',model:'single-button'|'two-button'='two-button'){
- const session=new GameSession({scene:'depth',mode,model});
- if(layout==='raised8')useRaised8Physics(session);
+ const session=new GameSession({scene:'depth',mode,model,...(layout==='raised8'?{lab:PLAYER_TOY_SETTINGS}:{})});
  clearRings(session);
  const x=-session.simulation.layout.tank.x+.75;
  const ring=session.simulation.addRing(x,-5.2,0);
