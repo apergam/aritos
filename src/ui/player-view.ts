@@ -1,4 +1,5 @@
 import { mountRoundResult } from './round-result';
+import { REAR_INSERT_ASSETS } from '../themes';
 import type { MascotState } from '../game/mascots/player-mascots';
 import type { RingAssistKind } from '../lab/experiments/assist';
 import type { GameMode } from '../physics';
@@ -50,13 +51,15 @@ const THEMES: Array<{ id: ThemeId; icon: string; detail: string }> = [
 
 function themeChoices(selected: ThemeId): string {
   return THEMES.map(theme => `<button class="theme-choice ${selected === theme.id ? 'is-selected' : ''}" type="button" data-theme="${theme.id}" aria-pressed="${selected === theme.id}" aria-label="Tema ${THEME_NAMES[theme.id]}">
-    <span class="theme-emoji" aria-hidden="true">${theme.icon}</span><span><b>${THEME_NAMES[theme.id]}</b><small>${theme.detail}</small></span>
+    <span class="theme-art" aria-hidden="true"><img src="${REAR_INSERT_ASSETS[theme.id].source}" alt=""></span><span class="theme-emoji" aria-hidden="true">${theme.icon}</span><span><b>${THEME_NAMES[theme.id]}</b><small>${theme.detail}</small></span>
   </button>`).join('');
 }
 
 /** Mounts the Spanish player shell; pump and motion behavior remains owned by PocControls. */
 export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPreferences, handlers: PlayerUIHandlers) {
   root.classList.add('aritos-player');
+  root.dataset.screen = 'setup';
+  root.dataset.model = initialPreferences.model;
   root.innerHTML = `
     <main class="player-shell" aria-label="Aritos">
       <header class="player-header">
@@ -83,9 +86,15 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
         <div class="pump-deck" aria-label="Botones de bombeo">
           <button class="pump-button pump-side" id="pump-left" type="button" aria-label="Bombear lado izquierdo"><span class="pump-icon" aria-hidden="true">↗</span><span>Bombear</span></button>
           <button class="pump-button pump-center" id="pump-center" type="button" aria-label="Bombear"><span class="pump-icon" aria-hidden="true">↑</span><span>Bombear</span></button>
+          <div class="dock-tools" aria-label="Herramientas de juego">
+            <button class="dock-tool" id="tilt-open" type="button" aria-controls="tilt-panel" aria-expanded="false"><span aria-hidden="true">↔</span><span>Inclinar</span></button>
+            <button class="dock-tool" id="mascots-open" type="button" aria-controls="mascot-panel" aria-expanded="false"><span aria-hidden="true">✦</span><span>Mascota</span></button>
+          </div>
           <div class="pump-hint" id="pump-hint">Toca para impulsar</div>
           <button class="pump-button pump-side" id="pump-right" type="button" aria-label="Bombear lado derecho"><span class="pump-icon" aria-hidden="true">↖</span><span>Bombear</span></button>
         </div>
+        <aside class="play-tools" id="play-tools" aria-label="Herramientas de juego">
+        <div class="tools-heading"><b id="tools-title">Inclina el juguete</b><button class="icon-button" id="tools-close" type="button" aria-label="Cerrar herramientas">×</button></div>
         <section class="tilt-panel" id="tilt-panel" aria-label="Control manual de inclinación">
           <div class="tilt-heading"><span><b>Inclina el juguete</b><small>También puedes inclinar mientras bombeas</small></span><button class="text-button small" id="invert" type="button">↻ Invertir</button></div>
           <div class="tilt-sliders">
@@ -95,11 +104,12 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
           <div class="motion-row"><span id="sensor-status" aria-live="polite">Control manual activo. Puedes usar movimiento si tu dispositivo lo permite.</span><button class="outline-button" id="sensor" type="button">Usar movimiento</button></div>
           <button class="text-button small center-button" id="upright" type="button">◎ Centrar inclinación</button>
         </section>
-        <section class="mascot-panel" aria-labelledby="mascot-title">
+        <section class="mascot-panel" id="mascot-panel" aria-labelledby="mascot-title">
           <div class="mascot-heading"><img src="./assets/stickers/ocean-octopus-3ee08e881c.png" alt=""><div><b id="mascot-title">Compañía bajo el agua</b><small>Pide ayuda y prepárate para una sorpresa.</small></div></div>
           <div class="mascot-actions"><fieldset><legend>Una mano amiga</legend><button type="button" data-assist="thread">Ensartar un aro</button><button type="button" data-assist="above">Soltar sobre estaca</button></fieldset><fieldset><legend>La traviesa · sorpresa</legend><p id="villain-status">Cuando falten entre 1 y 5 aros, puede aparecer con dos encadenados. Una vez por ronda.</p></fieldset></div>
           <p class="mascot-status" id="mascot-status" role="status">La traviesa puede sorprenderte al final de la ronda.</p>
         </section>
+        </aside>
       </section>
       <dialog class="player-dialog" id="settings-dialog" aria-labelledby="settings-title">
         <form method="dialog" class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">TU PARTIDA</p><h2 id="settings-title">Ajustes</h2></div><button class="icon-button dialog-close" value="close" aria-label="Cerrar ajustes">×</button></div>
@@ -141,7 +151,48 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   const settings = $('#settings-dialog') as HTMLDialogElement;
   const restart = $('#restart-dialog') as HTMLDialogElement;
   const help = $('#help-dialog') as HTMLDialogElement;
-  const result = mountRoundResult($('#toy-stage'), handlers.onNewGame);
+  const compact = window.matchMedia('(max-width:1100px), (max-height:600px)');
+  let activeTool: 'tilt' | 'mascots' | undefined;
+  const syncTools = () => {
+    root.dataset.compact = String(compact.matches);
+    $('#play-tools').hidden = compact.matches && !activeTool;
+    $('#tilt-panel').hidden = compact.matches && activeTool !== 'tilt';
+    $('#mascot-panel').hidden = compact.matches && activeTool !== 'mascots';
+    $('#tilt-open').setAttribute('aria-expanded', String(activeTool === 'tilt'));
+    $('#mascots-open').setAttribute('aria-expanded', String(activeTool === 'mascots'));
+    $('#tools-title').textContent = activeTool === 'mascots' ? 'Tu compañía acuática' : 'Inclinación';
+  };
+  const closeTools = (restoreFocus = false) => {
+    const previous = activeTool;
+    activeTool = undefined; syncTools();
+    if (restoreFocus && previous && compact.matches) $('#' + (previous === 'tilt' ? 'tilt-open' : 'mascots-open')).focus({ preventScroll: true });
+  };
+  const openTool = (tool: 'tilt' | 'mascots') => {
+    activeTool = activeTool === tool ? undefined : tool; syncTools();
+    if (activeTool) {
+      if (compact.matches) $('#tools-close').focus({ preventScroll: true });
+      else $('#' + (tool === 'tilt' ? 'tilt-panel' : 'mascot-panel')).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+  const onCompactChange = () => {
+    const focus = root.ownerDocument.activeElement;
+    // A resize must not leave keyboard focus in a newly hidden panel/opener.
+    const wasToolsFocus = focus instanceof Element && Boolean(focus.closest('#play-tools, .dock-tools'));
+    closeTools();
+    if (wasToolsFocus) $(compact.matches ? '#tilt-open' : '#sensor').focus({ preventScroll: true });
+  };
+  compact.addEventListener('change', onCompactChange);
+  $('#tilt-open').addEventListener('click', () => openTool('tilt'));
+  $('#mascots-open').addEventListener('click', () => openTool('mascots'));
+  $('#tools-close').addEventListener('click', () => closeTools(true));
+  const toolsEscape = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && activeTool && !settings.open && !help.open && !restart.open) {
+      event.preventDefault(); closeTools(true);
+    }
+  };
+  root.addEventListener('keydown', toolsEscape);
+  syncTools();
+  const result = mountRoundResult($('#toy-stage'), () => { closeTools(); handlers.onNewGame(); });
   const prefsFromChoices = () => ({ ...currentPreferences, model: draftModel });
   const setPreference = (changes: Partial<PlayerPreferences>) => {
     currentPreferences = { ...currentPreferences, ...changes };
@@ -180,6 +231,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   root.querySelectorAll<HTMLButtonElement>('[data-assist]').forEach(button => button.addEventListener('click', () => handlers.onAssist(button.dataset.assist as RingAssistKind)));
   $('#start-game').addEventListener('click', () => {
     started = true; activeModel = draftModel; modelDraftDirty = false;
+    root.dataset.screen = 'game'; root.dataset.model = draftModel; closeTools();
     if (currentPreferences.model !== draftModel) {
       currentPreferences = { ...currentPreferences, model: draftModel };
       lastPreferenceSync = currentPreferences; handlers.onPreferenceChange({ model: draftModel });
@@ -190,6 +242,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     $('#pump-left').hidden = draftModel !== 'two-button'; $('#pump-right').hidden = draftModel !== 'two-button'; $('#pump-center').hidden = draftModel !== 'single-button';
   });
   $('#settings-open').addEventListener('click', () => {
+    closeTools();
     for (const id of ['stickers-open','pause-toggle','controls-open','rule-change','model-change','restart-open']) $<HTMLButtonElement>('#'+id).disabled = !started;
     handlers.onPause('menu', true); settings.showModal();
   });
@@ -206,10 +259,10 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     if (!disposed) $('#preview-sound-status').textContent = played ? 'Muestra de ' + (currentPreferences.collectionSound === 'coin' ? 'monedita.' : 'chispas.') : 'No se pudo activar el audio. Puedes seguir jugando.';
   });
   $('#stickers-open').addEventListener('click', () => { handlers.onDecorate(); settings.close(); });
-  $('#controls-open').addEventListener('click', () => { settings.close(); scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#tilt-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); refs.motion.button.focus(); }); });
+  $('#controls-open').addEventListener('click', () => { settings.close(); scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; openTool('tilt'); refs.motion.button.focus({ preventScroll: compact.matches }); }); });
   const returnToSetup = (includeModel: boolean) => {
     if (!includeModel || !modelDraftDirty) { draftModel = activeModel; modelDraftDirty = false; syncPrefs(); }
-    started = false; settings.close(); $('#setup-screen').hidden = false; $('#game-screen').hidden = true;
+    started = false; root.dataset.screen = 'setup'; closeTools(); settings.close(); $('#setup-screen').hidden = false; $('#game-screen').hidden = true;
   };
   $('#rule-change').addEventListener('click', () => returnToSetup(false));
   $('#model-change').addEventListener('click', () => returnToSetup(true));
@@ -222,7 +275,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     $('.help-steps li:nth-child(3) small').textContent = helpMode === 'collect'
       ? 'Guía cada aro hasta una estaca. Al llegar a la base queda guardado durante esta partida.'
       : 'Guía todos los aros hasta las estacas y mantenlos ensartados dos segundos. Pueden volver a salir.';
-    handlers.onPause('menu', true); help.showModal();
+    closeTools(); handlers.onPause('menu', true); help.showModal();
     scheduledFrame = requestAnimationFrame(() => { scheduledFrame = 0; $('#help-title').focus(); });
   };
   $('#help-open').addEventListener('click', openHelp);
@@ -241,7 +294,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     update(snapshot: SessionSnapshot, preferences: PlayerPreferences, nextState: PlayerUIState = {}) {
       latestSnapshot = snapshot;
       result.update(snapshot, preferences.theme);
-      for (const button of Object.values(refs.controls)) button.disabled = snapshot.won;
+      for (const button of [...Object.values(refs.controls), $<HTMLButtonElement>('#tilt-open'), $<HTMLButtonElement>('#mascots-open')]) button.disabled = snapshot.won;
       if (preferences.model !== lastPreferenceSync.model || preferences.theme !== lastPreferenceSync.theme || preferences.sound !== lastPreferenceSync.sound || preferences.music !== lastPreferenceSync.music || preferences.collectionSound !== lastPreferenceSync.collectionSound || preferences.control !== lastPreferenceSync.control) {
         if (!modelDraftDirty && preferences.model !== lastPreferenceSync.model) draftModel = preferences.model;
         currentPreferences = preferences;
@@ -259,18 +312,22 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
       $('#round-label').textContent = snapshot.mode === 'collect' ? 'RETO · GUARDAR AL LLEGAR' : 'RETO · MODO CLÁSICO';
       $('#player-status').textContent = nextState.paused ? 'En pausa' : '';
       $('#pause-title').textContent = snapshot.paused.includes('manual') ? 'Continuar partida' : 'Pausar partida';
-      if (nextState.motionMessage !== undefined) refs.motion.status.textContent = nextState.motionMessage;
+      root.dataset.motion = nextState.motionState ?? 'manual';
+      if (nextState.motionMessage !== undefined) refs.motion.status.textContent = compact.matches && nextState.motionState === 'manual' ? 'Mueve los deslizadores o activa el movimiento del dispositivo.' : nextState.motionMessage;
       refs.motion.button.setAttribute('aria-pressed', String(currentPreferences.control === 'motion'));
       refs.motion.button.textContent = nextState.motionState === 'usable' ? 'Movimiento activo ✓' : nextState.motionState === 'waiting' ? 'Esperando movimiento…' : currentPreferences.control === 'motion' ? 'Reintentar movimiento' : 'Usar movimiento';
       const feedback = $('#feedback-toast'); feedback.textContent = nextState.victory || nextState.feedback || '';
       feedback.hidden = snapshot.won || !feedback.textContent;
+      if (snapshot.won && activeTool) closeTools();
       if (started) { $('#setup-screen').hidden = true; $('#game-screen').hidden = false; }
     },
     dispose() {
       disposed = true; result.dispose();
+      compact.removeEventListener('change', onCompactChange);
+      root.removeEventListener('keydown', toolsEscape);
       if (scheduledFrame) cancelAnimationFrame(scheduledFrame);
       for (const dialog of [settings, restart, help]) if (dialog.open) dialog.close();
-      root.innerHTML = ''; root.classList.remove('aritos-player'); delete root.dataset.theme; delete root.dataset.control;
+      root.innerHTML = ''; root.classList.remove('aritos-player'); delete root.dataset.theme; delete root.dataset.control; delete root.dataset.screen; delete root.dataset.compact; delete root.dataset.model; delete root.dataset.motion;
     },
   };
 }

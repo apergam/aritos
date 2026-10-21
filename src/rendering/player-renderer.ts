@@ -33,6 +33,26 @@ export function fixedCameraPosition(distance: number): Readonly<{ x: number; y: 
   return Object.freeze({ x: 0, y: distance * Math.sin(elevation), z: distance * Math.cos(elevation) });
 }
 
+/** Fit the complete acrylic shell, including its depth, rather than empty scenery.
+ * The fixed elevation is unchanged; resizing never changes physical orientation.
+ */
+export function fitToyCameraDistance(width: number, height: number, tank = TOY_PHYSICS.tank, fov = 37): number {
+  if (width <= 0 || height <= 0) return 21.5;
+  const elevation = THREE.MathUtils.degToRad(0.7);
+  const tangent = Math.tan(THREE.MathUtils.degToRad(fov) / 2);
+  // Four percent breathing room on each edge includes corners and reflections.
+  const vertical = tangent * .92, horizontal = vertical * width / height;
+  let distance = 0;
+  for (const x of [-tank.x - .29, tank.x + .29])
+    for (const y of [-tank.y - .31, tank.y + .31])
+      for (const z of [-tank.z - .24, tank.z + .24]) {
+        const depth = y * Math.sin(elevation) + z * Math.cos(elevation);
+        const up = y * Math.cos(elevation) - z * Math.sin(elevation);
+        distance = Math.max(distance, depth + Math.abs(x) / horizontal, depth + Math.abs(up) / vertical);
+      }
+  return distance;
+}
+
 type LivePulse = { side: PumpSide; started: number; seed: number };
 
 /**
@@ -189,10 +209,7 @@ export class PlayerRenderer {
     if (!width || !height) return;
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
-    const fov = THREE.MathUtils.degToRad(this.camera.fov);
-    const vertical = 14.8 / (2 * Math.tan(fov / 2));
-    const horizontal = (2 * this.layout.tank.x + 1.7) / (2 * Math.tan(fov / 2) * this.camera.aspect);
-    const distance = Math.max(21.5, vertical, horizontal);
+    const distance = fitToyCameraDistance(width, height, this.layout.tank, this.camera.fov);
     const position = fixedCameraPosition(distance);
     this.camera.position.set(position.x, position.y, position.z);
     this.camera.lookAt(0, 0, 0);

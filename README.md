@@ -85,3 +85,8 @@ Ver `docs/POC_REPORT.md` y `tests/physics.test.ts`. La suite incluye la caída d
 Open `/lab.html` and use **Experimento** to compare the historic width-9 floor layout with widths 8/7, twenty rings, raised supported pegs, variable pressure, two mascot assists and a bounded villain encounter. Each selection restarts its isolated candidate. **Preparar 2 aros · Guardar** gives a short physical drop fixture for trying the helper; wait until one ring collects, then request an assist. Lab audio is opt-in and respects the saved global/music preferences.
 
 [Laboratory comparison](docs/validation/lab-experiments.md): build2005c319, 130 passing tests at that checkpoint. The later normal-game selection and its validation are tracked in [selected-toy integration evidence](docs/validation/selected-toy-integration.md). No paid device service or deployment is needed.
+
+
+## Interfaz móvil — 21 de octubre
+
+Candidato local **019e6188**: juguete ampliado al alto disponible, bombeo siempre visible y paneles desplegables de inclinación/mascota, con inicio compacto y previews de los temas. **160 pruebas**, TypeScript y build superados; diez tamaños de navegador revisados. [Evidencia y límites](docs/validation/mobile-interface.md). Falta la revisión del usuario en su Pixel; la emulación no acredita sensores, multitáctil físico ni FPS del teléfono.

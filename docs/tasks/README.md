@@ -58,3 +58,12 @@ T17/T19 are also available; the user gave positive feedback on the direction. Ex
 ## October21 — automatic linked villain selected
 
 T23 now includes the explicitly requested automatic normal-game encounter with1–5 rings remaining and a linked pair. The earlier manual-only notes are historical. The new schedule and physical chain are tracked in [current validation](../validation/automatic-linked-villain.md); no chain bonus or unlimited respawning is included.
+
+
+## Mobile refinement — October21
+
+The user supplied Pixel screenshots and selected an implementation pass to maximize usable mobile screen space.
+
+| ID | Task | Dependencies | Status | Owner | Evidence / next decision |
+| --- | --- | --- | --- | --- | --- |
+| T24 | [Redesign the mobile interface](T24-mobile-interface.md) | T07, T08, T11; preserve T17/T19/T22/T23 | review | Parent | Build 019e6188, 160 tests, ten viewport checks; [candidate/evidence](../validation/mobile-interface.md); Pixel user review remains pending |

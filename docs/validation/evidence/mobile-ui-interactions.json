@@ -1,0 +1,66 @@
+{
+  "build": "019e6188",
+  "victories": [
+    {
+      "action": {
+        "bottom": 328.97265625,
+        "height": 44,
+        "left": 40,
+        "right": 280,
+        "top": 284.97265625,
+        "width": 240,
+        "x": 40,
+        "y": 284.97265625
+      },
+      "count": "12 / 12",
+      "toolsDisabled": true,
+      "viewport": [
+        320,
+        568
+      ]
+    },
+    {
+      "action": {
+        "bottom": 230.97265625,
+        "height": 44,
+        "left": 287,
+        "right": 557,
+        "top": 186.97265625,
+        "width": 270,
+        "x": 287,
+        "y": 186.97265625
+      },
+      "count": "12 / 12",
+      "toolsDisabled": true,
+      "viewport": [
+        844,
+        390
+      ]
+    }
+  ],
+  "normalFlow": {
+    "physicalAssist": "0/12 -> 1/12 through real base contact",
+    "afterRotation": {
+      "count": "1 / 12",
+      "roll": 25,
+      "pitch": -35
+    },
+    "afterRestartCancel": {
+      "count": "1 / 12",
+      "roll": 25,
+      "pitch": -35,
+      "paused": false
+    },
+    "escapeFocus": "mascots-open",
+    "settingsControlsRoute": "tilt panel visible, sensor button focused",
+    "shortPanel": {
+      "viewport": [
+        568,
+        320
+      ],
+      "scrollTop": 123.5,
+      "closeHit": true
+    }
+  },
+  "limits": "Desktop browser viewport checks; no physical sensor, independent-finger or sustained Pixel FPS acceptance."
+}

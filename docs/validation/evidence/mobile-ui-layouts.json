@@ -1,0 +1,1340 @@
+{
+  "build": "019e6188",
+  "browser": {
+    "name": "Codex In-app Browser",
+    "version": "not exposed by DOM inspector",
+    "buildScript": "./app.js?v=019e6188"
+  },
+  "cases": [
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 456,
+            "height": 364,
+            "left": 8,
+            "right": 312,
+            "top": 92,
+            "width": 304,
+            "x": 8,
+            "y": 92
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 560,
+            "height": 104,
+            "left": 8,
+            "right": 312,
+            "top": 456,
+            "width": 304,
+            "x": 8,
+            "y": 456
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 534,
+            "height": 72,
+            "left": 15,
+            "right": 85,
+            "top": 462,
+            "width": 70,
+            "x": 15,
+            "y": 462
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 534,
+            "height": 72,
+            "left": 235,
+            "right": 305,
+            "top": 462,
+            "width": 70,
+            "x": 235,
+            "y": 462
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 526,
+            "height": 56,
+            "left": 105.6875,
+            "right": 155.1640625,
+            "top": 470,
+            "width": 49.4765625,
+            "x": 105.6875,
+            "y": 470
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 526,
+            "height": 56,
+            "left": 161.1640625,
+            "right": 214.3046875,
+            "top": 470,
+            "width": 53.140625,
+            "x": 161.1640625,
+            "y": 470
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 264,
+            "right": 308,
+            "top": 2,
+            "width": 44,
+            "x": 264,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 92,
+            "height": 44,
+            "left": 240.6015625,
+            "right": 306,
+            "top": 48,
+            "width": 65.3984375,
+            "x": 240.6015625,
+            "y": 48
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        320,
+        568
+      ],
+      "viewport": [
+        320,
+        568
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 528,
+            "height": 436,
+            "left": 8,
+            "right": 352,
+            "top": 92,
+            "width": 344,
+            "x": 8,
+            "y": 92
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 632,
+            "height": 104,
+            "left": 8,
+            "right": 352,
+            "top": 528,
+            "width": 344,
+            "x": 8,
+            "y": 528
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 606,
+            "height": 72,
+            "left": 15,
+            "right": 85,
+            "top": 534,
+            "width": 70,
+            "x": 15,
+            "y": 534
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 606,
+            "height": 72,
+            "left": 275,
+            "right": 345,
+            "top": 534,
+            "width": 70,
+            "x": 275,
+            "y": 534
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 598,
+            "height": 56,
+            "left": 125.6875,
+            "right": 175.1640625,
+            "top": 542,
+            "width": 49.4765625,
+            "x": 125.6875,
+            "y": 542
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 598,
+            "height": 56,
+            "left": 181.1640625,
+            "right": 234.3046875,
+            "top": 542,
+            "width": 53.140625,
+            "x": 181.1640625,
+            "y": 542
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 304,
+            "right": 348,
+            "top": 2,
+            "width": 44,
+            "x": 304,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 92,
+            "height": 44,
+            "left": 280.6015625,
+            "right": 346,
+            "top": 48,
+            "width": 65.3984375,
+            "x": 280.6015625,
+            "y": 48
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        360,
+        640
+      ],
+      "viewport": [
+        360,
+        640
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 598,
+            "height": 506,
+            "left": 8,
+            "right": 385,
+            "top": 92,
+            "width": 377,
+            "x": 8,
+            "y": 92
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 702,
+            "height": 104,
+            "left": 8,
+            "right": 385,
+            "top": 598,
+            "width": 377,
+            "x": 8,
+            "y": 598
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 676,
+            "height": 72,
+            "left": 20,
+            "right": 96,
+            "top": 604,
+            "width": 76,
+            "x": 20,
+            "y": 604
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 676,
+            "height": 72,
+            "left": 297,
+            "right": 373,
+            "top": 604,
+            "width": 76,
+            "x": 297,
+            "y": 604
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 668,
+            "height": 56,
+            "left": 139.9296875,
+            "right": 191.9296875,
+            "top": 612,
+            "width": 52,
+            "x": 139.9296875,
+            "y": 612
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 668,
+            "height": 56,
+            "left": 197.9296875,
+            "right": 253.0703125,
+            "top": 612,
+            "width": 55.140625,
+            "x": 197.9296875,
+            "y": 612
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 337,
+            "right": 381,
+            "top": 2,
+            "width": 44,
+            "x": 337,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 92,
+            "height": 44,
+            "left": 313.6015625,
+            "right": 379,
+            "top": 48,
+            "width": 65.3984375,
+            "x": 313.6015625,
+            "y": 48
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        393,
+        710
+      ],
+      "viewport": [
+        393,
+        710
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 788,
+            "height": 696,
+            "left": 8,
+            "right": 422,
+            "top": 92,
+            "width": 414,
+            "x": 8,
+            "y": 92
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 892,
+            "height": 104,
+            "left": 8,
+            "right": 422,
+            "top": 788,
+            "width": 414,
+            "x": 8,
+            "y": 788
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 866,
+            "height": 72,
+            "left": 20,
+            "right": 96,
+            "top": 794,
+            "width": 76,
+            "x": 20,
+            "y": 794
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 866,
+            "height": 72,
+            "left": 334,
+            "right": 410,
+            "top": 794,
+            "width": 76,
+            "x": 334,
+            "y": 794
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 858,
+            "height": 56,
+            "left": 158.4296875,
+            "right": 210.4296875,
+            "top": 802,
+            "width": 52,
+            "x": 158.4296875,
+            "y": 802
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 858,
+            "height": 56,
+            "left": 216.4296875,
+            "right": 271.5703125,
+            "top": 802,
+            "width": 55.140625,
+            "x": 216.4296875,
+            "y": 802
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 374,
+            "right": 418,
+            "top": 2,
+            "width": 44,
+            "x": 374,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 92,
+            "height": 44,
+            "left": 350.6015625,
+            "right": 416,
+            "top": 48,
+            "width": 65.3984375,
+            "x": 350.6015625,
+            "y": 48
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        430,
+        900
+      ],
+      "viewport": [
+        430,
+        900
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 234,
+            "height": 186,
+            "left": 8,
+            "right": 560,
+            "top": 48,
+            "width": 552,
+            "x": 8,
+            "y": 48
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 312,
+            "height": 78,
+            "left": 8,
+            "right": 560,
+            "top": 234,
+            "width": 552,
+            "x": 8,
+            "y": 234
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 301,
+            "height": 62,
+            "left": 24,
+            "right": 96,
+            "top": 239,
+            "width": 72,
+            "x": 24,
+            "y": 239
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 301,
+            "height": 62,
+            "left": 472,
+            "right": 544,
+            "top": 239,
+            "width": 72,
+            "x": 472,
+            "y": 239
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 298,
+            "height": 56,
+            "left": 227.4296875,
+            "right": 279.4296875,
+            "top": 242,
+            "width": 52,
+            "x": 227.4296875,
+            "y": 242
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 298,
+            "height": 56,
+            "left": 285.4296875,
+            "right": 340.5703125,
+            "top": 242,
+            "width": 55.140625,
+            "x": 285.4296875,
+            "y": 242
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 512,
+            "right": 556,
+            "top": 2,
+            "width": 44,
+            "x": 512,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 434.6015625,
+            "right": 500,
+            "top": 2,
+            "width": 65.3984375,
+            "x": 434.6015625,
+            "y": 2
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        568,
+        320
+      ],
+      "viewport": [
+        568,
+        320
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 289,
+            "height": 241,
+            "left": 8,
+            "right": 659,
+            "top": 48,
+            "width": 651,
+            "x": 8,
+            "y": 48
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 367,
+            "height": 78,
+            "left": 8,
+            "right": 659,
+            "top": 289,
+            "width": 651,
+            "x": 8,
+            "y": 289
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 356,
+            "height": 62,
+            "left": 24,
+            "right": 96,
+            "top": 294,
+            "width": 72,
+            "x": 24,
+            "y": 294
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 356,
+            "height": 62,
+            "left": 571,
+            "right": 643,
+            "top": 294,
+            "width": 72,
+            "x": 571,
+            "y": 294
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 353,
+            "height": 56,
+            "left": 276.9296875,
+            "right": 328.9296875,
+            "top": 297,
+            "width": 52,
+            "x": 276.9296875,
+            "y": 297
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 353,
+            "height": 56,
+            "left": 334.9296875,
+            "right": 390.0703125,
+            "top": 297,
+            "width": 55.140625,
+            "x": 334.9296875,
+            "y": 297
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 611,
+            "right": 655,
+            "top": 2,
+            "width": 44,
+            "x": 611,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 533.6015625,
+            "right": 599,
+            "top": 2,
+            "width": 65.3984375,
+            "x": 533.6015625,
+            "y": 2
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        667,
+        375
+      ],
+      "viewport": [
+        667,
+        375
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 304,
+            "height": 256,
+            "left": 8,
+            "right": 836,
+            "top": 48,
+            "width": 828,
+            "x": 8,
+            "y": 48
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 382,
+            "height": 78,
+            "left": 8,
+            "right": 836,
+            "top": 304,
+            "width": 828,
+            "x": 8,
+            "y": 304
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 371,
+            "height": 62,
+            "left": 24,
+            "right": 96,
+            "top": 309,
+            "width": 72,
+            "x": 24,
+            "y": 309
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 371,
+            "height": 62,
+            "left": 748,
+            "right": 820,
+            "top": 309,
+            "width": 72,
+            "x": 748,
+            "y": 309
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 368,
+            "height": 56,
+            "left": 365.4296875,
+            "right": 417.4296875,
+            "top": 312,
+            "width": 52,
+            "x": 365.4296875,
+            "y": 312
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 368,
+            "height": 56,
+            "left": 423.4296875,
+            "right": 478.5703125,
+            "top": 312,
+            "width": 55.140625,
+            "x": 423.4296875,
+            "y": 312
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 788,
+            "right": 832,
+            "top": 2,
+            "width": 44,
+            "x": 788,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 590.6015625,
+            "right": 656,
+            "top": 2,
+            "width": 65.3984375,
+            "x": 590.6015625,
+            "y": 2
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        844,
+        390
+      ],
+      "viewport": [
+        844,
+        390
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 912,
+            "height": 820,
+            "left": 8,
+            "right": 760,
+            "top": 92,
+            "width": 752,
+            "x": 8,
+            "y": 92
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 1016,
+            "height": 104,
+            "left": 8,
+            "right": 760,
+            "top": 912,
+            "width": 752,
+            "x": 8,
+            "y": 912
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 990,
+            "height": 72,
+            "left": 20,
+            "right": 96,
+            "top": 918,
+            "width": 76,
+            "x": 20,
+            "y": 918
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 990,
+            "height": 72,
+            "left": 672,
+            "right": 748,
+            "top": 918,
+            "width": 76,
+            "x": 672,
+            "y": 918
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 982,
+            "height": 56,
+            "left": 327.4296875,
+            "right": 379.4296875,
+            "top": 926,
+            "width": 52,
+            "x": 327.4296875,
+            "y": 926
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 982,
+            "height": 56,
+            "left": 385.4296875,
+            "right": 440.5703125,
+            "top": 926,
+            "width": 55.140625,
+            "x": 385.4296875,
+            "y": 926
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 712,
+            "right": 756,
+            "top": 2,
+            "width": 44,
+            "x": 712,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 92,
+            "height": 44,
+            "left": 688.6015625,
+            "right": 754,
+            "top": 48,
+            "width": 65.3984375,
+            "x": 688.6015625,
+            "y": 48
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        768,
+        1024
+      ],
+      "viewport": [
+        768,
+        1024
+      ]
+    },
+    {
+      "compact": "true",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 682,
+            "height": 634,
+            "left": 8,
+            "right": 1016,
+            "top": 48,
+            "width": 1008,
+            "x": 8,
+            "y": 48
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 760,
+            "height": 78,
+            "left": 8,
+            "right": 1016,
+            "top": 682,
+            "width": 1008,
+            "x": 8,
+            "y": 682
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 749,
+            "height": 62,
+            "left": 24,
+            "right": 96,
+            "top": 687,
+            "width": 72,
+            "x": 24,
+            "y": 687
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 749,
+            "height": 62,
+            "left": 928,
+            "right": 1000,
+            "top": 687,
+            "width": 72,
+            "x": 928,
+            "y": 687
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 746,
+            "height": 56,
+            "left": 455.4296875,
+            "right": 507.4296875,
+            "top": 690,
+            "width": 52,
+            "x": 455.4296875,
+            "y": 690
+          },
+          "selector": "#tilt-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 746,
+            "height": 56,
+            "left": 513.4296875,
+            "right": 568.5703125,
+            "top": 690,
+            "width": 55.140625,
+            "x": 513.4296875,
+            "y": 690
+          },
+          "selector": "#mascots-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 968,
+            "right": 1012,
+            "top": 2,
+            "width": 44,
+            "x": 968,
+            "y": 2
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 46,
+            "height": 44,
+            "left": 770.6015625,
+            "right": 836,
+            "top": 2,
+            "width": 65.3984375,
+            "x": 770.6015625,
+            "y": 2
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        1024,
+        768
+      ],
+      "viewport": [
+        1024,
+        768
+      ]
+    },
+    {
+      "compact": "false",
+      "elements": [
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 531.9453125,
+            "height": 387,
+            "left": 260,
+            "right": 1020,
+            "top": 144.9453125,
+            "width": 760,
+            "x": 260,
+            "y": 144.9453125
+          },
+          "selector": "#toy-stage",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 634.9453125,
+            "height": 104,
+            "left": 395,
+            "right": 885,
+            "top": 530.9453125,
+            "width": 490,
+            "x": 395,
+            "y": 530.9453125
+          },
+          "selector": ".pump-deck",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 617.9453125,
+            "height": 72,
+            "left": 416,
+            "right": 494,
+            "top": 545.9453125,
+            "width": 78,
+            "x": 416,
+            "y": 545.9453125
+          },
+          "selector": "#pump-left",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 617.9453125,
+            "height": 72,
+            "left": 786,
+            "right": 864,
+            "top": 545.9453125,
+            "width": 78,
+            "x": 786,
+            "y": 545.9453125
+          },
+          "selector": "#pump-right",
+          "visible": true
+        },
+        {
+          "hit": null,
+          "rect": {
+            "bottom": 0,
+            "height": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "selector": "#tilt-open",
+          "visible": false
+        },
+        {
+          "hit": null,
+          "rect": {
+            "bottom": 0,
+            "height": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "selector": "#mascots-open",
+          "visible": false
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 57,
+            "height": 44,
+            "left": 1080,
+            "right": 1124,
+            "top": 13,
+            "width": 44,
+            "x": 1080,
+            "y": 13
+          },
+          "selector": "#settings-open",
+          "visible": true
+        },
+        {
+          "hit": true,
+          "rect": {
+            "bottom": 129.46875,
+            "height": 44,
+            "left": 946.1015625,
+            "right": 1018,
+            "top": 85.46875,
+            "width": 71.8984375,
+            "x": 946.1015625,
+            "y": 85.46875
+          },
+          "selector": "#game-help-open",
+          "visible": true
+        }
+      ],
+      "page": [
+        1280,
+        1218
+      ],
+      "viewport": [
+        1280,
+        900
+      ]
+    }
+  ]
+}
