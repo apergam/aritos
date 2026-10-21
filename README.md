@@ -4,7 +4,7 @@ Juego de aros al agua en el navegador, con TypeScript, Rapier 3D 0.19.3 y Three.
 
 ## Estado actual
 
-Build **2005c319**: **130 pruebas superadas** (evidencia de esa integración). La selección posterior del usuario incorpora al jugador normal el depósito de ancho 8 con estacas elevadas, las dos ayudas manuales de la mascota y un encuentro manual con villano por ronda. La verificación integrada de esta selección está pendiente y se registrará en [la evidencia de integración](docs/validation/selected-toy-integration.md). El laboratorio conserva la comparación histórica de ancho 9 con bases en el piso, además de los candidatos optativos.
+Build **2005c319**: **130 pruebas superadas** (evidencia de esa integración). La selección posterior del usuario incorpora al jugador normal el depósito de ancho 8 con estacas elevadas, las dos ayudas manuales de la mascota y un encuentro manual con villano por ronda. La selección quedó integrada con 145 pruebas en [la evidencia de integración](docs/validation/selected-toy-integration.md). El arreglo del cierre de ronda del 21 de octubre pasa **147 pruebas**, build **08cfeebd**: [celebración y Nueva partida](docs/validation/round-completion.md). El laboratorio conserva la comparación histórica de ancho 9 con bases en el piso, además de los candidatos optativos.
 
 La sensación base fue aceptada el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. La selección de geometría del 20 de octubre cambia el ancho normal a 8 y mueve las estacas a soportes elevados; conserva doce aros, fondo 1.8, fuerza 75 y resistencia 0.50. El ancho 9 con bases en el piso sigue siendo la referencia histórica del POC.
 
@@ -82,4 +82,4 @@ Ver `docs/POC_REPORT.md` y `tests/physics.test.ts`. La suite incluye la caída d
 
 Open `/lab.html` and use **Experimento** to compare the historic width-9 floor layout with widths 8/7, twenty rings, raised supported pegs, variable pressure, two mascot assists and a bounded villain encounter. Each selection restarts its isolated candidate. **Preparar 2 aros · Guardar** gives a short physical drop fixture for trying the helper; wait until one ring collects, then request an assist. Lab audio is opt-in and respects the saved global/music preferences.
 
-[Laboratory comparison](docs/validation/lab-experiments.md): build2005c319, 130 passing tests at that checkpoint. The later normal-game selection and its pending validation are tracked in [selected-toy integration evidence](docs/validation/selected-toy-integration.md). No paid device service or deployment is needed.
+[Laboratory comparison](docs/validation/lab-experiments.md): build2005c319, 130 passing tests at that checkpoint. The later normal-game selection and its validation are tracked in [selected-toy integration evidence](docs/validation/selected-toy-integration.md). No paid device service or deployment is needed.

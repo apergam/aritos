@@ -91,6 +91,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   onPause: (reason, paused) => { pause(reason, paused); if (reason === 'menu' && paused) stickers?.close(); },
   onRecenter: center,
   onRestart: () => freshRound(),
+  onNewGame: () => { pause('manual', false); freshRound(); void audio.activate(); void music.activate(); },
   onDecorate: () => { if (started) stickers?.open(); },
   onPreviewSound: () => document.hidden || pageSuspended ? Promise.resolve(false) : audio.previewCollectionSound(),
  });
@@ -106,9 +107,9 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  const smoothGravity = motion.gravity.clone();
  controls = new PocControls({
   model: () => session.snapshot().model,
-  paused: () => !started || session.isPaused || document.hidden,
+  paused: () => !started || session.isPaused || session.snapshot().won || document.hidden,
   pump: side => {
-   if (!started || document.hidden || session.isPaused) return;
+   if (!started || document.hidden || session.isPaused || session.snapshot().won) return;
    void audio.activate(); void music.activate(); session.dispatch({ type: 'pump', side });
   },
   togglePause: () => { if (started) pause('manual', !session.pauseReasons.includes('manual')); },
@@ -151,6 +152,9 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
    if (steps === 12) accumulator = 0;
   } else accumulator = 0;
   const snapshot = session.snapshot();
+  // Recover visual feedback from authoritative state if an event was missed; the
+  // celebration controller still owns once-per-round deduplication and expiry.
+  if (snapshot.won) celebration.handle({ type: 'victory', roundId: snapshot.roundId, mode: snapshot.mode });
   mascots?.update();
   const mascotState = mascots?.state;
   mascotActor.hidden = !mascotState?.actor;

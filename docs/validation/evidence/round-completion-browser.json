@@ -1,0 +1,97 @@
+{
+  "build": "08cfeebd",
+  "cases": [
+    {
+      "model": "single-button",
+      "theme": "ocean",
+      "mode": "classic",
+      "art": "./assets/stickers/ocean-octopus-3ee08e881c.png",
+      "celebration": "active",
+      "count": "12 / 12",
+      "detail": "Ensartaste los 12 aros. ¡Bien jugado!",
+      "title": "¡Lo lograste!"
+    },
+    {
+      "model": "two-button",
+      "theme": "capybaras",
+      "mode": "collect",
+      "art": "./assets/stickers/capybara-capy-d01bdb98ab.png",
+      "celebration": "active",
+      "count": "12 / 12",
+      "detail": "Guardaste los 12 aros. ¡Bien jugado!",
+      "title": "¡Lo lograste!"
+    },
+    {
+      "model": "two-button",
+      "theme": "space",
+      "mode": "collect",
+      "art": "./assets/stickers/space-rocket-e7184c9a22.png",
+      "celebration": "active",
+      "count": "12 / 12",
+      "detail": "Guardaste los 12 aros. ¡Bien jugado!",
+      "title": "¡Lo lograste!"
+    }
+  ],
+  "layouts": [
+    {
+      "button": {
+        "bottom": 299.91796875,
+        "height": 44,
+        "left": 48,
+        "right": 312,
+        "top": 255.91796875,
+        "width": 264,
+        "x": 48,
+        "y": 255.91796875
+      },
+      "buttonFits": true,
+      "celebration": "idle",
+      "overflow": false,
+      "panel": {
+        "bottom": 310.91796875,
+        "height": 131.9453125,
+        "left": 33,
+        "right": 327,
+        "top": 178.97265625,
+        "width": 294,
+        "x": 33,
+        "y": 178.97265625
+      },
+      "resultVisible": true,
+      "viewport": [
+        360,
+        640
+      ]
+    },
+    {
+      "button": {
+        "bottom": 253.41796875,
+        "height": 44,
+        "left": 155.3828125,
+        "right": 425.3828125,
+        "top": 209.41796875,
+        "width": 270,
+        "x": 155.3828125,
+        "y": 209.41796875
+      },
+      "buttonFits": true,
+      "celebration": "idle",
+      "overflow": false,
+      "panel": {
+        "bottom": 264.41796875,
+        "height": 131.9453125,
+        "left": 140.3828125,
+        "right": 440.3828125,
+        "top": 132.47265625,
+        "width": 300,
+        "x": 140.3828125,
+        "y": 132.47265625
+      },
+      "resultVisible": true,
+      "viewport": [
+        844,
+        390
+      ]
+    }
+  ]
+}

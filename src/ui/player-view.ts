@@ -1,3 +1,4 @@
+import { mountRoundResult } from './round-result';
 import type { MascotState } from '../game/mascots/player-mascots';
 import type { RingAssistKind } from '../lab/experiments/assist';
 import type { GameMode } from '../physics';
@@ -22,6 +23,7 @@ export type PlayerUIHandlers = Readonly<{
   onPause: (reason: PauseReason, paused: boolean) => void;
   onRecenter: () => void;
   onRestart: () => void;
+  onNewGame: () => void;
   onDecorate: () => void;
   onPreviewSound: () => Promise<boolean>;
 }>;
@@ -140,6 +142,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   const settings = $('#settings-dialog') as HTMLDialogElement;
   const restart = $('#restart-dialog') as HTMLDialogElement;
   const help = $('#help-dialog') as HTMLDialogElement;
+  const result = mountRoundResult($('#toy-stage'), handlers.onNewGame);
   const prefsFromChoices = () => ({ ...currentPreferences, model: draftModel });
   const setPreference = (changes: Partial<PlayerPreferences>) => {
     currentPreferences = { ...currentPreferences, ...changes };
@@ -185,6 +188,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     }
     $('#setup-screen').hidden = true; $('#game-screen').hidden = false;
     handlers.onStart(prefsFromChoices(), mode);
+    root.scrollIntoView({ block: 'start' });
     $('#pump-left').hidden = draftModel !== 'two-button'; $('#pump-right').hidden = draftModel !== 'two-button'; $('#pump-center').hidden = draftModel !== 'single-button';
   });
   $('#settings-open').addEventListener('click', () => {
@@ -238,6 +242,8 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
     refs,
     update(snapshot: SessionSnapshot, preferences: PlayerPreferences, nextState: PlayerUIState = {}) {
       latestSnapshot = snapshot;
+      result.update(snapshot, preferences.theme);
+      for (const button of Object.values(refs.controls)) button.disabled = snapshot.won;
       if (preferences.model !== lastPreferenceSync.model || preferences.theme !== lastPreferenceSync.theme || preferences.sound !== lastPreferenceSync.sound || preferences.music !== lastPreferenceSync.music || preferences.collectionSound !== lastPreferenceSync.collectionSound || preferences.control !== lastPreferenceSync.control) {
         if (!modelDraftDirty && preferences.model !== lastPreferenceSync.model) draftModel = preferences.model;
         currentPreferences = preferences;
@@ -259,11 +265,11 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
       refs.motion.button.setAttribute('aria-pressed', String(currentPreferences.control === 'motion'));
       refs.motion.button.textContent = nextState.motionState === 'usable' ? 'Movimiento activo ✓' : nextState.motionState === 'waiting' ? 'Esperando movimiento…' : currentPreferences.control === 'motion' ? 'Reintentar movimiento' : 'Usar movimiento';
       const feedback = $('#feedback-toast'); feedback.textContent = nextState.victory || nextState.feedback || '';
-      feedback.hidden = !feedback.textContent;
+      feedback.hidden = snapshot.won || !feedback.textContent;
       if (started) { $('#setup-screen').hidden = true; $('#game-screen').hidden = false; }
     },
     dispose() {
-      disposed = true;
+      disposed = true; result.dispose();
       if (scheduledFrame) cancelAnimationFrame(scheduledFrame);
       for (const dialog of [settings, restart, help]) if (dialog.open) dialog.close();
       root.innerHTML = ''; root.classList.remove('aritos-player'); delete root.dataset.theme; delete root.dataset.control;
