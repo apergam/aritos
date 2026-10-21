@@ -53,3 +53,8 @@ The original three laboratory experiments are implemented. After user review, T2
 POCs T13/T18/T20/T21/T22/T23 are integrated in laboratory build **2005c319**, with [comparison and evidence](../validation/lab-experiments.md). The user has since selected width8, raised pegs, both manual mascot assists, and one manual villain encounter per round for normal play; the selected integration validation is [recorded](../validation/selected-toy-integration.md). T18's twenty-ring count and T21's variable-pressure controls remain deferred from normal play. Keep production count at12 and strength at75; do not add pressure sliders. The width9 floor arrangement remains the historical comparison baseline.
 
 T17/T19 are also available; the user gave positive feedback on the direction. Exact finish/reward cadence and the existing acoustic review remain open. Actual Android/iOS pressure/sensors, independent fingers and sustained mobile FPS remain not run until free hardware is available. No paid service, deployment or push is part of this iteration.
+
+
+## October21 — automatic linked villain selected
+
+T23 now includes the explicitly requested automatic normal-game encounter with1–5 rings remaining and a linked pair. The earlier manual-only notes are historical. The new schedule and physical chain are tracked in [current validation](../validation/automatic-linked-villain.md); no chain bonus or unlimited respawning is included.

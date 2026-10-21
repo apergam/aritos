@@ -1,3 +1,4 @@
+import { VillainSchedule } from './villain-schedule';
 import type { GameSession } from '../session';
 import { RingAssistController, type RingAssistKind } from '../../lab/experiments/assist';
 import { VillainEncounterController } from '../../lab/experiments/enemies';
@@ -8,22 +9,27 @@ export type MascotState = Readonly<{
  actor: Readonly<{ villain: boolean; caption: string; position: Readonly<{x:number;y:number;z:number}> }> | null;
 }>;
 type Cue = Pick<VillainCue, 'unlock'|'play'|'stop'|'dispose'>;
+export type PlayerMascotOptions = Readonly<{automaticVillain?: boolean; random?: ()=>number}>;
 
-/** Coordinates the accepted manual helpers and challenge, using active simulation time. */
+/** Coordinates manual helpers and the bounded late-round surprise using active simulation time. */
 export class PlayerMascots {
  private helper: RingAssistController;
  private enemy: VillainEncounterController;
  private readonly cue: Cue;
  private pending = false;
+ private automaticPending = false;
+ private readonly schedule?: VillainSchedule;
  private enemyUntil = 0;
  private enemyPosition = {x:0,y:4.5,z:0};
  private message = 'Una mano amiga o una travesura: tú eliges.';
  private audioEnabled = false;
  private disposed = false;
  private roundId: number;
- constructor(private readonly session: GameSession, private readonly duck: (active:boolean)=>void, cue?: Cue) {
+ constructor(private readonly session: GameSession, private readonly duck: (active:boolean)=>void, cue?: Cue, options: PlayerMascotOptions = {}) {
   this.helper = new RingAssistController(session); this.enemy = new VillainEncounterController(session);
   this.cue = cue ?? new VillainCue(); this.roundId = session.snapshot().roundId;
+  if(options.automaticVillain)this.schedule=new VillainSchedule(options.random);
+  this.message=this.initialMessage();
  }
  get extraRingIds(): ReadonlySet<number> { return this.enemy.extraRingIds; }
  get state(): MascotState {
@@ -57,10 +63,18 @@ export class PlayerMascots {
   if (this.disposed) return;
   this.reconcile();
   this.helper.beforeStep();
+  const snapshot=this.session.snapshot();
+  if(this.schedule?.ready(snapshot,this.helper.state.active||this.pending,this.extraRingIds.size>0)) {
+   const request=this.enemy.requestLinkedPair();
+   this.pending=request.accepted;this.automaticPending=request.accepted;
+   if(!request.accepted)this.schedule.defer(snapshot.activeSeconds);
+  }
   const result = this.enemy.beforeStep();
   if (!result) return;
-  this.pending = false;
+  const automatic=this.automaticPending;
+  this.pending = false;this.automaticPending=false;
   if (!result.ok) {
+   if(automatic){this.schedule?.defer(snapshot.activeSeconds);return;}
    this.message = result.reason==='no-safe-space' ? 'No hay una caída segura. Centra el juguete, despeja la parte alta y prueba otra vez.'
     : result.reason==='paused' ? 'La travesura se canceló al pausar.' : 'La traviesa ya no puede entrar en esta ronda.';
    return;
@@ -68,7 +82,7 @@ export class PlayerMascots {
   const ring = this.session.simulation.rings.find(r=>r.id===result.spawned[0]);
   if (ring) this.enemyPosition = {...ring.body.translation()};
   this.enemyUntil = this.session.snapshot().activeSeconds + 2.2;
-  this.message = `¡La traviesa añadió ${result.spawned.length===1?'un aro':'dos aros'}!`;
+  this.message = result.linked ? '¡La traviesa soltó dos aros encadenados!' : `¡La traviesa añadió ${result.spawned.length===1?'un aro':'dos aros'}!`;
   if (this.audioEnabled) { this.duck(true); void this.cue.play(); }
  }
  update(): void {
@@ -76,17 +90,20 @@ export class PlayerMascots {
   this.reconcile();
   if (this.session.isPaused || !this.audioEnabled || this.session.snapshot().activeSeconds>=this.enemyUntil) this.stopCue();
  }
+ /** Call during Jugar/pump gestures so automatic encounters can use an unlocked context. */
+ activateAudio(): void {if(this.audioEnabled&&!this.disposed)void this.cue.unlock();}
  setAudioEnabled(enabled: boolean): void { this.audioEnabled=enabled; if(!enabled)this.stopCue(); }
  setPaused(paused: boolean): void { if(paused){this.stopCue();this.beforeStep();} }
  /** Restore a carried body's dynamics before the world is reset. */
  reset(): void {
-  this.helper.dispose(); this.enemy.dispose(); this.stopCue(); this.pending=false; this.enemyUntil=0;
+  this.helper.dispose(); this.enemy.dispose(); this.stopCue(); this.pending=false;this.automaticPending=false; this.enemyUntil=0;this.schedule?.reset();
   if(this.disposed)return;
   this.helper=new RingAssistController(this.session); this.enemy=new VillainEncounterController(this.session);
   this.roundId=this.session.snapshot().roundId;
-  this.message='Una mano amiga o una travesura: tú eliges.';
+  this.message=this.initialMessage();
  }
  dispose(): void { if(this.disposed)return;this.disposed=true;this.helper.dispose();this.enemy.dispose();this.stopCue();this.cue.dispose(); }
+ private initialMessage(): string {return this.schedule ? 'Pide ayuda si la necesitas. La traviesa puede sorprenderte cuando falten entre 1 y 5 aros.' : 'Una mano amiga o una travesura: tú eliges.';}
  private stopCue(): void { this.cue.stop(); this.duck(false); }
  private reconcile(): void { if(!this.disposed && this.roundId!==this.session.snapshot().roundId)this.reset(); }
 }

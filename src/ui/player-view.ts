@@ -17,7 +17,6 @@ export type PlayerUIState = Readonly<{
 
 export type PlayerUIHandlers = Readonly<{
   onAssist: (kind: RingAssistKind) => void;
-  onVillain: (count: 1 | 2) => void;
   onStart: (preferences: PlayerPreferences, mode: GameMode) => void;
   onPreferenceChange: (changes: Partial<PlayerPreferences>) => void;
   onPause: (reason: PauseReason, paused: boolean) => void;
@@ -97,9 +96,9 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
           <button class="text-button small center-button" id="upright" type="button">◎ Centrar inclinación</button>
         </section>
         <section class="mascot-panel" aria-labelledby="mascot-title">
-          <div class="mascot-heading"><img src="./assets/stickers/ocean-octopus-3ee08e881c.png" alt=""><div><b id="mascot-title">Compañía bajo el agua</b><small>Pide ayuda o invita una travesura.</small></div></div>
-          <div class="mascot-actions"><fieldset><legend>Una mano amiga</legend><button type="button" data-assist="thread">Ensartar un aro</button><button type="button" data-assist="above">Soltar sobre estaca</button></fieldset><fieldset><legend>La traviesa · una vez por ronda</legend><button type="button" data-villain="1">Añadir 1 aro</button><button type="button" data-villain="2">Añadir 2 aros</button></fieldset></div>
-          <p class="mascot-status" id="mascot-status" role="status">Una mano amiga o una travesura: tú eliges.</p>
+          <div class="mascot-heading"><img src="./assets/stickers/ocean-octopus-3ee08e881c.png" alt=""><div><b id="mascot-title">Compañía bajo el agua</b><small>Pide ayuda y prepárate para una sorpresa.</small></div></div>
+          <div class="mascot-actions"><fieldset><legend>Una mano amiga</legend><button type="button" data-assist="thread">Ensartar un aro</button><button type="button" data-assist="above">Soltar sobre estaca</button></fieldset><fieldset><legend>La traviesa · sorpresa</legend><p id="villain-status">Cuando falten entre 1 y 5 aros, puede aparecer con dos encadenados. Una vez por ronda.</p></fieldset></div>
+          <p class="mascot-status" id="mascot-status" role="status">La traviesa puede sorprenderte al final de la ronda.</p>
         </section>
       </section>
       <dialog class="player-dialog" id="settings-dialog" aria-labelledby="settings-title">
@@ -179,7 +178,6 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   root.querySelectorAll<HTMLButtonElement>('[data-model]').forEach(button => button.addEventListener('click', () => chooseModel(button.dataset.model as ToyModelId)));
   root.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => button.addEventListener('click', () => setPreference({ theme: button.dataset.theme as ThemeId })));
   root.querySelectorAll<HTMLButtonElement>('[data-assist]').forEach(button => button.addEventListener('click', () => handlers.onAssist(button.dataset.assist as RingAssistKind)));
-  root.querySelectorAll<HTMLButtonElement>('[data-villain]').forEach(button => button.addEventListener('click', () => handlers.onVillain(Number(button.dataset.villain) as 1|2)));
   $('#start-game').addEventListener('click', () => {
     started = true; activeModel = draftModel; modelDraftDirty = false;
     if (currentPreferences.model !== draftModel) {
@@ -253,7 +251,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
       if (nextState.mascots) {
         const state = nextState.mascots, blocked = Boolean(nextState.paused || snapshot.won || state.busy);
         root.querySelectorAll<HTMLButtonElement>('[data-assist]').forEach(button => button.disabled = blocked);
-        root.querySelectorAll<HTMLButtonElement>('[data-villain]').forEach(button => button.disabled = blocked || state.enemyUsed || snapshot.scene !== 'free');
+        $('#villain-status').textContent = state.enemyUsed ? 'Ya hizo su travesura en esta ronda. ¡A completar el reto!' : 'Cuando falten entre 1 y 5 aros, puede aparecer con dos encadenados. Una vez por ronda.';
         const message = $('#mascot-status'); if (message.textContent !== state.message) message.textContent = state.message;
       }
       $('#count').textContent = `${snapshot.mode === 'collect' ? snapshot.collected : snapshot.rings.filter(r => r.threaded).length} / ${snapshot.total}`;

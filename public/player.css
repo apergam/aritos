@@ -270,3 +270,5 @@
  .round-result .primary-button { grid-area:action; min-height:44px; }
 }
 @media (prefers-reduced-motion:reduce) { .round-result__art { animation:none; } }
+
+.mascot-actions #villain-status { margin:0; font-size:11px; line-height:1.6; color:var(--muted); }

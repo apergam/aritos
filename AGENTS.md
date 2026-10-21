@@ -59,3 +59,6 @@ Normal integration is now recorded in `docs/validation/selected-toy-integration.
 
 
 October21 round-completion fix: build08cfeebd,147/147 tests, `docs/validation/round-completion.md`. `mountRoundResult` derives a persistent result and Nueva partida action from `snapshot.won`; transient celebration expiry must never remove the only completion/new-round UI. Reconcile visual celebration idempotently from won state, retain once-per-round effects, use actual dynamic targets, preserve stickers/preferences and reset mascots when starting again. Keep compact action fully visible and keyboard accessible. The earlier missing-celebration user report reproduced as four-second feedback expiry, not proven event loss.
+
+
+October21 automatic linked villain supersedes older manual-only restrictions: normal play uses a random remaining-count threshold1–5, then a1–3 active-second delay, one successful appearance per round, exactly two already-linked physical rings (max14). Collect counts active rings; classic counts unthreaded. No late spawn at0/win, helper overlap or paused time. Keep per-member external safety/atomicity, silent one-second unsafe retries, real collection that frees the partner, and no artificial joint. Historical lab +1/+2 remain manual/unlinked. `docs/validation/automatic-linked-villain.md`, build004a48ef,158/158 tests.

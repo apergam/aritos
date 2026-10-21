@@ -85,19 +85,18 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
  };
  view = mountPlayerUI(root, preferences, {
   onAssist: kind => { if (started) mascots?.requestAssist(kind); },
-  onVillain: count => { if (started) mascots?.requestVillain(count); },
-  onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); void audio.activate(); void music.activate(); },
+  onStart: (next, mode) => { save({ ...next, control: preferences.control }); freshRound(next.model, mode); mascots?.activateAudio(); void audio.activate(); void music.activate(); },
   onPreferenceChange: changes => save(changes),
   onPause: (reason, paused) => { pause(reason, paused); if (reason === 'menu' && paused) stickers?.close(); },
   onRecenter: center,
   onRestart: () => freshRound(),
-  onNewGame: () => { pause('manual', false); freshRound(); void audio.activate(); void music.activate(); },
+  onNewGame: () => { pause('manual', false); freshRound(); mascots?.activateAudio(); void audio.activate(); void music.activate(); },
   onDecorate: () => { if (started) stickers?.open(); },
   onPreviewSound: () => document.hidden || pageSuspended ? Promise.resolve(false) : audio.previewCollectionSound(),
  });
  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  renderer = new PlayerRenderer(view.refs.viewport, { model: preferences.model, theme: preferences.theme, quality: reduced ? 'reduced' : 'high', layout: PLAYER_TOY_LAYOUT });
- mascots = new PlayerMascots(session, active => music.setDucked(active));
+ mascots = new PlayerMascots(session, active => music.setDucked(active), undefined, {automaticVillain:true});
  const mascotActor = view.refs.viewport.querySelector<HTMLElement>('#player-mascot')!;
  stickers = createStickerFeature(view.refs.viewport, { catalog: DEFAULT_STICKERS, getSurface: () => renderer.toySurfaceBounds(), onEditingChange: editing => pause('decoration', editing), eligible: !options.labScene });
  celebration = createCelebration(view.refs.viewport, { theme: preferences.theme, roundId: 0, quality: reduced ? 'reduced' : 'high' });
@@ -110,7 +109,7 @@ export async function startPlayer(root: HTMLElement, options: { labScene?: Scene
   paused: () => !started || session.isPaused || session.snapshot().won || document.hidden,
   pump: side => {
    if (!started || document.hidden || session.isPaused || session.snapshot().won) return;
-   void audio.activate(); void music.activate(); session.dispatch({ type: 'pump', side });
+   mascots?.activateAudio(); void audio.activate(); void music.activate(); session.dispatch({ type: 'pump', side });
   },
   togglePause: () => { if (started) pause('manual', !session.pauseReasons.includes('manual')); },
   setManualTilt: manualTilt,

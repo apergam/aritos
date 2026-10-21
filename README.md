@@ -12,6 +12,8 @@ Las 16 pruebas originales preservan el setup aceptado. La primera integración d
 
 Los tres fondos se rehicieron como escenas ilustradas; el usuario aprobó océano/capibaras y solicitó el mismo acabado para espacio; ver [el candidato actual](docs/validation/art-refresh.md), build **a3889036**, con las mismas 66 pruebas superadas.
 
+La traviesa ahora aparece automáticamente cerca del final: cada ronda sortea un umbral entre1 y5 aros pendientes y una espera de1–3 segundos activos. Suelta una pareja encadenada de aros reales, una vez por ronda y con máximo14 aros totales. En clásico se cuentan los que faltan por ensartar. Build **004a48ef**, **158 pruebas**; [reglas y evidencia](docs/validation/automatic-linked-villain.md).
+
 ## Implementation planning
 
 The [requirements](docs/requirements.md) are available in English, with their original IDs and POC amendments preserved. Read the [implementation guide](docs/implementation-guide.md) and [agent task board](docs/tasks/README.md) to plan the next iteration. Each task card defines ownership, dependencies, acceptance criteria, and verification. The user authorized implementation using `gpt-6-luna` with high reasoning effort. T01–T08 and T10–T12 have integrated implementation/evidence. T09 audio is integrated with automated lifecycle checks; subjective browser/device audition remains in review. T06 completed its free baseline, independently of unavailable physical devices. See the board and release report for exact evidence; no paid subscription or billing activation is allowed. Player-facing text remains in Spanish.

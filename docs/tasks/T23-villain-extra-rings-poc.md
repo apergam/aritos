@@ -35,3 +35,8 @@ The user requested a review after T17/T19. [Feasibility findings](../validation/
 ## Implemented laboratory candidate — October 20
 
 The user selected a bounded normal-game encounter: one explicit manual trigger per round, adding one or two real physical rings, with the total objective capped at fourteen. The selection does not authorize automatic timing, repeat encounters, or a frequency/economy system. The current integration's validation is [pending](../validation/selected-toy-integration.md); the separate laboratory evidence is in [the experiment report](../validation/lab-experiments.md). Preserve existing progress and reject unsafe/post-victory additions as specified above.
+
+
+## Automatic linked encounter selected — October 21
+
+The user explicitly authorized random normal-game timing with1–5 rings remaining and a chained drop. This supersedes the earlier manual-only timing restriction: normal play now selects a random1–5 remaining-count threshold and1–3 active-second wait, then safely adds one linked pair of real rings once per round. Both count toward the maximum14; ordinary contact collection frees the surviving partner. Historic lab +1/+2 controls remain manual and separate. See [current validation](../validation/automatic-linked-villain.md).

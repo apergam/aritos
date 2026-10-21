@@ -1,3 +1,4 @@
+import { linkedPairPoses } from '../../physics/linked-rings';
 import { RING } from '../../physics';
 import type { GameSession } from '../../game/session';
 import { TOY_PHYSICS } from '../../models/toy-model';
@@ -9,12 +10,13 @@ export type VillainSpawnResult = Readonly<{
   requested: 1 | 2;
   spawned: readonly number[];
   ok: boolean;
+  linked?: boolean;
   reason?: 'paused' | 'won' | 'stale-round' | 'duplicate' | 'disposed' | 'unsupported-round' | 'no-safe-space';
 }>;
 
-type Request = { addCount: 1 | 2; roundId: number; encounterId: string };
+type Request = { addCount: 1 | 2; roundId: number; encounterId: string; linked: boolean };
 export type VillainRequestResult = Readonly<{ accepted: boolean; pending: boolean; encounterId: string; roundId: number; reason?: 'duplicate' | 'stale-round' | 'disposed' | 'paused' | 'pending' }>;
-/** Opt-in manual enemy behavior for the approved layouts. Call beforeStep immediately before each session.step(). */
+/** Bounded enemy spawns for the approved layouts. Call beforeStep immediately before each session.step(). */
 export class VillainEncounterController {
   private pending: Request[] = [];
   private seen = new Set<string>();
@@ -31,6 +33,15 @@ export class VillainEncounterController {
 
   /** Queue one manual encounter. It is validated again at the physics boundary. */
   request(addCount: 1 | 2, roundId = this.session.snapshot().roundId, encounterId = `villain-${++this.sequence}`): VillainRequestResult {
+    return this.queue(addCount, roundId, encounterId, false);
+  }
+
+  /** Initial linked geometry is intentional; neither body is attached by a joint. */
+  requestLinkedPair(roundId = this.session.snapshot().roundId, encounterId = `linked-villain-${++this.sequence}`): VillainRequestResult {
+    return this.queue(2, roundId, encounterId, true);
+  }
+
+  private queue(addCount: 1|2, roundId: number, encounterId: string, linked: boolean): VillainRequestResult {
     this.syncRound();
     const fail = (reason: VillainRequestResult['reason']): VillainRequestResult => Object.freeze({ accepted: false, pending: false, encounterId, roundId, reason });
     if (this.disposed) return fail('disposed');
@@ -39,7 +50,7 @@ export class VillainEncounterController {
     if (this.seen.has(`${roundId}:${encounterId}`)) return fail('duplicate');
     if (this.pending.length) return fail('pending');
     this.seen.add(`${roundId}:${encounterId}`);
-    this.pending.push({ addCount, roundId, encounterId });
+    this.pending.push({ addCount, roundId, encounterId, linked });
     return Object.freeze({ accepted: true, pending: true, encounterId, roundId });
   }
 
@@ -58,12 +69,12 @@ export class VillainEncounterController {
     else if (snapshot.scene !== 'free' || snapshot.total !== 12 || snapshot.total + request.addCount > 14 || !this.isSupportedLayout()) reason = 'unsupported-round';
     if (reason) return this.finish(request, [], reason);
 
-    const positions = this.findSafePositions(request.addCount);
+    const positions = request.linked ? this.findSafeLinkedPair() : this.findSafePositions(request.addCount)?.map(position=>({position,rotation:undefined}));
     if (!positions) return this.finish(request, [], 'no-safe-space');
 
     // No world step occurs between these calls: placement is atomic at this boundary.
     const ids: number[] = [];
-    for (const { x, y, z } of positions) ids.push(this.session.simulation.addRing(x, y, z).id);
+    for (const {position:{x,y,z},rotation} of positions) ids.push(this.session.simulation.addRing(x, y, z, rotation).id);
     this.session.simulation.stableTime = 0;
     this.successfulEncounters++;
     for (const id of ids) this.ringIds.add(id);
@@ -82,7 +93,7 @@ export class VillainEncounterController {
 
   private finish(request: Request, spawned: number[], reason?: VillainSpawnResult['reason']): VillainSpawnResult {
     const result: VillainSpawnResult = Object.freeze({ encounterId: request.encounterId, roundId: request.roundId,
-      requested: request.addCount, spawned: Object.freeze([...spawned]), ok: !reason, ...(reason ? { reason } : {}) });
+      requested: request.addCount, spawned: Object.freeze([...spawned]), ok: !reason, ...(request.linked ? {linked:true} : {}), ...(reason ? { reason } : {}) });
     this.currentStatus = result;
     return result;
   }
@@ -112,10 +123,7 @@ export class VillainEncounterController {
     // Side lanes and the center line keep the full ring envelope outside each
     // peg's vertical catchment. Placing just above the tallest peg tip also
     // clears the selected layout's high fourth row; the fall path is checked.
-    const side = layout.tank.x - radius - .1;
-    const spawnY = Math.max(...layout.pegs.map(peg => peg.tipY)) + .35;
-    const z = Math.min(.1, layout.tank.z - radius - .1);
-    const candidates = [-side, 0, side].map(x => ({ x, y: spawnY, z }));
+    const candidates = this.spawnCandidates();
     const accepted: typeof candidates = [];
     for (const candidate of candidates) {
       if (!this.clearOfTank(candidate, radius, layout) || !this.clearOfFixtures(candidate, radius, layout) || !this.safeFallLane(candidate, radius, layout)) continue;
@@ -125,6 +133,25 @@ export class VillainEncounterController {
       if (accepted.some(other => this.distance(candidate, other) < radius * 2)) continue;
       accepted.push(candidate);
       if (accepted.length === count) return accepted;
+    }
+    return undefined;
+  }
+
+  private spawnCandidates() {
+    const radius=RING.radius+RING.tube, layout=this.layout;
+    const side=layout.tank.x-radius-.1, y=Math.max(...layout.pegs.map(peg=>peg.tipY))+.35;
+    const z=Math.min(.1,layout.tank.z-radius-.1);
+    return [-side,0,side].map(x=>({x,y,z}));
+  }
+
+  private findSafeLinkedPair() {
+    const radius=RING.radius+RING.tube,layout=this.layout;
+    for (const center of this.spawnCandidates()) {
+      const poses=linkedPairPoses(center);
+      // Bounding spheres may overlap within the deliberately linked pair. Its
+      // fixed capsule geometry is disjoint; every external object still clears.
+      if (poses.every(({position:p})=>this.clearOfTank(p,radius,layout)&&this.clearOfFixtures(p,radius,layout)&&this.safeFallLane(p,radius,layout)&&
+        !this.session.simulation.rings.some(ring=>this.distance(p,ring.body.translation())<radius*2))) return poses;
     }
     return undefined;
   }
