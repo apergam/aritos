@@ -1,5 +1,7 @@
-import { BASE, PEGS, RING, TANK, TIP } from '../../physics';
+import { RING } from '../../physics';
 import type { GameSession } from '../../game/session';
+import { TOY_PHYSICS } from '../../models/toy-model';
+import type { LabLayout } from './geometry';
 
 export type VillainSpawnResult = Readonly<{
   encounterId: string;
@@ -12,8 +14,6 @@ export type VillainSpawnResult = Readonly<{
 
 type Request = { addCount: 1 | 2; roundId: number; encounterId: string };
 export type VillainRequestResult = Readonly<{ accepted: boolean; pending: boolean; encounterId: string; roundId: number; reason?: 'duplicate' | 'stale-round' | 'disposed' | 'paused' | 'pending' }>;
-type LayoutContract = { width: number; ringCount: number; pegLayout: string; pegs: readonly { baseY: number; tipY: number }[] };
-
 /** Opt-in laboratory-only enemy behavior. Call beforeStep immediately before each session.step(). */
 export class VillainEncounterController {
   private pending: Request[] = [];
@@ -55,7 +55,7 @@ export class VillainEncounterController {
     else if (snapshot.paused.length) reason = 'paused';
     else if (snapshot.won) reason = 'won';
     else if (this.successfulEncounters >= 1) reason = 'unsupported-round';
-    else if (snapshot.scene !== 'free' || snapshot.total !== 12 || snapshot.total + request.addCount > 14 || !this.isBaselineLayout()) reason = 'unsupported-round';
+    else if (snapshot.scene !== 'free' || snapshot.total !== 12 || snapshot.total + request.addCount > 14 || !this.isSupportedLayout()) reason = 'unsupported-round';
     if (reason) return this.finish(request, [], reason);
 
     const positions = this.findSafePositions(request.addCount);
@@ -98,22 +98,27 @@ export class VillainEncounterController {
     this.currentStatus = undefined;
   }
 
-  private isBaselineLayout(): boolean {
-    // Older integrated sessions expose only the accepted constants; newer lab
-    // sessions carry explicit geometry and must match the baseline experiment.
-    const layout = (this.session.simulation as typeof this.session.simulation & { layout?: LayoutContract }).layout;
-    return !layout || (layout.width === 9 && layout.ringCount === 12 && layout.pegLayout === 'floor' &&
-      layout.pegs.length === 2 && layout.pegs.every(peg => Math.abs((peg.tipY - peg.baseY) - 4.35) < .001));
+  private get layout(): LabLayout { return this.session.simulation.layout; }
+
+  private isSupportedLayout(): boolean {
+    const { width, ringCount, pegLayout, pegs } = this.layout;
+    const approved = (width === 9 && pegLayout === 'floor') || (width === 8 && pegLayout === 'raised');
+    return approved && ringCount === 12 && pegs.length === 2;
   }
 
   private findSafePositions(count: number): { x: number; y: number; z: number }[] | undefined {
     const radius = RING.radius + RING.tube;
-    // The full ring's bounding sphere is deliberately used as clearance. The upper
-    // grid stays clear of the peg tips, bases, walls, and starting stacks.
-    const candidates = [-3.55, -1.75, 0, 1.75, 3.55].map(x => ({ x, y: 4.75, z: 0 }));
+    const layout = this.layout;
+    // Side lanes and the center line keep the full ring envelope outside each
+    // peg's vertical catchment. Placing just above the tallest peg tip also
+    // clears the selected layout's high fourth row; the fall path is checked.
+    const side = layout.tank.x - radius - .1;
+    const spawnY = Math.max(...layout.pegs.map(peg => peg.tipY)) + .35;
+    const z = Math.min(.1, layout.tank.z - radius - .1);
+    const candidates = [-side, 0, side].map(x => ({ x, y: spawnY, z }));
     const accepted: typeof candidates = [];
     for (const candidate of candidates) {
-      if (!this.clearOfTank(candidate, radius) || !this.clearOfFixtures(candidate, radius)) continue;
+      if (!this.clearOfTank(candidate, radius, layout) || !this.clearOfFixtures(candidate, radius, layout) || !this.safeFallLane(candidate, radius, layout)) continue;
       if (this.session.simulation.rings.some(r => {
         const p = r.body.translation(); return this.distance(candidate, p) < radius * 2;
       })) continue;
@@ -124,19 +129,53 @@ export class VillainEncounterController {
     return undefined;
   }
 
-  private clearOfTank(p: { x: number; y: number; z: number }, r: number): boolean {
-    return Math.abs(p.x) + r <= TANK.x && Math.abs(p.z) + r <= TANK.z && Math.abs(p.y) + r <= TANK.y;
+  private clearOfTank(p: { x: number; y: number; z: number }, r: number, layout: LabLayout): boolean {
+    const margin = .1;
+    return Math.abs(p.x) + r + margin <= layout.tank.x && Math.abs(p.z) + r + margin <= layout.tank.z && Math.abs(p.y) + r + margin <= layout.tank.y;
   }
 
-  private clearOfFixtures(p: { x: number; y: number; z: number }, r: number): boolean {
-    for (const peg of PEGS) {
+  private clearOfFixtures(p: { x: number; y: number; z: number }, r: number, layout: LabLayout): boolean {
+    const margin = .1;
+    for (const peg of layout.pegs) {
       const dx = p.x - peg.x, dz = p.z - peg.z;
-      const nearestY = Math.max(BASE, Math.min(TIP, p.y));
-      if (Math.hypot(dx, p.y - nearestY, dz) < r + .12) return false;
-      // Base is a low, wide cylinder; check its horizontal footprint when vertically close.
-      if (Math.abs(p.y - (BASE - .15)) < r + .15 && Math.hypot(dx, dz) < r + .86) return false;
+      const nearestY = Math.max(peg.baseY, Math.min(peg.tipY, p.y));
+      if (Math.hypot(dx, p.y - nearestY, dz) < r + TOY_PHYSICS.pegRadius + margin) return false;
+      const base = { x: peg.x, y: peg.baseY - TOY_PHYSICS.base.footHeight / 2, z: peg.z };
+      if (this.sphereIntersectsBox(p, r, base, { x: TOY_PHYSICS.base.halfWidth, y: TOY_PHYSICS.base.footHeight / 2, z: TOY_PHYSICS.base.halfDepth }, margin)) return false;
+    }
+    for (const support of layout.supports) if (this.sphereIntersectsBox(p, r, support.center, support.halfExtents, margin)) return false;
+    return true;
+  }
+
+  private safeFallLane(p: { x: number; y: number; z: number }, radius: number, layout: LabLayout): boolean {
+    const gravity = this.session.simulation.gravity;
+    if (gravity.y >= -.05) return false;
+    const endY = -layout.tank.y + radius + .1;
+    if (endY >= p.y) return false;
+    const clearance = radius + TOY_PHYSICS.pegRadius + .1;
+    const atHeight = (y: number) => {
+      const time = (y - p.y) / gravity.y;
+      return { x: p.x + gravity.x * time, z: p.z + gravity.z * time };
+    };
+    for (const peg of layout.pegs) {
+      const low = Math.max(endY, peg.baseY - clearance), high = Math.min(p.y, peg.tipY + clearance);
+      if (low > high) continue;
+      const a = atHeight(low), b = atHeight(high), dx = b.x - a.x, dz = b.z - a.z;
+      const lengthSquared = dx * dx + dz * dz;
+      const t = lengthSquared > 0 ? Math.max(0, Math.min(1, ((peg.x - a.x) * dx + (peg.z - a.z) * dz) / lengthSquared)) : 0;
+      if (Math.hypot(a.x + t * dx - peg.x, a.z + t * dz - peg.z) < clearance) return false;
     }
     return true;
+  }
+
+  private sphereIntersectsBox(
+    p: { x: number; y: number; z: number }, radius: number,
+    center: { x: number; y: number; z: number }, half: { x: number; y: number; z: number }, margin: number,
+  ): boolean {
+    const dx = Math.max(0, Math.abs(p.x - center.x) - half.x);
+    const dy = Math.max(0, Math.abs(p.y - center.y) - half.y);
+    const dz = Math.max(0, Math.abs(p.z - center.z) - half.z);
+    return Math.hypot(dx, dy, dz) < radius + margin;
   }
 
   private distance(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): number {

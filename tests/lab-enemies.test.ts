@@ -98,6 +98,7 @@ test('classic 14-ring capacity fixture can hold seven physical rings on each peg
 test('explicit lab width, count and peg layout settings isolate villain encounters', async () => {
   await initPhysics();
   for (const layout of [
+    { width: 7, ringCount: 12, pegLayout: 'floor' },
     { width: 8, ringCount: 12, pegLayout: 'floor' },
     { width: 9, ringCount: 20, pegLayout: 'floor' },
     { width: 9, ringCount: 12, pegLayout: 'raised' },
