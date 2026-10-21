@@ -92,7 +92,7 @@ export class Simulation {
    // Start clear of the floor-mounted pedestals and shafts, including tilted rings.
    const narrow=this.layout.width<9;
    const raised=this.layout.pegLayout==='raised';
-   const columns=raised?[-3.8,0,3.8]:(narrow?[-2.1,0,2.1]:[-3.8,-2.5,-.675,.675,2.5,3.8]);
+   const columns=raised?[-3.8,0,3.8]:(narrow?[-2.8,0,2.8]:[-3.8,-2.5,-.675,.675,2.5,3.8]);
    const rowWidth=raised||narrow?3:6;
    const rows=raised?[-5,-2.5,.5,4]:undefined;
    for(let i=0;i<this.layout.ringCount;i++){

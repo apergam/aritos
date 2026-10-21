@@ -18,18 +18,26 @@ test('lab widths are immutable per instance and baseline geometry stays exact',(
  } finally {base.dispose();narrow.dispose();}
 });
 
-test('free spawns fit all widths without initial ring overlap or wall intersections',()=>{
+test('free spawns fit all widths without ring, wall, shaft, or base overlap',()=>{
  for(const width of [9,8,7] as const){
-  const s=new Simulation({width});
+  const s=new Simulation({width});s.reset('free');
   try {
-   const bound=s.layout.tank.x;
+   assert.equal(s.rings.length,12,`width ${width} free scene must spawn all twelve rings`);
+   const extent=RING.radius+RING.tube;
    for(const ring of s.rings){
-    const p=ring.body.translation();assert.ok(Math.abs(p.x)+RING.radius+RING.tube<=bound,`width ${width} x containment`);
-    assert.ok(Math.abs(p.z)+RING.radius+RING.tube<=s.layout.tank.z,'depth containment');
+    const p=ring.body.translation();
+    assert.ok(Math.abs(p.x)+extent<=s.layout.tank.x,`width ${width}: x wall clearance`);
+    assert.ok(Math.abs(p.y)+extent<=s.layout.tank.y,`width ${width}: floor/ceiling clearance`);
+    assert.ok(Math.abs(p.z)+extent<=s.layout.tank.z,`width ${width}: depth wall clearance`);
+    for(const peg of s.layout.pegs){
+     assert.ok(Math.hypot(p.x-peg.x,p.z-peg.z)>=extent+TOY_PHYSICS.pegRadius,`width ${width}: spawn intersects peg shaft`);
+     const baseTop=peg.baseY;
+     assert.ok(p.y-extent>=baseTop,`width ${width}: spawn intersects pedestal`);
+    }
    }
    for(let i=0;i<s.rings.length;i++)for(let j=i+1;j<s.rings.length;j++){
     const a=s.rings[i].body.translation(),b=s.rings[j].body.translation();
-    assert.ok(Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)>=2*(RING.radius+RING.tube),`width ${width}: initial overlap ${i}/${j}`);
+    assert.ok(Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)>=2*extent,`width ${width}: initial overlap ${i}/${j}`);
    }
   } finally {s.dispose();}
  }

@@ -9,7 +9,7 @@ const run=(s:Simulation,seconds:number)=>{for(let i=0;i<seconds/DT;i++)s.step();
 const raised={pegLayout:'raised' as const};
 
 test('raised layout has explicit offset bases, full-length pegs, and attached rear supports',()=>{
- const s=new Simulation(raised);
+ const s=new Simulation(raised),floor=new Simulation();
  try {
   assert.deepEqual(s.layout.pegs.map(p=>[p.x,p.baseY]),[[-1.7,-3.8],[1.7,-2.2]]);
   assert.ok(Math.abs(s.layout.pegs[0].tipY-.55)<1e-12);assert.ok(Math.abs(s.layout.pegs[1].tipY-2.15)<1e-12);
@@ -22,8 +22,8 @@ test('raised layout has explicit offset bases, full-length pegs, and attached re
    assert.ok(support.center.z-support.halfExtents.z < -s.layout.tank.z,'support penetrates the rear plastic for a fixed attachment');
    assert.ok(support.center.z+support.halfExtents.z < -RING.radius-RING.tube,'support stays behind the maximum-depth ring envelope');
   }
-  assert.deepEqual(new Simulation().layout.supports,[]);
- } finally {s.dispose();}
+  assert.deepEqual(floor.layout.supports,[]);
+ } finally {s.dispose();floor.dispose();}
 });
 
 test('raised free-play rings spawn inside the tank and outside the threaded peg region',()=>{
