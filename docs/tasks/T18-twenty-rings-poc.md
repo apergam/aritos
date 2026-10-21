@@ -25,4 +25,4 @@ Coverage: BL-03 (existing backlog, not a duplicate); requirements section 16; RF
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+The user selected twelve rings for normal play; twenty remains an opt-in laboratory comparison. Its measured capacity/stress evidence uses the historical width-9 floor layout and does not establish a twenty-ring capacity claim for the selected width-8 raised toy. See [the lab comparison](../validation/lab-experiments.md). Production count controls are not part of this task.

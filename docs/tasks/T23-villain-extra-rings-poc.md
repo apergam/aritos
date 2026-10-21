@@ -34,4 +34,4 @@ The user requested a review after T17/T19. [Feasibility findings](../validation/
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+The user selected a bounded normal-game encounter: one explicit manual trigger per round, adding one or two real physical rings, with the total objective capped at fourteen. The selection does not authorize automatic timing, repeat encounters, or a frequency/economy system. The current integration's validation is [pending](../validation/selected-toy-integration.md); the separate laboratory evidence is in [the experiment report](../validation/lab-experiments.md). Preserve existing progress and reject unsafe/post-victory additions as specified above.

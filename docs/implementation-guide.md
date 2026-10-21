@@ -20,7 +20,7 @@ Baseline commit: `dc20f5f` on `main`. Do not rebuild the physics experiment from
 | Area | Existing evidence / behavior |
 | --- | --- |
 | Engine | TypeScript, Rapier 3D 0.19.3, Three.js 0.180.0; pinned dependencies. |
-| Geometry | Enclosed tank, interior depth 1.8, ring outer diameter 1.3, two floor-mounted pedestals, peg length 4.35. |
+| Geometry | Historical POC baseline: enclosed tank, interior depth 1.8, ring outer diameter 1.3, two floor-mounted pedestals, peg length 4.35. The user later selected width 8 with raised pegs for normal play; see requirements section 21. |
 | Dynamics | Fixed 120 Hz step, bounded catch-up, compound ring colliders preserving the hole, physical threading and extraction. |
 | Tuning | Pump strength 75; linear water damping 0.50; pulse duration 0.24 s. Preserve these unless the user approves retuning. |
 | Jets | Lower side outlets point inward/upward with a weak bottom return current during the pulse; one-button model uses its central outlet. |
@@ -45,7 +45,7 @@ Preserve both rule modes when evolving the accepted POC. The collect behavior in
 
 T06 does not block UI, themes, audio, celebration or integration. Use existing automated checks, browser viewport/touch/sensor emulation and practical local emulators; optional physical checks use free quota or borrowed/user-owned devices. No paid subscription, billing activation or overage is authorized. T06 completion requires evidence for its free baseline, with unavailable physical checks explicitly not run. This does not waive mobile product criteria or equate emulation with real-device acceptance.
 
-T01–T08 and T10–T12 are integrated; T09 implementation is integrated and remains in review for subjective listening. The first version received positive user feedback on October 20. T13–T20 are polish cards recorded at the user’s request. The user subsequently selected T14/T15/T16; their implementations are integrated, with audio awaiting subjective review. Other polish cards remain planned. Consult the task board for current evidence and ownership. Read requirements section 16 for the music-scope amendment and lab-only geometry experiments. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
+T01–T08 and T10–T12 are integrated; T09 implementation is integrated and remains in review for subjective listening. The first version received positive user feedback on October 20. T13–T20 are polish cards recorded at the user’s request. T14/T15/T16 were selected and implemented, with audio awaiting subjective review. T13/T20 are now selected for normal play; see requirements section 21 and the task board for current ownership/evidence. Read requirements section 16 for the original music and geometry backlog, not as the latest geometry default. Exact dependencies are listed in each task card; a dependency is satisfied by merged, verified work, not an unmerged branch or an agent's progress message.
 
 ## Module boundaries and shared contracts
 
@@ -128,11 +128,11 @@ These are ownership links, not claims that requirements are already satisfied. M
 
 BL-02 is implemented and must be preserved. The original T01–T12 iteration excludes BL-01 and BL-03–BL-06. The new T13–T20 polish cards cover BL-07–BL-13 and a bounded twelve-versus-twenty experiment under BL-03; they do not add a general count editor, time trial, broad customization editor, shake feature or PWA. Stickers are a bounded extension to the earlier no-editor scope. Music explicitly extends the first version's effects-only scope; keep historical T09 evidence intact. Runtime offline-after-load remains distinct from installation/cold offline startup.
 
-For the next polish iteration, assign only cards explicitly selected for implementation. Prefer separate width, count and peg experiments so player feedback can identify which variable improved play. Do not silently adopt candidates in the normal player. T14/T15 touch audio and T16/T17 touch themes/rendering: serialize overlapping ownership or establish explicit file boundaries before dispatch. The integration owner coordinates cross-module changes and records new exported contracts; each card must deliver its evidence and unresolved choices, not merely code.
+The user has selected T13 width 8 and T20 raised pegs for normal play; retain width 9/floor pegs as the historical comparison. T18's twenty rings and T21's variable pressure remain opt-in laboratory comparisons. T14/T15 touch audio and T16/T17 touch themes/rendering: serialize overlapping ownership or establish explicit file boundaries before dispatch. The integration owner coordinates cross-module changes and records new exported contracts; each card must deliver its evidence and unresolved choices, not merely code. Current selected-layout integration evidence is pending in `validation/selected-toy-integration.md`.
 
-## Pressure and arcade experiments
+## Pressure and arcade choices
 
-[Requirements section 17](requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026) and T21–T23 add planned lab work for variable pressure, two mascot assists and villain encounters. No agents or implementation are started by this addition. T21 must distinguish genuine pressure input from a fallback and preserve a bounded single pulse. T22 documents any scripted assistance as an explicit experiment instead of silently changing unassisted threading. T23 owns an experimental dynamic objective: successful added rings change totals, failed spawns do not, and completed rounds stay completed.
+[Requirements section 17](requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026) records the original backlog. The user later selected T22's two manual assist actions and T23's one manual villain encounter per round for normal play, as recorded in section 21. T21's variable-pressure controls remain lab-only; do not add a normal pressure slider. Scripted mascot placement is identified as assistance and does not bypass collection contact. The enemy's successful physical additions update totals, failed spawns do not, and completed rounds stay completed.
 
 Coordinate shared pump-command, body-spawning, session-event and count contracts before coding. T18's initial count comparison does not automatically satisfy T23's dynamic-spawn requirements. Compare one mechanic at a time; music/art hooks do not justify parallel edits to shared composition. Preserve the accepted baseline and historical validation claims.
 

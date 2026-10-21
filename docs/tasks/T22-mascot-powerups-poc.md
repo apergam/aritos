@@ -28,4 +28,4 @@ Coverage: BL-15; requirements section 17; experimental extension to RF-15, RF-25
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+The user selected both explicit manual assist actions for normal play: thread one eligible loose floor ring onto a peg, or position one above a peg without insertion. They remain one-ring-at-a-time actions, and ordinary physics/contact—not the script—decides collection. Scripted movement must be identified as assistance and counted separately from unassisted results. The selected raised width-8 geometry is the only additional supported layout. See [selected-toy integration evidence](../validation/selected-toy-integration.md) for pending validation and [the lab comparison](../validation/lab-experiments.md) for the experiment report.

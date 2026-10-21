@@ -27,4 +27,4 @@ Coverage: BL-07; requirements section 16; preserve RF-06–RF-16 and CA-01–CA-
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+The user selected width 8 for normal play, combined with T20's raised-peg layout. Normal geometry now comes from immutable `PLAYER_TOY_SETTINGS`; width 9/floor pegs remain the historical POC baseline and width 7 remains a comparison candidate. See [selected-toy integration evidence](../validation/selected-toy-integration.md) for the pending integration validation and [the lab comparison](../validation/lab-experiments.md) for the original measurements. Do not describe width 9 as the current production default.

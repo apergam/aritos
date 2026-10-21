@@ -28,4 +28,4 @@ Coverage: BL-14; requirements section 17; RF-11–RF-14, RF-21–RF-24; CA-04–
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+Variable pressure remains a laboratory experiment. The user retained fixed pump strength 75 in normal play; there is no production pressure slider. The bounded lab inputs and pulse measurements remain documented in [the lab comparison](../validation/lab-experiments.md). Do not infer real pressure-sensor compatibility from the desktop/emulated experiment.

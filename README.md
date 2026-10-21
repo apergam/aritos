@@ -4,9 +4,9 @@ Juego de aros al agua en el navegador, con TypeScript, Rapier 3D 0.19.3 y Three.
 
 ## Estado actual
 
-Build **2005c319**: **130 pruebas superadas**. T17/T19 y los seis POCs restantes están integrados para revisión; los experimentos viven en `/lab.html` y no cambian los defaults del jugador. Ver [comparación actual](docs/validation/lab-experiments.md). Los siguientes resultados describen las etapas anteriores.
+Build **2005c319**: **130 pruebas superadas** (evidencia de esa integración). La selección posterior del usuario incorpora al jugador normal el depósito de ancho 8 con estacas elevadas, las dos ayudas manuales de la mascota y un encuentro manual con villano por ronda. La verificación integrada de esta selección está pendiente y se registrará en [la evidencia de integración](docs/validation/selected-toy-integration.md). El laboratorio conserva la comparación histórica de ancho 9 con bases en el piso, además de los candidatos optativos.
 
-Aceptado por el usuario el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. Incluye depósito de fondo 1.8, estacas apoyadas en el piso, chorros laterales bajos, botones bajo el depósito y controles de cámara exclusivos del laboratorio.
+La sensación base fue aceptada el 19 de octubre de 2026 con fuerza de bombeo **75**, resistencia del agua **0.50** y modo inicial **Guardar al llegar a la base**. La selección de geometría del 20 de octubre cambia el ancho normal a 8 y mueve las estacas a soportes elevados; conserva doce aros, fondo 1.8, fuerza 75 y resistencia 0.50. El ancho 9 con bases en el piso sigue siendo la referencia histórica del POC.
 
 Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas. El pulido posterior de audio y fondos supera **66 pruebas**, TypeScript y build; ver [la revisión actual](docs/validation/polish-audio-art.md). Se comprobaron las doce combinaciones de modelo/tema/modo, seis tamaños de pantalla y el cambio de temas con el servidor detenido después de cargar; ver el [informe de preparación](docs/validation/release.md). La aceptación del POC no acredita sensores, multitáctil ni rendimiento en dispositivos móviles reales. Esas comprobaciones y el alcance del juego completo se mantienen separados; ver `docs/POC_REPORT.md`.
 
@@ -18,9 +18,9 @@ The [requirements](docs/requirements.md) are available in English, with their or
 
 ## Backlog de pulido
 
-El usuario aprobó la primera versión visual el 20 de octubre. Se registraron [ocho tareas T13–T20](docs/tasks/README.md#polish-backlog--recorded-october-20) para sus siete ideas: ancho, sonido de recompensa, música por tema, ilustraciones traseras, aros temáticos, veinte aros, stickers y estacas en otras posiciones. El usuario seleccionó T14/T15/T16: están integradas, con sonido/música pendientes de revisión auditiva. Después seleccionó T17/T19 y finalmente los POCs restantes; ya están integrados para comparación en el laboratorio. La música amplía el alcance anterior de solo efectos; ver [la decisión](docs/requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026).
+El usuario aprobó la primera versión visual el 20 de octubre. Se registraron [ocho tareas T13–T20](docs/tasks/README.md#polish-backlog--recorded-october-20) para sus siete ideas. Tras revisar los POCs, eligió ancho 8 con estacas elevadas para el jugador normal. T14/T15/T16 y T17/T19 siguen sus decisiones de revisión documentadas. Ver [la decisión original](docs/requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026) y la [selección de integración](docs/requirements.md#21-selected-normal-game-integration--october-20-2026).
 
-Se añadieron [T21–T23](docs/tasks/README.md#pressure-and-arcade-backlog--recorded-october-20): presión variable en el POC, dos powerups con mascota acuática y un enemigo que añade uno o dos aros llamativos con música de villano. Posteriormente se autorizaron e integraron como experimentos separados; ver [alcance y reglas pendientes](docs/requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026).
+Se añadieron [T21–T23](docs/tasks/README.md#pressure-and-arcade-backlog--recorded-october-20): presión variable, dos ayudas de mascota y un encuentro con villano que añade uno o dos aros. El usuario eligió las dos ayudas manuales y el encuentro limitado para el jugador normal; presión variable y veinte aros siguen siendo experimentos de laboratorio, sin controles deslizantes en el juego normal. Los límites seleccionados están en [la sección 21](docs/requirements.md#21-selected-normal-game-integration--october-20-2026).
 
 ## Ejecutar y construir
 
@@ -80,6 +80,6 @@ Ver `docs/POC_REPORT.md` y `tests/physics.test.ts`. La suite incluye la caída d
 
 ## Laboratory comparisons
 
-Open `/lab.html` and use **Experimento** to compare the baseline with widths8/7, twenty rings, raised supported pegs, variable pressure, two mascot assists and a bounded villain encounter. Each selection restarts its isolated candidate. **Preparar 2 aros · Guardar** gives a short physical drop fixture for trying the helper; wait until one ring collects, then request an assist. Lab audio is opt-in and respects the saved global/music preferences.
+Open `/lab.html` and use **Experimento** to compare the historic width-9 floor layout with widths 8/7, twenty rings, raised supported pegs, variable pressure, two mascot assists and a bounded villain encounter. Each selection restarts its isolated candidate. **Preparar 2 aros · Guardar** gives a short physical drop fixture for trying the helper; wait until one ring collects, then request an assist. Lab audio is opt-in and respects the saved global/music preferences.
 
-[Current comparison/evidence](docs/validation/lab-experiments.md): build2005c319, 130 passing tests. Production `/` keeps the accepted defaults; the experiments await user comparison before promotion. No paid device service or deployment is needed.
+[Laboratory comparison](docs/validation/lab-experiments.md): build2005c319, 130 passing tests at that checkpoint. The later normal-game selection and its pending validation are tracked in [selected-toy integration evidence](docs/validation/selected-toy-integration.md). No paid device service or deployment is needed.

@@ -26,4 +26,4 @@ Coverage: BL-13; requirements section 16; preserve RF-08–RF-10 and physical cl
 
 ## Implemented laboratory candidate — October 20
 
-The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
+The user selected the raised, supported peg layout for normal play, paired with T13's width-8 tank. Each base remains associated with its own peg, and collection still requires real threading and 0.12 seconds of physical contact. The selected production layout is `PLAYER_TOY_SETTINGS`; the floor layout remains the historical lab baseline. See [selected-toy integration evidence](../validation/selected-toy-integration.md) for pending validation and [the lab comparison](../validation/lab-experiments.md) for candidate measurements.
