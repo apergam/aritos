@@ -4,10 +4,10 @@ import { BASE, initPhysics, PEGS, Simulation } from '../src/physics';
 import { GameSession } from '../src/game/session';
 import { VillainEncounterController } from '../src/lab/experiments/enemies';
 
-test('villain encounter creates one or two safe physical rings atomically and marks their IDs', async () => {
+test('villain encounter creates one or two safe physical rings atomically for both models', async () => {
   await initPhysics();
-  for (const addCount of [1, 2] as const) {
-    const session = new GameSession({ scene: 'free', mode: 'classic' });
+  for (const model of ['two-button', 'single-button'] as const) for (const addCount of [1, 2] as const) {
+    const session = new GameSession({ scene: 'free', mode: 'classic', model });
     const enemies = new VillainEncounterController(session);
     session.simulation.stableTime = 1.8;
     assert.equal(enemies.request(addCount, 0, `spawn-${addCount}`).accepted, true);
@@ -31,20 +31,19 @@ test('spawn failures cover pause, duplicate, stale round, restart, post-win and 
   const enemies = new VillainEncounterController(session);
   assert.equal(enemies.request(1, 0, 'dupe').accepted, true);
   assert.equal(enemies.request(1, 0, 'dupe').reason, 'duplicate');
+  assert.equal(enemies.request(2, 0, 'backlog').reason, 'pending');
   session.dispatch({ type: 'pause', reason: 'manual', paused: true });
   assert.equal(enemies.beforeStep()?.reason, 'paused');
+  assert.equal(enemies.request(1, 0, 'paused-now').reason, 'paused');
   session.dispatch({ type: 'pause', reason: 'manual', paused: false });
   const oldRound = session.snapshot().roundId;
   session.dispatch({ type: 'restart' });
   assert.equal(enemies.request(1, oldRound, 'stale').reason, 'stale-round');
+  assert.equal(enemies.status, undefined);
   assert.equal(enemies.extraRingIds.size, 0);
   assert.equal(enemies.request(1, undefined, 'postwin').accepted, true);
   session.simulation.won = true;
   assert.equal(enemies.beforeStep()?.reason, 'won');
-  session.dispatch({ type: 'restart' });
-  session.dispatch({ type: 'set-model', model: 'single-button' });
-  assert.equal(enemies.request(1).accepted, true);
-  assert.equal(enemies.beforeStep()?.reason, 'unsupported-round');
   session.dispose();
 });
 
@@ -94,5 +93,22 @@ test('classic 14-ring capacity fixture can hold seven physical rings on each peg
   assert.equal(simulation.count, 14);
   assert.equal(simulation.escaped, false);
   simulation.dispose();
+});
+
+test('explicit lab width, count and peg layout settings isolate villain encounters', async () => {
+  await initPhysics();
+  for (const layout of [
+    { width: 8, ringCount: 12, pegLayout: 'floor' },
+    { width: 9, ringCount: 20, pegLayout: 'floor' },
+    { width: 9, ringCount: 12, pegLayout: 'raised' },
+  ]) {
+    const session = new GameSession({ scene: 'free', mode: 'classic' });
+    Object.assign(session.simulation, { layout });
+    const enemies = new VillainEncounterController(session);
+    assert.equal(enemies.request(1).accepted, true);
+    assert.equal(enemies.beforeStep()?.reason, 'unsupported-round');
+    assert.equal(session.snapshot().total, 12);
+    session.dispose();
+  }
 });
 

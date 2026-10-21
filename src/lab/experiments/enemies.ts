@@ -11,7 +11,8 @@ export type VillainSpawnResult = Readonly<{
 }>;
 
 type Request = { addCount: 1 | 2; roundId: number; encounterId: string };
-export type VillainRequestResult = Readonly<{ accepted: boolean; pending: boolean; encounterId: string; roundId: number; reason?: 'duplicate' | 'stale-round' | 'disposed' }>;
+export type VillainRequestResult = Readonly<{ accepted: boolean; pending: boolean; encounterId: string; roundId: number; reason?: 'duplicate' | 'stale-round' | 'disposed' | 'paused' | 'pending' }>;
+type LayoutContract = { width: number; ringCount: number; pegLayout: string; pegs: readonly { baseY: number; tipY: number }[] };
 
 /** Opt-in laboratory-only enemy behavior. Call beforeStep immediately before each session.step(). */
 export class VillainEncounterController {
@@ -34,7 +35,9 @@ export class VillainEncounterController {
     const fail = (reason: VillainRequestResult['reason']): VillainRequestResult => Object.freeze({ accepted: false, pending: false, encounterId, roundId, reason });
     if (this.disposed) return fail('disposed');
     if (roundId !== this.lastRound) return fail('stale-round');
+    if (this.session.snapshot().paused.length) return fail('paused');
     if (this.seen.has(`${roundId}:${encounterId}`)) return fail('duplicate');
+    if (this.pending.length) return fail('pending');
     this.seen.add(`${roundId}:${encounterId}`);
     this.pending.push({ addCount, roundId, encounterId });
     return Object.freeze({ accepted: true, pending: true, encounterId, roundId });
@@ -52,7 +55,7 @@ export class VillainEncounterController {
     else if (snapshot.paused.length) reason = 'paused';
     else if (snapshot.won) reason = 'won';
     else if (this.successfulEncounters >= 1) reason = 'unsupported-round';
-    else if (snapshot.scene !== 'free' || snapshot.model !== 'two-button' || snapshot.total !== 12 || snapshot.total + request.addCount > 14) reason = 'unsupported-round';
+    else if (snapshot.scene !== 'free' || snapshot.total !== 12 || snapshot.total + request.addCount > 14 || !this.isBaselineLayout()) reason = 'unsupported-round';
     if (reason) return this.finish(request, [], reason);
 
     const positions = this.findSafePositions(request.addCount);
@@ -67,8 +70,8 @@ export class VillainEncounterController {
     return this.finish(request, ids);
   }
 
-  get extraRingIds(): ReadonlySet<number> { return new Set(this.ringIds); }
-  get status(): VillainSpawnResult | undefined { return this.currentStatus; }
+  get extraRingIds(): ReadonlySet<number> { this.syncRound(); return new Set(this.ringIds); }
+  get status(): VillainSpawnResult | undefined { this.syncRound(); return this.currentStatus; }
 
   dispose(): void {
     this.disposed = true;
@@ -93,6 +96,14 @@ export class VillainEncounterController {
     this.ringIds.clear();
     this.successfulEncounters = 0;
     this.currentStatus = undefined;
+  }
+
+  private isBaselineLayout(): boolean {
+    // Older integrated sessions expose only the accepted constants; newer lab
+    // sessions carry explicit geometry and must match the baseline experiment.
+    const layout = (this.session.simulation as typeof this.session.simulation & { layout?: LayoutContract }).layout;
+    return !layout || (layout.width === 9 && layout.ringCount === 12 && layout.pegLayout === 'floor' &&
+      layout.pegs.length === 2 && layout.pegs.every(peg => Math.abs((peg.tipY - peg.baseY) - 4.35) < .001));
   }
 
   private findSafePositions(count: number): { x: number; y: number; z: number }[] | undefined {
