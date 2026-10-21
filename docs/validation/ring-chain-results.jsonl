@@ -1,0 +1,9 @@
+{"name":"baseline","speed":1,"step":0.008333333333333333,"ccd":1,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":14,"firstLinkedSeconds":0.11666666666666667,"linkedSeconds":1.8916666666666666,"linkAt2Seconds":-1}
+{"name":"half-speed","speed":0.5,"step":0.008333333333333333,"ccd":1,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"name":"quarter-speed","speed":0.25,"step":0.008333333333333333,"ccd":1,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"name":"240Hz","speed":1,"step":0.004166666666666667,"ccd":1,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"name":"480Hz","speed":1,"step":0.0020833333333333333,"ccd":1,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"name":"ccd4","speed":1,"step":0.008333333333333333,"ccd":4,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"name":"ccd8","speed":1,"step":0.008333333333333333,"ccd":8,"initialMinSeparation":0.19689013063907623,"firstLinkedTick":null,"firstLinkedSeconds":null,"linkedSeconds":0,"linkAt2Seconds":0}
+{"pull":{"initial":[{"x":0.009948765859007835,"y":2.892576217651367,"z":0.2589508593082428},{"x":0.31197389960289,"y":3.0262184143066406,"z":0.2973872721195221}],"end":[{"x":-0.1266225129365921,"y":4.322052955627441,"z":0.245305135846138},{"x":0.44191989302635193,"y":4.104117393493652,"z":0.24903693795204163}],"linked":-1,"survivedSeconds":2},"joints":0,"multibodyJoints":0}
+{"afterRemoval":{"bodies":1,"survivorValid":true,"survivorPosition":{"x":0.47130998969078064,"y":4.3302412033081055,"z":0.24543610215187073}}}
