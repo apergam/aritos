@@ -1,0 +1,13 @@
+.experiment-card { border-color: #7faeaa; background: #f0faf8; }
+.experiment-readout { display:block; margin:12px 0; padding:10px; border-radius:8px; background:#dfeee8; color:#31594e; font:600 12px/1.5 system-ui,sans-serif; }
+#pressure-options,#assist-options,#enemy-options { border-top:1px solid #c9ded6; margin-top:12px; padding-top:10px; }
+#pressure-readout { display:block; font:600 12px/1.5 system-ui,sans-serif; color:#31594e; }
+#arcade-status { min-height:2.8em; font-weight:650; }
+.lab-mascot { position:absolute; width:clamp(40px,9vw,86px); transform:translate(-50%,-50%); z-index:24; pointer-events:none; text-align:center; }
+.lab-mascot img { display:block; width:100%; height:auto; filter:drop-shadow(0 3px 4px #183d3866); }
+.lab-mascot.villain img { filter:hue-rotate(250deg) saturate(1.2) drop-shadow(0 3px 5px #49134d88); }
+.lab-mascot span { display:block; color:#183d38; background:#fffdf1ee; font:700 10px/1.2 system-ui,sans-serif; padding:4px 6px; border-radius:10px; white-space:nowrap; width:max-content; max-width:150px; margin:auto; }
+
+.lab-top { gap: 12px; align-items: center; }
+#scene-label { line-height:1.5; }
+@media(max-width:980px) { .lab { position:relative; top:auto; } }

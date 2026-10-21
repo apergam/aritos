@@ -1,5 +1,6 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import {Quaternion,Vector3,Euler} from 'three';
+import { stackStartPoses } from '../lab/experiments/count';
 import { TOY_PHYSICS, type PumpSide } from '../models/toy-model';
 import { createLabLayout, type LabLayout, type LabSimulationSettings } from '../lab/experiments/geometry';
 export type { PumpSide } from '../models/toy-model';
@@ -31,7 +32,7 @@ let initialized:Promise<void>|undefined;
 export const initPhysics=()=>initialized??=RAPIER.init();
 export const horizontal=new Quaternion().setFromEuler(new Euler(Math.PI/2,0,0));
 export class Simulation {
- world:RAPIER.World; rings:Ring[]=[]; pulses:{side:PumpSide,left:number}[]=[];
+ world:RAPIER.World; rings:Ring[]=[]; pulses:{side:PumpSide,left:number,intensity:number,strength:number}[]=[];
  gravity=new Vector3(0,-3,0); strength:number=TOY_PHYSICS.strength; drag:number=TOY_PHYSICS.drag; time=0; model=2;
  stableTime=0; won=false; onWin?:()=>void; escaped=false;
  mode:GameMode='classic';collected=0;totalRings=0;
@@ -82,7 +83,7 @@ export class Simulation {
   if(scene==='drop'){
    this.addRing(-1.7,3,0);this.addRing(2.65,3,0);
   }else if(scene==='stack'){
-   for(let i=0;i<this.layout.ringCount;i++){const peg=this.layout.pegs[i%this.layout.pegs.length];this.addRing(peg.x,peg.baseY+.6+Math.floor(i/this.layout.pegs.length)*.55,peg.z);}
+   for(const p of stackStartPoses(this.layout.ringCount,this.layout.pegs))this.addRing(p.x,p.y,p.z);
   }else if(scene==='depth'){
    // The upright ring fits in the shallower tank and passes in front of the peg.
    // Its screen overlap must still never grant threading progress.
@@ -105,8 +106,10 @@ export class Simulation {
   this.gravity.copy(g);this.world.gravity={...g};
   for(const r of this.rings)r.body.wakeUp();
  }
- pump(side:PumpSide){
-  this.pulses.push({side,left:PULSE_DURATION});
+ pump(side:PumpSide,intensity=1){
+  if(!Number.isFinite(intensity))return;
+  const bounded=Math.max(.5,Math.min(1.5,intensity));
+  this.pulses.push({side,left:PULSE_DURATION,intensity:bounded,strength:this.strength*bounded});
  }
  isThreaded(ring:Ring){return this.threadedPegIndex(ring)!==undefined;}
  private threadedPegIndex(ring:Ring):number|undefined{
@@ -157,7 +160,7 @@ export class Simulation {
    for(const pulse of this.pulses){
     const flow=flowAt(pulse.side,p,this.layout);
     const shelter=this.isThreaded(ring)?.30:1;
-    const impulse=this.strength*DT*shelter;
+    const impulse=pulse.strength*DT*shelter;
     const localImpulse=impulse*Math.hypot(flow.x,flow.y);
     if(localImpulse>.00002){
      b.applyImpulse({x:flow.x*impulse,y:flow.y*impulse,z:Math.sin(this.time*4+ring.id)*localImpulse*.09},true);

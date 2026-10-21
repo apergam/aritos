@@ -54,6 +54,7 @@ export class MusicController {
   private enabled: boolean;
   private theme: ThemeId;
   private paused = false;
+  private ducked = false;
   private disposed = false;
   private context: AudioContext | undefined;
   private gain: GainNode | undefined;
@@ -135,6 +136,17 @@ export class MusicController {
     } else this.refreshStatus();
   }
 
+  /** Lab encounters lower the existing loop without restarting its phrase. */
+  setDucked(ducked: boolean): void {
+    if (this.disposed || this.ducked === ducked) return;
+    this.ducked = ducked;
+    if (this.gain && this.context) {
+      const param = this.gain.gain, now = this.context.currentTime;
+      param.cancelScheduledValues(now); param.setValueAtTime(param.value,now);
+      param.linearRampToValueAtTime(OUTPUT_GAIN * (ducked ? .22 : 1),now+.08);
+    }
+  }
+
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
@@ -163,7 +175,7 @@ export class MusicController {
     this.stopSource();
     if (!this.gain) {
       this.gain = context.createGain();
-      this.gain.gain.value = OUTPUT_GAIN;
+      this.gain.gain.value = OUTPUT_GAIN * (this.ducked ? .22 : 1);
       this.gain.connect(context.destination);
     }
     const source = context.createBufferSource();

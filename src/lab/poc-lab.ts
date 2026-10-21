@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { BASE, JETS, PEGS, PULSE_DURATION, RING, TANK, TIP, type Scene } from '../physics';
+import { PULSE_DURATION, RING } from '../physics';
+import { createLabLayout, type LabLayout } from './experiments/geometry';
+import { REAR_INSERT_ASSETS, theme, type ThemeId } from '../themes';
 import type { SessionSnapshot } from '../game/session';
 import type { Simulation } from '../physics';
 import { PocRingRenderer } from '../rendering/poc-renderer';
@@ -23,7 +25,15 @@ export class PocLab {
   private readonly debugGeometry = new THREE.BufferGeometry();
   private readonly debugLines: THREE.LineSegments;
   private readonly gravityArrow: THREE.ArrowHelper;
-  private readonly outlets: Array<{ side: string; mesh: THREE.Mesh }>;
+  private readonly outlets: Array<{ side: string; mesh: THREE.Mesh }> = [];
+  private readonly toyGroup = new THREE.Group();
+  private readonly toyResources: Array<THREE.BufferGeometry | THREE.Material> = [];
+  private readonly textures = new Map<ThemeId, THREE.Texture>();
+  private currentLayout: LabLayout = createLabLayout();
+  private currentTheme: ThemeId = 'ocean';
+  private currentModel: ToyModelId = 'two-button';
+  private disposed = false;
+  private rearMaterial?: THREE.MeshBasicMaterial;
   private readonly cameraDefaults: CameraSettings = { azimuth: 0, elevation: .7, distanceScale: 1, targetY: 0 };
   private cameraSettings: CameraSettings = { ...this.cameraDefaults };
   private fitDistance = 25;
@@ -37,43 +47,72 @@ export class PocLab {
     const key = new THREE.DirectionalLight(0xffffff, 3); key.position.set(-4, 10, 12); this.scene.add(key);
     const fill = new THREE.DirectionalLight(0x91d9c6, 1.5); fill.position.set(5, -2, -3); this.scene.add(fill);
     const v = (x:number,y:number,z:number)=>new THREE.Vector3(x,y,z);
-    const mesh=(g:THREE.BufferGeometry,color:number,position:THREE.Vector3,opacity=1)=>{
-      const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.34,metalness:.1,transparent:opacity<1,opacity,depthWrite:opacity>=1}));
-      m.position.copy(position);this.scene.add(m);this.resources.push(g,m.material);return m;
-    };
-    mesh(new THREE.BoxGeometry(9.55,12.5,.28),0x8ab8a6,v(0,0,-TANK.z-.25));
-    mesh(new THREE.PlaneGeometry(8.95,11.95),0xd4e9dc,v(0,0,-TANK.z-.08));
-    const gridPositions:number[]=[];
-    for(let x=-4;x<=4;x+=1)gridPositions.push(x,-5.9,-TANK.z-.05,x,5.9,-TANK.z-.05);
-    for(let y=-5;y<=5;y+=1)gridPositions.push(-4.4,y,-TANK.z-.05,4.4,y,-TANK.z-.05);
-    const gridGeometry=new THREE.BufferGeometry();gridGeometry.setAttribute('position',new THREE.Float32BufferAttribute(gridPositions,3));
-    const grid=new THREE.LineSegments(gridGeometry,new THREE.LineBasicMaterial({color:0xa7c8b4,transparent:true,opacity:.28}));this.scene.add(grid);this.resources.push(gridGeometry,(grid.material as THREE.Material));
-    for(const x of [-4.65,4.65])mesh(new THREE.BoxGeometry(.3,12.55,2*(TANK.z+.25)),0x6b9d87,v(x,0,0),.35);
-    for(const y of [-6.15,6.15])mesh(new THREE.BoxGeometry(9.5,.3,2*(TANK.z+.25)),0x6b9d87,v(0,y,0),.38);
-    const edges=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(9.3,12.3,2*(TANK.z+.15))),new THREE.LineBasicMaterial({color:0x447d65,transparent:true,opacity:.52}));this.scene.add(edges);this.resources.push(edges.geometry,edges.material as THREE.Material);
-    for(const p of PEGS){mesh(new THREE.CylinderGeometry(.79,.86,.3,32),0x739f87,v(p.x,BASE-.15,p.z));mesh(new THREE.CylinderGeometry(TOY_PHYSICS.pegRadius,TOY_PHYSICS.pegRadius,TIP-BASE,24),0xe2c789,v(p.x,(TIP+BASE)/2,p.z));mesh(new THREE.SphereGeometry(TOY_PHYSICS.pegRadius,16,8),0xf4db9c,v(p.x,TIP,p.z));}
-    this.outlets=Object.entries(JETS).map(([side,jet])=>{const outlet=mesh(new THREE.CylinderGeometry(.13,.18,.42,16),0x458a89,v(jet.origin.x,jet.origin.y,jet.origin.z));outlet.quaternion.setFromUnitVectors(v(0,1,0),v(jet.direction.x,jet.direction.y,jet.direction.z));return {side,mesh:outlet};});
-    const front=mesh(new THREE.PlaneGeometry(9,12),0xd6fff1,v(0,0,TANK.z+.01),.035);front.renderOrder=10;
+    this.scene.add(this.toyGroup);
+    this.rebuildToy();
+    for (const id of ['ocean','space','capybaras'] as const) {
+      new THREE.TextureLoader().load(REAR_INSERT_ASSETS[id].source, texture => {
+        if (this.disposed) { texture.dispose(); return; }
+        texture.colorSpace = THREE.SRGBColorSpace; this.textures.set(id, texture);
+        if (this.currentTheme === id && this.rearMaterial) { this.rearMaterial.map = texture; this.rearMaterial.needsUpdate = true; }
+      });
+    }
     this.ringLayer=new PocRingRenderer(this.scene);
     const jets=new THREE.Group();this.scene.add(jets);const bubbleG=new THREE.SphereGeometry(.045,7,5),bubbleM=new THREE.MeshBasicMaterial({color:0xf0fff7,transparent:true,opacity:.65});
     this.bubbles=Array.from({length:36},()=>{const b=new THREE.Mesh(bubbleG,bubbleM);jets.add(b);return b;});this.resources.push(bubbleG,bubbleM);
     this.debugLines=new THREE.LineSegments(this.debugGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.7,depthTest:false}));this.debugLines.renderOrder=20;this.scene.add(this.debugLines);this.resources.push(this.debugGeometry,this.debugLines.material as THREE.Material);
     this.gravityArrow=new THREE.ArrowHelper(v(0,-1,0),v(3.65,4.8,.9),.75,0x477b60,.2,.13);this.scene.add(this.gravityArrow);
     this.bindCameraControls();this.updateOutlets(model);
-    $('depth-readout').textContent=`FONDO ${(2*TANK.z).toFixed(1)} · ARO ${(2*(RING.radius+RING.tube)).toFixed(1)}`;
+    $('depth-readout').textContent=`FONDO ${(2*this.currentLayout.tank.z).toFixed(1)} · ARO ${(2*(RING.radius+RING.tube)).toFixed(1)}`;
+  }
+  setLayout(layout: LabLayout): void { if (this.currentLayout !== layout) { this.currentLayout = layout; this.rebuildToy(); this.resize(); } }
+  setTheme(id: ThemeId): void { this.currentTheme = id; this.rebuildToy(); this.ringLayer.setTheme(id); }
+  projectPoint(point: {x:number;y:number;z:number}): {x:number;y:number} {
+    const p = new THREE.Vector3(point.x,point.y,point.z).project(this.camera);
+    return { x: (p.x+1)*this.viewport.clientWidth/2, y: (1-p.y)*this.viewport.clientHeight/2 };
+  }
+  private rebuildToy(): void {
+    this.toyGroup.clear(); for (const resource of this.toyResources) resource.dispose(); this.toyResources.length = 0; this.outlets.length = 0;
+    const {tank,pegs,jets} = this.currentLayout, colors = theme(this.currentTheme).colors;
+    this.scene.background = new THREE.Color(colors.background);
+    const mesh = (g:THREE.BufferGeometry,color:number,x:number,y:number,z:number,opacity=1) => {
+      const m = new THREE.MeshStandardMaterial({color,roughness:.34,metalness:.08,transparent:opacity<1,opacity,depthWrite:opacity>=1});
+      const object = new THREE.Mesh(g,m); object.position.set(x,y,z); this.toyGroup.add(object); this.toyResources.push(g,m); return object;
+    };
+    mesh(new THREE.BoxGeometry(tank.x*2+.55,12.5,.28),colors.housing,0,0,-tank.z-.25,.7);
+    const rearMaterial = new THREE.MeshBasicMaterial({color:0xffffff,map:this.textures.get(this.currentTheme),transparent:true,opacity:.78,depthWrite:false,toneMapped:false});
+    const rearGeometry = new THREE.PlaneGeometry(tank.x*2-.3,11.6);
+    const rear = new THREE.Mesh(rearGeometry,rearMaterial); rear.position.set(0,0,-tank.z+.095); this.toyGroup.add(rear); this.toyResources.push(rearGeometry,rearMaterial); this.rearMaterial=rearMaterial;
+    for(const x of [-tank.x-.15,tank.x+.15]) mesh(new THREE.BoxGeometry(.3,12.55,2*(tank.z+.25)),colors.housingEdge,x,0,0,.4);
+    for(const y of [-6.15,6.15]) mesh(new THREE.BoxGeometry(tank.x*2+.5,.3,2*(tank.z+.25)),colors.housingEdge,0,y,0,.42);
+    for(const p of pegs){
+      mesh(new THREE.CylinderGeometry(.79,.86,.3,32),colors.base,p.x,p.baseY-.15,p.z);
+      mesh(new THREE.CylinderGeometry(TOY_PHYSICS.pegRadius,TOY_PHYSICS.pegRadius,p.tipY-p.baseY,24),colors.peg,p.x,(p.tipY+p.baseY)/2,p.z);
+      mesh(new THREE.SphereGeometry(TOY_PHYSICS.pegRadius,16,8),colors.peg,p.x,p.tipY,p.z);
+    }
+    // Raised variants expose the same support boxes used by Rapier.
+    const supports = (this.currentLayout as LabLayout & {supports?:readonly {center:{x:number;y:number;z:number};halfExtents:{x:number;y:number;z:number}}[]}).supports ?? [];
+    for(const support of supports){const c=support.center,h=support.halfExtents;mesh(new THREE.BoxGeometry(h.x*2,h.y*2,h.z*2),colors.base,c.x,c.y,c.z);}
+    for(const [side,jet] of Object.entries(jets)){
+      const outlet=mesh(new THREE.CylinderGeometry(.13,.18,.42,16),colors.button,jet.origin.x,jet.origin.y,jet.origin.z);
+      outlet.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(jet.direction.x,jet.direction.y,jet.direction.z)); this.outlets.push({side,mesh:outlet});
+    }
+    const front=mesh(new THREE.PlaneGeometry(tank.x*2,12),colors.water,0,0,tank.z+.01,.035);front.renderOrder=10;
+    this.updateOutlets(this.currentModel);
   }
   cameraSnapshot(): CameraSnapshot {
     return Object.freeze({...this.cameraSettings,position:Object.freeze({x:this.camera.position.x,y:this.camera.position.y,z:this.camera.position.z}),target:Object.freeze({x:0,y:this.cameraSettings.targetY,z:0}),distance:this.fitDistance*this.cameraSettings.distanceScale,fov:this.camera.fov,aspect:this.camera.aspect});
   }
-  updateOutlets(model:ToyModelId):void {const sides:readonly string[]=toyModel(model).outlets;for(const {side,mesh} of this.outlets)mesh.visible=sides.includes(side);}
+  updateOutlets(model:ToyModelId):void {this.currentModel=model;const sides:readonly string[]=toyModel(model).outlets;for(const {side,mesh} of this.outlets)mesh.visible=sides.includes(side);}
   resize():void {
     const w=this.viewport.clientWidth,h=this.viewport.clientHeight;if(!w||!h)return;
     this.renderer.setSize(w,h,false);this.camera.aspect=w/h;
-    this.fitDistance=Math.max(21.5,14.8/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))),10.7/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2)))/this.camera.aspect);
+    this.fitDistance=Math.max(21.5,14.8/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))),(this.currentLayout.tank.x*2+1.7)/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2)))/this.camera.aspect);
     this.camera.updateProjectionMatrix();this.updateCamera();
   }
-  render(snapshot:SessionSnapshot,simulation:Simulation):void {
-    this.ringLayer.update(snapshot);
+  render(snapshot:SessionSnapshot,simulation:Simulation,enemyIds:ReadonlySet<number>=new Set()):void {
+    this.setLayout(simulation.layout);
+    const TANK=simulation.layout.tank,JETS=simulation.layout.jets;
+    this.ringLayer.update(snapshot,enemyIds);
     this.bubbles.forEach((b,i)=>{
       const pulse=simulation.pulses[i%Math.max(1,simulation.pulses.length)];b.visible=!!pulse;
       if(pulse){const jet=JETS[pulse.side],t=(PULSE_DURATION-pulse.left)*18+Math.floor(i/simulation.pulses.length)*.18;b.position.set(jet.origin.x+jet.direction.x*t+Math.sin(i*2.3+t)*.12,jet.origin.y+jet.direction.y*t,(i%3-1)*.13);b.visible=Math.abs(b.position.x)<TANK.x-.1&&b.position.y<TANK.y-.1;}
@@ -84,6 +123,7 @@ export class PocLab {
     this.renderer.render(this.scene,this.camera);
   }
   dispose():void {
+    this.disposed=true; for(const texture of this.textures.values())texture.dispose(); this.textures.clear(); for(const resource of this.toyResources)resource.dispose(); this.toyResources.length=0;
     this.ringLayer.dispose();this.gravityArrow.cone.geometry.dispose();(this.gravityArrow.cone.material as THREE.Material).dispose();this.gravityArrow.line.geometry.dispose();(this.gravityArrow.line.material as THREE.Material).dispose();
     for(const resource of this.resources)resource.dispose();this.resources.length=0;this.renderer.dispose();this.renderer.domElement.remove();
   }

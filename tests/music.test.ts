@@ -42,6 +42,7 @@ class FakeContext {
   destination = {} as AudioDestinationNode;
   buffers: FakeBuffer[] = [];
   sources: FakeSource[] = [];
+  gains: FakeGain[] = [];
   resumeGate: Promise<void> | undefined;
   failResume = false;
   closed = false;
@@ -60,7 +61,7 @@ class FakeContext {
     const source = new FakeSource(); this.sources.push(source);
     return source as unknown as AudioBufferSourceNode;
   }
-  createGain(): GainNode { return new FakeGain() as unknown as GainNode; }
+  createGain(): GainNode { const gain=new FakeGain();this.gains.push(gain);return gain as unknown as GainNode; }
 }
 
 function setup(options: { enabled?: boolean; theme?: 'ocean' | 'space' | 'capybaras' } = {}) {
@@ -221,4 +222,10 @@ test('theme openings do not reuse the same normalized sample pattern', async () 
     assert.ok(similarity < 0.95, `theme ${a}/${b} opening similarity ${similarity.toFixed(4)} must be below 0.95`);
   }
   controller.dispose();
+});
+
+
+test('encounter ducking preserves the loop source and restores gain through pause/resume', async()=>{
+ const context=new FakeContext();const music=createMusicController({enabled:true,theme:'ocean',audioContextFactory:()=>context as unknown as AudioContext});
+ try{await music.activate();const first=context.sources[0]!;const gain=context.gains[0]!.gain;const normal=gain.value;music.setDucked(true);assert.ok(gain.value<normal/2);assert.equal(context.sources.length,1);assert.equal(first.stopped,false);music.setDucked(false);assert.equal(gain.value,normal);context.currentTime=3;music.setPaused(true);music.setDucked(false);music.setPaused(false);await music.activate();assert.equal(context.sources.length,2);assert.equal(context.sources[1]!.offset,3);assert.equal(gain.value,normal);}finally{music.dispose();}
 });

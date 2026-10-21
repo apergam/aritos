@@ -10,7 +10,7 @@ export type SessionSnapshot = Readonly<{
   activeSeconds: number; paused: readonly PauseReason[]; won: boolean; escaped: boolean;
 }>;
 export type SessionCommand =
-  | { type: 'pump'; side: PumpSide }
+  | { type: 'pump'; side: PumpSide; intensity?: number }
   | { type: 'orient'; gravity: Vec }
   | { type: 'pause'; reason: PauseReason; paused: boolean }
   | { type: 'start'; options?: SessionOptions }
@@ -18,7 +18,7 @@ export type SessionCommand =
   | { type: 'set-mode'; mode: GameMode; scene?: Scene }
   | { type: 'restart'; scene?: Scene };
 export type GameEvent =
-  | Readonly<{ type: 'pump'; roundId: number; side: PumpSide }>
+  | Readonly<{ type: 'pump'; roundId: number; side: PumpSide; intensity?: number }>
   | Readonly<{ type: 'ring-collected'; roundId: number; ringId: number; collected: number; total: number }>
   | Readonly<{ type: 'victory'; roundId: number; mode: GameMode }>;
 export type SessionOptions = Readonly<{ scene?: Scene; model?: ToyModelId; mode?: GameMode; lab?: LabSimulationSettings }>;
@@ -66,8 +66,11 @@ export class GameSession {
       case 'pump':
         if (!this.isPaused && toyModel(this.model).pumpSides.includes(command.side)) {
           const roundId = this.round;
-          this.simulation.pump(command.side);
-          this.emit({ type: 'pump', roundId, side: command.side });
+          const intensity = command.intensity ?? 1;
+          if (!Number.isFinite(intensity)) break;
+          const bounded = Math.max(.5, Math.min(1.5, intensity));
+          this.simulation.pump(command.side, bounded);
+          this.emit({ type: 'pump', roundId, side: command.side, intensity: bounded });
         }
         break;
       case 'orient': this.simulation.setGravity(command.gravity); break;

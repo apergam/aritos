@@ -7,14 +7,14 @@ const assets=['assets/themes/ocean-reef-v2-9767a3f999.png','assets/themes/capyba
 await mkdir('dist/assets/themes',{recursive:true});
 await mkdir('dist/assets/stickers',{recursive:true});
 for(const file of assets)await copyFile('public/'+file,'dist/'+file);
-const styles=['style.css','player.css','celebration.css','stickers.css'];
+const styles=['style.css','player.css','celebration.css','stickers.css','experiments.css'];
 for(const file of styles)await copyFile('public/'+file,'dist/'+file);
 const html=await readFile('public/index.html','utf8'),lab=await readFile('public/lab.html','utf8');
 const hash=createHash('sha256').update(html).update(lab).update(await readFile('dist/app.js'));
 for(const file of assets)hash.update(await readFile('dist/'+file));
 for(const file of styles)hash.update(await readFile('dist/'+file));
 const revision=hash.digest('hex').slice(0,8);
-const version=source=>source.replace(/\.\/(style|player|celebration|stickers)\.css/g,`./$1.css?v=${revision}`).replace('./app.js',`./app.js?v=${revision}`).replace('POC / 01',`POC / ${revision}`);
+const version=source=>source.replace(/\.\/(style|player|celebration|stickers|experiments)\.css/g,`./$1.css?v=${revision}`).replace('./app.js',`./app.js?v=${revision}`).replace('POC / 01',`POC / ${revision}`);
 await writeFile('dist/index.html',version(html));
 await writeFile('dist/lab.html',version(lab));
 await writeFile('dist/preview.html',version(html).replace('<title>Aritos · Aros al agua</title>','<title>Aritos · Vista de prueba</title>'));
