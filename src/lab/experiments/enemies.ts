@@ -152,11 +152,29 @@ export class VillainEncounterController {
     if (gravity.y >= -.05) return false;
     const endY = -layout.tank.y + radius + .1;
     if (endY >= p.y) return false;
-    const clearance = radius + TOY_PHYSICS.pegRadius + .1;
     const atHeight = (y: number) => {
       const time = (y - p.y) / gravity.y;
       return { x: p.x + gravity.x * time, z: p.z + gravity.z * time };
     };
+    const end = atHeight(endY);
+    const margin = .1;
+    // A straight trajectory that crosses a wall can bounce back into a peg.
+    // Since tank bounds are convex, checking both endpoints proves the full
+    // swept ring envelope stays inside them.
+    if (Math.abs(end.x) + radius + margin > layout.tank.x || Math.abs(end.z) + radius + margin > layout.tank.z) return false;
+
+    // Avoid bases and raised supports along the entire fall, not just at the
+    // spawn point. A collision there can redirect a tilted fall toward a peg.
+    for (const peg of layout.pegs) {
+      const base = { x: peg.x, y: peg.baseY - TOY_PHYSICS.base.footHeight / 2, z: peg.z };
+      if (this.sweptSphereIntersectsBox(p, endY, end, radius, base,
+        { x: TOY_PHYSICS.base.halfWidth, y: TOY_PHYSICS.base.footHeight / 2, z: TOY_PHYSICS.base.halfDepth }, margin)) return false;
+    }
+    for (const support of layout.supports) {
+      if (this.sweptSphereIntersectsBox(p, endY, end, radius, support.center, support.halfExtents, margin)) return false;
+    }
+
+    const clearance = radius + TOY_PHYSICS.pegRadius + margin;
     for (const peg of layout.pegs) {
       const low = Math.max(endY, peg.baseY - clearance), high = Math.min(p.y, peg.tipY + clearance);
       if (low > high) continue;
@@ -176,6 +194,19 @@ export class VillainEncounterController {
     const dy = Math.max(0, Math.abs(p.y - center.y) - half.y);
     const dz = Math.max(0, Math.abs(p.z - center.z) - half.z);
     return Math.hypot(dx, dy, dz) < radius + margin;
+  }
+
+  private sweptSphereIntersectsBox(
+    start: { x: number; y: number; z: number }, endY: number, end: { x: number; z: number }, radius: number,
+    center: { x: number; y: number; z: number }, half: { x: number; y: number; z: number }, margin: number,
+  ): boolean {
+    const pathMin = { x: Math.min(start.x, end.x), y: endY, z: Math.min(start.z, end.z) };
+    const pathMax = { x: Math.max(start.x, end.x), y: start.y, z: Math.max(start.z, end.z) };
+    const boxMin = { x: center.x - half.x - radius - margin, y: center.y - half.y - radius - margin, z: center.z - half.z - radius - margin };
+    const boxMax = { x: center.x + half.x + radius + margin, y: center.y + half.y + radius + margin, z: center.z + half.z + radius + margin };
+    return pathMin.x <= boxMax.x && pathMax.x >= boxMin.x
+      && pathMin.y <= boxMax.y && pathMax.y >= boxMin.y
+      && pathMin.z <= boxMax.z && pathMax.z >= boxMin.z;
   }
 
   private distance(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): number {

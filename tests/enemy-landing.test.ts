@@ -93,3 +93,16 @@ test('tilted gravity rejects a +2 encounter when fewer than two clear fall paths
     } finally { session.dispose(); }
   }
 });
+
+test('enemy spawn rejects a tilted free-fall path that exits the tank and would bounce off its wall', async () => {
+  await initPhysics();
+  const session = new GameSession({ scene: 'free', mode: 'classic', lab: { width: 9, ringCount: 12, pegLayout: 'floor' } });
+  try {
+    session.simulation.setGravity({ x: 3, y: -1, z: 0 });
+    const enemies = new VillainEncounterController(session);
+    assert.equal(enemies.request(1).accepted, true);
+    assert.equal(enemies.beforeStep()?.reason, 'no-safe-space');
+    assert.equal(session.snapshot().total, 12);
+    assert.equal(session.snapshot().active, 12);
+  } finally { session.dispose(); }
+});
