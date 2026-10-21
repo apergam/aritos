@@ -107,3 +107,8 @@ Validación técnica final del fuente: 16 pruebas, TypeScript y build superados 
 ## Integración posterior al POC — 19 de octubre de 2026
 
 T01–T05 separaron módulos, reforzaron controles y ciclo de partida, centralizaron los modelos y añadieron preferencias seguras. Se conserva el setup aceptado. La suite integrada pasa 42 pruebas, TypeScript y build; el detalle y las limitaciones están en [el informe de integración](validation/integration-t01-t05.md). Las entradas anteriores son evidencia histórica, no el número actual de pruebas. T06 sigue pendiente de dispositivos reales; el usuario descartó pagar acceso a un servicio móvil para este experimento.
+
+
+## October 20 — selected candidates adopted in normal play
+
+After trying the isolated POCs, the user selected width8, raised pegs and both mascot features for normal `/`. The combined selection is integrated with145 passing tests and browser evidence in [selected-toy integration](validation/selected-toy-integration.md), build20eb133f. The villain no longer uses a peg-aligned fallback and rejects unsafe falling/bouncing paths. Twelve rings/fixed75 remain production defaults; twenty rings and variable pressure return to planned backlog. All earlier measurements retain their original geometry and settings. Physical mobile and subjective acoustic acceptance remain pending.

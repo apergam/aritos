@@ -373,7 +373,7 @@ No automatic enemy timing, powerup economy, pressure hardware compatibility or s
 
 ## 21. Selected normal-game integration — October 20, 2026
 
-After comparing the laboratory candidates, the user explicitly selected the width-8 toy with raised pegs, both manual mascot-assist options, and one manual villain encounter per round for normal play. The selected geometry uses the real immutable `PLAYER_TOY_SETTINGS` layout, not a test-only geometry fixture. See [selected-toy integration evidence](validation/selected-toy-integration.md) for the integration checks; that evidence is pending and must not be inferred from the earlier laboratory report.
+After comparing the laboratory candidates, the user explicitly selected the width-8 toy with raised pegs, both manual mascot-assist options, and one manual villain encounter per round for normal play. The selected geometry uses the real immutable `PLAYER_TOY_SETTINGS` layout, not a test-only geometry fixture. See [selected-toy integration evidence](validation/selected-toy-integration.md) for the recorded integration checks (145 passing tests and browser verification); do not infer these checks from the earlier laboratory report.
 
 The production setup keeps twelve starting rings, pump strength **75**, water resistance **0.50**, and the selected initial collect-at-the-base mode. The villain may add one or two real physical rings once per round; the round objective follows successful additions and is capped at fourteen total. The two mascot actions remain explicit/manual. Their scripted movement is identified as assistance; the ordinary physics/contact rules decide collection, and positioning above a peg awards no progress by itself. These selected features are not automatic triggers or an economy.
 

@@ -35,7 +35,7 @@ const SEGMENT_TICKS = [48, 72, 24, 96] as const;
 const freezeVec = (value: Vec): Readonly<Vec> => Object.freeze({ x: value.x, y: value.y, z: value.z });
 const horizontalRotation = Object.freeze({ x: horizontal.x, y: horizontal.y, z: horizontal.z, w: horizontal.w });
 
-/** Explicit lab-only scripted placement; physics still owns contact, threading and collection. */
+/** Explicit manual scripted assistance; physics still owns contact, threading and collection. */
 export class RingAssistController {
   private active: ActiveAssist | undefined;
   private disposed = false;

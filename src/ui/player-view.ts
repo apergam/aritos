@@ -1,9 +1,12 @@
+import type { MascotState } from '../game/mascots/player-mascots';
+import type { RingAssistKind } from '../lab/experiments/assist';
 import type { GameMode } from '../physics';
 import type { SessionSnapshot, PauseReason } from '../game/session';
 import type { ToyModelId } from '../models/toy-model';
 import type { PlayerPreferences, ThemeId } from '../platform/preferences';
 
 export type PlayerUIState = Readonly<{
+  mascots?: MascotState;
   paused?: boolean;
   feedback?: string;
   victory?: string;
@@ -12,6 +15,8 @@ export type PlayerUIState = Readonly<{
 }>;
 
 export type PlayerUIHandlers = Readonly<{
+  onAssist: (kind: RingAssistKind) => void;
+  onVillain: (count: 1 | 2) => void;
   onStart: (preferences: PlayerPreferences, mode: GameMode) => void;
   onPreferenceChange: (changes: Partial<PlayerPreferences>) => void;
   onPause: (reason: PauseReason, paused: boolean) => void;
@@ -73,7 +78,7 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
       </section>
       <section class="game-screen" id="game-screen" aria-label="Partida" hidden>
         <div class="game-topline"><div><p class="eyebrow" id="round-label">RETO CLÁSICO</p><p class="progress-copy"><strong id="count">0 / 12</strong><span id="count-label">AROS GUARDADOS</span></p></div><button class="compact-button" id="game-help-open" type="button" aria-haspopup="dialog">? <span>Ayuda</span></button></div>
-        <div class="toy-stage" id="toy-stage"><div class="stage-glow" aria-hidden="true"></div><div class="viewport" id="viewport" aria-label="Juguete de agua en 3D"></div><div class="stage-status" id="player-status" aria-live="polite"></div><div class="feedback-toast" id="feedback-toast" role="status" hidden></div></div>
+        <div class="toy-stage" id="toy-stage"><div class="stage-glow" aria-hidden="true"></div><div class="viewport" id="viewport" aria-label="Juguete de agua en 3D"><div class="player-mascot" id="player-mascot" hidden aria-hidden="true"><img src="./assets/stickers/ocean-octopus-3ee08e881c.png" alt=""><span></span></div></div><div class="stage-status" id="player-status" aria-live="polite"></div><div class="feedback-toast" id="feedback-toast" role="status" hidden></div></div>
         <div class="pump-deck" aria-label="Botones de bombeo">
           <button class="pump-button pump-side" id="pump-left" type="button" aria-label="Bombear lado izquierdo"><span class="pump-icon" aria-hidden="true">↗</span><span>Bombear</span></button>
           <button class="pump-button pump-center" id="pump-center" type="button" aria-label="Bombear"><span class="pump-icon" aria-hidden="true">↑</span><span>Bombear</span></button>
@@ -88,6 +93,11 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
           </div>
           <div class="motion-row"><span id="sensor-status" aria-live="polite">Control manual activo. Puedes usar movimiento si tu dispositivo lo permite.</span><button class="outline-button" id="sensor" type="button">Usar movimiento</button></div>
           <button class="text-button small center-button" id="upright" type="button">◎ Centrar inclinación</button>
+        </section>
+        <section class="mascot-panel" aria-labelledby="mascot-title">
+          <div class="mascot-heading"><img src="./assets/stickers/ocean-octopus-3ee08e881c.png" alt=""><div><b id="mascot-title">Compañía bajo el agua</b><small>Pide ayuda o invita una travesura.</small></div></div>
+          <div class="mascot-actions"><fieldset><legend>Una mano amiga</legend><button type="button" data-assist="thread">Ensartar un aro</button><button type="button" data-assist="above">Soltar sobre estaca</button></fieldset><fieldset><legend>La traviesa · una vez por ronda</legend><button type="button" data-villain="1">Añadir 1 aro</button><button type="button" data-villain="2">Añadir 2 aros</button></fieldset></div>
+          <p class="mascot-status" id="mascot-status" role="status">Una mano amiga o una travesura: tú eliges.</p>
         </section>
       </section>
       <dialog class="player-dialog" id="settings-dialog" aria-labelledby="settings-title">
@@ -165,6 +175,8 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
   }));
   root.querySelectorAll<HTMLButtonElement>('[data-model]').forEach(button => button.addEventListener('click', () => chooseModel(button.dataset.model as ToyModelId)));
   root.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => button.addEventListener('click', () => setPreference({ theme: button.dataset.theme as ThemeId })));
+  root.querySelectorAll<HTMLButtonElement>('[data-assist]').forEach(button => button.addEventListener('click', () => handlers.onAssist(button.dataset.assist as RingAssistKind)));
+  root.querySelectorAll<HTMLButtonElement>('[data-villain]').forEach(button => button.addEventListener('click', () => handlers.onVillain(Number(button.dataset.villain) as 1|2)));
   $('#start-game').addEventListener('click', () => {
     started = true; activeModel = draftModel; modelDraftDirty = false;
     if (currentPreferences.model !== draftModel) {
@@ -231,6 +243,12 @@ export function mountPlayerUI(root: HTMLElement, initialPreferences: PlayerPrefe
         currentPreferences = preferences;
         lastPreferenceSync = preferences;
         syncPrefs();
+      }
+      if (nextState.mascots) {
+        const state = nextState.mascots, blocked = Boolean(nextState.paused || snapshot.won || state.busy);
+        root.querySelectorAll<HTMLButtonElement>('[data-assist]').forEach(button => button.disabled = blocked);
+        root.querySelectorAll<HTMLButtonElement>('[data-villain]').forEach(button => button.disabled = blocked || state.enemyUsed || snapshot.scene !== 'free');
+        const message = $('#mascot-status'); if (message.textContent !== state.message) message.textContent = state.message;
       }
       $('#count').textContent = `${snapshot.mode === 'collect' ? snapshot.collected : snapshot.rings.filter(r => r.threaded).length} / ${snapshot.total}`;
       $('#count-label').textContent = snapshot.mode === 'collect' ? 'AROS GUARDADOS' : 'AROS ENSARTADOS';

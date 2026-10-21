@@ -1,5 +1,7 @@
 # T18 — Compare twelve and twenty rings
 
+Status: **planned — deferred by the user after POC review**. The user deferred twenty rings after playing the comparison; reconsider enjoyment and crowding before another iteration. Historical implementation and evidence below are retained; there is no active assignment.
+
 Dependencies: T04, T03, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
 Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user subsequently selected this laboratory implementation; see current evidence below.

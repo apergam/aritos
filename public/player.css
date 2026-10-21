@@ -227,3 +227,26 @@
 .reward-controls select { flex:1; min-width:0; min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); font:inherit; font-size:13px; }
 .reward-controls button { min-height:44px; }
 .reward-setting>small { display:block; color:var(--muted); font-size:11px; }
+
+/* Optional manual mascots stay below the pump deck and never intercept the toy. */
+.mascot-panel { margin:12px 0 18px; padding:16px; border:1px solid var(--line); border-radius:18px; background:var(--paper); }
+.mascot-heading { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.mascot-heading img { width:44px; height:44px; object-fit:contain; }
+.mascot-heading b,.mascot-heading small { display:block; }
+.mascot-heading small { color:var(--muted); font-size:11px; }
+.mascot-actions { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.mascot-actions fieldset { margin:0; padding:0; min-width:0; border:0; display:flex; flex-wrap:wrap; gap:6px; align-content:start; }
+.mascot-actions legend { margin-bottom:7px; font-size:11px; font-weight:800; }
+.mascot-actions button { flex:1 1 100%; min-height:44px; padding:8px; border:1px solid var(--line); border-radius:10px; background:var(--wash); font-size:12px; cursor:pointer; }
+.mascot-actions button:disabled { cursor:default; opacity:.48; }
+.mascot-status { min-height:2.8em; margin:12px 0 0; color:var(--muted); font-size:11px; }
+.player-mascot { position:absolute; width:clamp(48px,10vw,86px); transform:translate(-50%,-65%); pointer-events:none; z-index:9; }
+.player-mascot img { display:block; width:100%; filter:drop-shadow(0 3px 4px #163d3866); }
+.player-mascot.is-villain img { filter:hue-rotate(250deg) saturate(1.2) drop-shadow(0 3px 5px #49134d88); }
+.player-mascot span { display:block; position:relative; left:50%; transform:translateX(-50%); width:max-content; max-width:140px; padding:4px 7px; border-radius:10px; background:#fffdf2f2; color:#193d43; text-align:center; font-size:10px; font-weight:800; }
+
+@media (min-width:700px) and (max-height:800px) and (orientation:landscape), (max-width:699px) and (max-height:540px) and (orientation:landscape) {
+ .game-screen { height:auto; grid-template-rows:auto minmax(160px,calc(100svh - 193px)) 68px auto; }
+ .mascot-panel { grid-column:1/-1; grid-row:4; margin-top:12px; }
+ .mascot-actions button { flex-basis:40%; }
+}

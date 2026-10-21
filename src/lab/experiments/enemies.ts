@@ -14,7 +14,7 @@ export type VillainSpawnResult = Readonly<{
 
 type Request = { addCount: 1 | 2; roundId: number; encounterId: string };
 export type VillainRequestResult = Readonly<{ accepted: boolean; pending: boolean; encounterId: string; roundId: number; reason?: 'duplicate' | 'stale-round' | 'disposed' | 'paused' | 'pending' }>;
-/** Opt-in laboratory-only enemy behavior. Call beforeStep immediately before each session.step(). */
+/** Opt-in manual enemy behavior for the approved layouts. Call beforeStep immediately before each session.step(). */
 export class VillainEncounterController {
   private pending: Request[] = [];
   private seen = new Set<string>();

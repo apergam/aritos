@@ -90,3 +90,14 @@ test('toy surface projection returns frozen CSS-pixel bounds from the fixed came
   assert.equal(Object.isFrozen(bounds), true);
   assert.deepEqual(projectToySurfaceBounds(camera, 0, 700), { left: 0, top: 0, width: 0, height: 0 });
 });
+
+
+test('sticker projection follows the selected narrow chamber without changing camera pose', async () => {
+ const { PLAYER_TOY_LAYOUT } = await import('../src/models/selected-toy');
+ const camera = new THREE.PerspectiveCamera(37, 1, .1, 100);
+ const position = fixedCameraPosition(25);
+ camera.position.set(position.x,position.y,position.z); camera.lookAt(0,0,0); camera.updateProjectionMatrix();
+ const baseline=projectToySurfaceBounds(camera,700,700), selected=projectToySurfaceBounds(camera,700,700,PLAYER_TOY_LAYOUT.tank);
+ assert.ok(selected.width<baseline.width); assert.equal(selected.height,baseline.height);
+ assert.ok(Math.abs(selected.left+selected.width/2-350)<1e-8);
+});

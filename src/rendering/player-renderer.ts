@@ -1,17 +1,17 @@
 import * as THREE from 'three';
+import { createLabLayout, type LabLayout } from '../lab/experiments/geometry';
 import type { SessionSnapshot } from '../game/session';
 import { TOY_PHYSICS, toyModel, type PumpSide, type ToyModelId } from '../models/toy-model';
 import { REAR_INSERT_ASSETS, theme, type ThemeId } from '../themes';
 import { applyRingAppearance } from '../themes/ring-appearance';
 
 export type RenderQuality = 'high' | 'reduced';
-export type PlayerRendererOptions = Readonly<{ model: ToyModelId; theme: ThemeId; quality?: RenderQuality }>;
+export type PlayerRendererOptions = Readonly<{ model: ToyModelId; theme: ThemeId; quality?: RenderQuality; layout?: LabLayout }>;
 export type ToySurfaceBounds = Readonly<{ left: number; top: number; width: number; height: number }>;
 
 /** Project the accepted front tank face into CSS pixels relative to its viewport. */
-export function projectToySurfaceBounds(camera: THREE.Camera, width: number, height: number): ToySurfaceBounds {
+export function projectToySurfaceBounds(camera: THREE.Camera, width: number, height: number, tank = TOY_PHYSICS.tank): ToySurfaceBounds {
   if (width <= 0 || height <= 0) return Object.freeze({ left: 0, top: 0, width: 0, height: 0 });
-  const tank = TOY_PHYSICS.tank;
   const halfWidth = tank.x + 0.08;
   const halfHeight = tank.y + 0.16;
   const frontZ = tank.z + 0.0875;
@@ -59,12 +59,14 @@ export class PlayerRenderer {
   private readonly rearInserts = new Map<ThemeId, THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>>();
   private readonly rearInsertTextures = new Map<ThemeId, THREE.Texture>();
   private readonly pendingRearInsertLoads = new Set<ThemeId>();
+  private readonly layout: LabLayout;
   private currentTheme: ThemeId;
   private currentModel: ToyModelId;
   private quality: RenderQuality;
   private disposed = false;
 
   constructor(private readonly container: HTMLElement, options: PlayerRendererOptions) {
+    this.layout = options.layout ?? createLabLayout();
     this.currentTheme = options.theme;
     this.currentModel = options.model;
     this.quality = options.quality ?? 'high';
@@ -103,7 +105,7 @@ export class PlayerRenderer {
   }
 
   /** Project readonly round poses into stable-ID meshes. */
-  render(snapshot: SessionSnapshot): void {
+  render(snapshot: SessionSnapshot, extraRingIds: ReadonlySet<number> = new Set()): void {
     const now = typeof performance === 'undefined' ? Date.now() : performance.now();
     const alive = new Set(snapshot.rings.map(ring => ring.id));
     for (const [id, mesh] of this.rings) {
@@ -127,6 +129,9 @@ export class PlayerRenderer {
         this.scene.add(mesh);
       }
       applyRingAppearance(mesh.material, this.currentTheme, pose.id, pose.threaded);
+      if (extraRingIds.has(pose.id)) {
+        mesh.material.color.setHex(0xf04465); mesh.material.emissive.setHex(0x8f1236); mesh.material.emissiveIntensity = .16;
+      }
       mesh.userData.threaded = pose.threaded;
       mesh.position.set(pose.position.x, pose.position.y, pose.position.z);
       mesh.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w);
@@ -186,7 +191,7 @@ export class PlayerRenderer {
     this.camera.aspect = width / height;
     const fov = THREE.MathUtils.degToRad(this.camera.fov);
     const vertical = 14.8 / (2 * Math.tan(fov / 2));
-    const horizontal = 10.7 / (2 * Math.tan(fov / 2) * this.camera.aspect);
+    const horizontal = (2 * this.layout.tank.x + 1.7) / (2 * Math.tan(fov / 2) * this.camera.aspect);
     const distance = Math.max(21.5, vertical, horizontal);
     const position = fixedCameraPosition(distance);
     this.camera.position.set(position.x, position.y, position.z);
@@ -196,7 +201,14 @@ export class PlayerRenderer {
 
   /** Front tank face in viewport-container CSS pixels for toy-bound overlays. */
   toySurfaceBounds(): ToySurfaceBounds {
-    return projectToySurfaceBounds(this.camera, this.container.clientWidth, this.container.clientHeight);
+    return projectToySurfaceBounds(this.camera, this.container.clientWidth, this.container.clientHeight, this.layout.tank);
+  }
+
+  /** CSS pixels in the same viewport as the toy and mascot overlay. */
+  projectPoint(point: Readonly<{ x: number; y: number; z: number }>): { x: number; y: number } {
+    this.camera.updateMatrixWorld();
+    const p = new THREE.Vector3(point.x, point.y, point.z).project(this.camera);
+    return { x: (p.x + 1) * this.container.clientWidth / 2, y: (1 - p.y) * this.container.clientHeight / 2 };
   }
 
   dispose(): void {
@@ -228,7 +240,7 @@ export class PlayerRenderer {
     const edge = this.tankMaterials.edge;
     const water = this.tankMaterials.water;
     const deep = this.tankMaterials.deepWater;
-    const tank = TOY_PHYSICS.tank;
+    const tank = this.layout.tank;
     const x = tank.x;
     const y = tank.y;
     const z = tank.z;
@@ -256,10 +268,10 @@ export class PlayerRenderer {
     this.box(this.tankGroup, 0.025, 2 * (y - 0.55), 0.035, lineMaterial, [-x + 0.13, -0.24, 0]);
     this.box(this.tankGroup, 0.025, 2 * (y - 0.55), 0.035, lineMaterial, [x - 0.13, -0.24, 0]);
     for (let i = 0; i < 4; i++) {
-      const p = TOY_PHYSICS.pegs[i % TOY_PHYSICS.pegs.length];
+      const p = this.layout.pegs[i % this.layout.pegs.length];
       const side = i < 2 ? -1 : 1;
       const yLine = -4.7 + (i % 2) * 0.68;
-      const reflection = this.box(this.tankGroup, 0.025, 0.28, 0.025, lineMaterial, [side * 4.15, yLine, p.z]);
+      const reflection = this.box(this.tankGroup, 0.025, 0.28, 0.025, lineMaterial, [side * (x - .35), yLine, p.z]);
       reflection.rotation.z = side * 0.34;
     }
     this.createBasesAndPegs();
@@ -268,22 +280,27 @@ export class PlayerRenderer {
 
   private createBasesAndPegs(): void {
     const colors = theme(this.currentTheme).colors;
-    for (const peg of TOY_PHYSICS.pegs) {
+    for (const support of this.layout.supports) {
+      const mat = this.standard(colors.base, .4, .12); this.bindThemeColor(mat, 'base');
+      const h = support.halfExtents, p = support.center;
+      this.box(this.tankGroup, 2*h.x, 2*h.y, 2*h.z, mat, [p.x,p.y,p.z]);
+    }
+    for (const peg of this.layout.pegs) {
       const baseMat = this.standard(colors.base, 0.31, 0.12);
       this.bindThemeColor(baseMat, 'base');
-      const footY = TOY_PHYSICS.base.topY - TOY_PHYSICS.base.footHeight / 2;
+      const footY = peg.baseY - TOY_PHYSICS.base.footHeight / 2;
       this.cylinder(this.tankGroup, 0.79, 0.85, TOY_PHYSICS.base.footHeight, 32, baseMat, [peg.x, footY, peg.z]);
       const baseTop = this.standard(colors.housingEdge, 0.3, 0.18);
       this.bindThemeColor(baseTop, 'housingEdge');
       const capHeight = 0.04;
-      this.cylinder(this.tankGroup, 0.54, 0.7, capHeight, 32, baseTop, [peg.x, TOY_PHYSICS.base.topY - capHeight / 2, peg.z]);
+      this.cylinder(this.tankGroup, 0.54, 0.7, capHeight, 32, baseTop, [peg.x, peg.baseY - capHeight / 2, peg.z]);
       const pegMat = this.standard(colors.peg, 0.2, 0.42);
       this.bindThemeColor(pegMat, 'peg');
-      const length = TOY_PHYSICS.pegTipY - TOY_PHYSICS.base.topY;
-      this.cylinder(this.tankGroup, TOY_PHYSICS.pegRadius, TOY_PHYSICS.pegRadius, length, 24, pegMat, [peg.x, (TOY_PHYSICS.pegTipY + TOY_PHYSICS.base.topY) / 2, peg.z]);
+      const length = peg.tipY - peg.baseY;
+      this.cylinder(this.tankGroup, TOY_PHYSICS.pegRadius, TOY_PHYSICS.pegRadius, length, 24, pegMat, [peg.x, (peg.tipY + peg.baseY) / 2, peg.z]);
       const tipMat = this.standard(colors.peg, 0.19, 0.35);
       this.bindThemeColor(tipMat, 'peg');
-      this.sphere(this.tankGroup, TOY_PHYSICS.pegRadius, 20, 12, tipMat, [peg.x, TOY_PHYSICS.pegTipY, peg.z]);
+      this.sphere(this.tankGroup, TOY_PHYSICS.pegRadius, 20, 12, tipMat, [peg.x, peg.tipY, peg.z]);
     }
   }
 
@@ -291,7 +308,7 @@ export class PlayerRenderer {
     const color = theme(this.currentTheme).colors.buttonEdge;
     const config = toyModel(this.currentModel);
     for (const side of config.outlets) {
-      const outlet = config.outletDefinitions[side];
+      const outlet = this.layout.jets[side];
       if (!outlet) continue;
       const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.37, 20), this.standard(color, 0.27, 0.14));
       mesh.position.set(outlet.origin.x, outlet.origin.y, outlet.origin.z);
@@ -324,8 +341,7 @@ export class PlayerRenderer {
       const pulseIndex = Math.floor(index / (this.quality === 'high' ? 10 : 4));
       const pulse = this.pulses[pulseIndex];
       const local = (now - pulse.started) / duration;
-      const toy = toyModel(this.currentModel);
-      const outlet = toy.outletDefinitions[pulse.side] ?? toy.outletDefinitions.center;
+      const outlet = this.layout.jets[pulse.side];
       if (!outlet) { bubble.visible = false; return; }
       const n = index % (this.quality === 'high' ? 10 : 4);
       const travel = local * 3.25 + n * 0.14;
@@ -333,7 +349,7 @@ export class PlayerRenderer {
       bubble.position.set(outlet.origin.x + outlet.direction.x * travel + sideWave, outlet.origin.y + outlet.direction.y * travel, (n % 3 - 1) * 0.12);
       const scale = (0.45 + Math.sin(local * Math.PI) * 0.75) * (1 - n * 0.025);
       bubble.scale.setScalar(scale);
-      bubble.visible = bubble.position.y < TOY_PHYSICS.tank.y - 0.3 && Math.abs(bubble.position.x) < TOY_PHYSICS.tank.x - 0.15;
+      bubble.visible = bubble.position.y < this.layout.tank.y - 0.3 && Math.abs(bubble.position.x) < this.layout.tank.x - 0.15;
     });
   }
 
@@ -378,7 +394,7 @@ export class PlayerRenderer {
    * preserving contrast around holes and peg tips.
    */
   private createRearInserts(): void {
-    const tank = TOY_PHYSICS.tank;
+    const tank = this.layout.tank;
     const z = -tank.z + 0.095;
     const panelWidth = 2 * (tank.x - 0.15);
     const panelHeight = 2 * (tank.y - 0.2);

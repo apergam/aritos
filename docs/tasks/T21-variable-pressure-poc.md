@@ -1,5 +1,7 @@
 # T21 — Prototype variable pump pressure
 
+Status: **planned — deferred by the user after POC review**. The user deferred variable pressure after playing the comparison; rethink the input and interaction before another iteration. Historical implementation and evidence below are retained; there is no active assignment.
+
 Dependencies: T02, T04, T11. Free lab/browser evidence is sufficient for exploration; unavailable hardware checks remain not run.
 
 Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). The user subsequently selected this laboratory implementation; see current evidence below.
