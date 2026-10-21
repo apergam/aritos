@@ -1,24 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { initPhysics, Simulation, DT, RING, TANK, BASE, TIP, horizontal } from '../src/physics.ts';
-import { freeStartPoses, stackSpacing, stackStartPoses, type RingCount } from '../src/lab/experiments/count.ts';
+import { initPhysics, Simulation, DT, RING, TANK, BASE, TIP } from '../src/physics.ts';
+import { freeStartPoses, stackSpacing, stackStartPoses } from '../src/lab/experiments/count.ts';
 
 await initPhysics();
 const run = (simulation: Simulation, seconds: number) => {
   for (let step = 0; step < seconds / DT; step++) simulation.step();
 };
-const arrangeStack = (simulation: Simulation, count: RingCount) => {
-  const poses = stackStartPoses(count, simulation.layout.pegs);
-  for (let index = 0; index < poses.length; index++) {
-    const ring = simulation.rings[index];
-    const pose = poses[index];
-    ring.body.setTranslation(pose, true);
-    ring.body.setRotation(horizontal, true);
-    ring.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
-    ring.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
-  }
-};
-
 test('count layouts preserve the twelve-ring starts and place twenty within the tank', () => {
   for (const count of [12, 20] as const) {
     const poses = freeStartPoses(count);
@@ -34,7 +22,7 @@ test('count layouts preserve the twelve-ring starts and place twenty within the 
     }
   }
   assert.equal(stackSpacing(12), 0.55);
-  assert.equal(stackSpacing(20), 0.34);
+  assert.equal(stackSpacing(20), 0.35);
 });
 
 test('stack layouts preserve twelve-ring heights and keep twenty below each peg tip', () => {
@@ -48,7 +36,7 @@ test('stack layouts preserve twelve-ring heights and keep twenty below each peg 
   for (const count of [12, 20] as const) {
     const poses = stackStartPoses(count);
     assert.equal(poses.length, count);
-    assert.ok(poses.at(-1)!.y + RING.radius + RING.tube <= TIP);
+    assert.ok(poses.at(-1)!.y + RING.tube <= TIP);
   }
   assert.throws(() => stackStartPoses(20, []), /At least one peg/);
   assert.throws(() => stackStartPoses(20, [{ x: 0, z: 0, baseY: 0, tipY: 1 }]), /exceeds its peg tip/);
@@ -76,8 +64,7 @@ test('twenty physical rings stack on both toy models and extract under inversion
     const simulation = new Simulation({ ringCount: 20 });
     try {
       simulation.model = model;
-      simulation.reset('free', { ringCount: 20 });
-      arrangeStack(simulation, 20);
+      simulation.reset('stack', { ringCount: 20 });
       run(simulation, 10);
       assert.equal(simulation.count, 20, `model ${model}: rings did not settle threaded`);
       assert.equal(simulation.won, true, `model ${model}: classic victory did not fire`);
@@ -99,8 +86,7 @@ test('twenty-ring collection keeps its denominator through removal, restart, and
   let victories = 0;
   simulation.onWin = () => victories++;
   try {
-    simulation.reset('free', { ringCount: 20 });
-    arrangeStack(simulation, 20);
+    simulation.reset('stack', { ringCount: 20 });
     for (let step = 0; step < 60 / DT; step++) {
       if (step % 120 === 0) simulation.pump(step % 240 === 0 ? 'left' : 'right');
       simulation.step();
@@ -114,12 +100,11 @@ test('twenty-ring collection keeps its denominator through removal, restart, and
     run(simulation, 1);
     assert.equal(victories, 1);
 
-    simulation.reset('free', { ringCount: 20 });
+    simulation.reset('stack', { ringCount: 20 });
     assert.equal(simulation.collected, 0);
     assert.equal(simulation.totalRings, 20);
     assert.equal(simulation.rings.length, 20);
     assert.equal(simulation.won, false);
-    arrangeStack(simulation, 20);
     for (let step = 0; step < 60 / DT; step++) {
       if (step % 120 === 0) simulation.pump(step % 240 === 0 ? 'left' : 'right');
       simulation.step();

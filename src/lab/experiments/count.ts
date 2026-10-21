@@ -5,6 +5,7 @@ export type RingStartPose = Readonly<{ x: number; y: number; z: number }>;
 export type CountPeg = Readonly<{ x: number; z: number; baseY?: number; tipY?: number }>;
 
 const RING_EXTENT = TOY_PHYSICS.ring.radius + TOY_PHYSICS.ring.tube;
+const RING_VERTICAL_EXTENT = TOY_PHYSICS.ring.tube;
 const BASE_Y = TOY_PHYSICS.base.topY;
 const TIP_Y = TOY_PHYSICS.pegTipY;
 const DEFAULT_PEGS: readonly CountPeg[] = TOY_PHYSICS.pegs.map(peg => Object.freeze({
@@ -13,7 +14,7 @@ const DEFAULT_PEGS: readonly CountPeg[] = TOY_PHYSICS.pegs.map(peg => Object.fre
 
 /** Keeps the accepted twelve-ring spacing and packs twenty below the peg tip. */
 export function stackSpacing(count: RingCount): number {
-  return count === 12 ? 0.55 : 0.34;
+  return count === 12 ? 0.55 : 0.35;
 }
 
 /** Starting centers for the physical stack scene, alternating rings across pegs. */
@@ -33,7 +34,7 @@ export function stackStartPoses(
     });
   })).map((pose, index) => {
     const peg = pegs[index % pegs.length];
-    const highestRingEdge = pose.y + RING_EXTENT;
+    const highestRingEdge = pose.y + RING_VERTICAL_EXTENT;
     if (highestRingEdge > (peg.tipY ?? TIP_Y) + 1e-9) {
       throw new RangeError(`A ${count}-ring stack exceeds its peg tip.`);
     }
