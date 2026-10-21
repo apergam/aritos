@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GameSession} from '../src/game/session';
+import {VillainEncounterController} from '../src/lab/experiments/enemies';
 import {Simulation,initPhysics,DT} from '../src/physics';
 
 test('variable pressure changes real local impulse and snapshots independent simultaneous pulse strengths',async()=>{
@@ -24,4 +25,9 @@ test('per-pulse intensity has the same fixed-tick outcome across render frame sc
 test('twenty-ring stack reset uses count spacing and real collect victory; restart restores twenty',async()=>{
  await initPhysics();const session=new GameSession({lab:{ringCount:20},scene:'stack',mode:'collect'});let wins=0;session.subscribe(e=>{if(e.type==='victory')wins++;});
  try{assert.equal(session.simulation.count,20);for(let i=0;i<7200&&!session.snapshot().won;i++)session.step();assert.equal(session.snapshot().collected,20);assert.equal(session.snapshot().total,20);assert.equal(wins,1);session.startRound();assert.equal(session.snapshot().active,20);assert.equal(session.snapshot().total,20);assert.equal(session.simulation.count,20);}finally{session.dispose();}
+});
+
+
+test('fourteen physical rings remain contained under strong pulses and inversion',async()=>{
+ await initPhysics();for(const model of ['single-button','two-button']as const){const session=new GameSession({model,mode:'classic'});const enemy=new VillainEncounterController(session);try{enemy.request(2);assert.equal(enemy.beforeStep()?.spawned.length,2);for(let i=0;i<2400;i++){if(i%90===0){session.dispatch({type:'orient',gravity:{x:Math.sin(i*.01)*2,y:Math.cos(i*.012)*3,z:Math.sin(i*.02)}});session.dispatch({type:'pump',side:model==='single-button'?'center':i%180===0?'left':'right',intensity:1.5});}session.step();}assert.equal(session.simulation.escaped,false);assert.equal(session.snapshot().active,14);assert.equal(session.snapshot().total,14);}finally{enemy.dispose();session.dispose();}}
 });

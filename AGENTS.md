@@ -20,7 +20,7 @@ El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 202
 
 ## Verificación
 Node.js 22+ y pnpm 11.25.0. Ejecutar pnpm install, pnpm typecheck, pnpm test y pnpm build.
-El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas (docs/validation/release.md). La suite actual tras la corrección de contraste musical tiene 66 pruebas superadas; ver docs/validation/polish-audio-art.md. El informe T01–T05 conserva la evidencia histórica de sus 42 pruebas. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
+El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas (docs/validation/release.md). La integración tras la corrección de contraste musical tuvo 66 pruebas superadas (histórico); la suite actual tiene 130; ver docs/validation/polish-audio-art.md. El informe T01–T05 conserva la evidencia histórica de sus 42 pruebas. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
 No afirmar que se validaron sensores, controles táctiles, FPS o apariencia sin probarlos en navegador/dispositivo real.
 
 ## Backlog de pulido registrado
@@ -48,3 +48,6 @@ User-selected worker configuration: `gpt-6-luna`, reasoning effort `high`. Use i
 
 
 T17/T19 were selected next and are integrated in review: build a23155cf, 78 tests, docs/validation/themed-rings-stickers.md. Preserve appearance-only ring finishes and the requirements §19 first-victory-per-theme sticker rule. Decorative saves are global within this browser; preview uses a completely isolated nonpersistent sandbox. Editing has its own decoration pause and separate preloaded thumbnail/placed image nodes. User visual/reward feedback remains pending. T23 received only feasibility review (docs/validation/enemy-feasibility.md); do not activate enemies in normal play.
+
+
+The user then authorized all remaining POCs T13/T18/T20/T21/T22/T23. They are integrated in review in /lab.html, build2005c319 with130 passing tests: docs/validation/lab-experiments.md and requirements§20 supersede older planned/review-only timing. Use the mutually exclusive experiment selector; do not promote a candidate to normal defaults without user selection. Simulation.layout is per-instance; exported constants remain baseline. Normal pump intensity defaults1; lab pulses clamp.5–1.5 and snapshot strength for.24s. Twenty-ring physical stack scene uses.35 spacing. Helpers are explicitly scripted with no direct scoring; thread needs clear peg, above may release over a pile. Enemy is manual once per round, atomic1/2 real red rings, max14, and not available in normal play. Keep unavailable real-pressure/sensor/mobile/acoustic acceptance explicit.

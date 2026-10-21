@@ -15,6 +15,7 @@ export class VillainCue {
    const oscillator=ctx.createOscillator(),gain=ctx.createGain(),at=ctx.currentTime+index*.17;
    oscillator.type='triangle';oscillator.frequency.value=frequency;
    gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.055,at+.012);gain.gain.exponentialRampToValueAtTime(.0001,at+.23);
+   oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();this.nodes=this.nodes.filter(node=>node!==oscillator);this.gains=this.gains.filter(node=>node!==gain);};
    oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(at);oscillator.stop(at+.25);
    this.nodes.push(oscillator);this.gains.push(gain);
   });

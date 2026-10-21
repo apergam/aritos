@@ -2,7 +2,7 @@
 
 Dependencies: T03, T04, T08, T09 implementation, T11; coordinate with T15 music when available. Free lab/browser evidence is sufficient for exploration; unavailable hardware checks remain not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). Planned only: recording this card starts no implementation or agents.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -30,3 +30,8 @@ Coverage: BL-16; requirements section 17; explicit experimental extension to RF-
 ## Feasibility review — October 20
 
 The user requested a review after T17/T19. [Feasibility findings](../validation/enemy-feasibility.md) propose one manual lab encounter, maximum two added rings (14 total), atomic +2 spawning and no late-game automatic punishment. Existing addRing is not a safe encounter API; capacity and fairness remain untested. Implementation is still planned.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.

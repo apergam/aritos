@@ -360,3 +360,12 @@ The user selected T17 and T19 for implementation, followed by a feasibility revi
 Up to three stickers (one instance per unlocked design) can be placed, moved or removed on the toy front. Editing pauses physics and pumping. Normalized positions and unlocks persist locally across reloads; unavailable/malformed storage falls back safely. Restart resets only the round. Controlled previews use an explicitly nonpersistent sandbox and neither read nor write normal rewards. The existing game rules and physical ring hole/dimensions remain unchanged.
 
 T17 compares the existing distinct theme palettes with glossy ocean, metallic space and satin capybara finishes, applied in place to stable ring meshes. It introduces no protrusions or collision changes. Both visual candidates await user feedback. T23 review does not authorize automatic enemies in normal play.
+
+
+## 20. Remaining POCs selected for implementation — October 20, 2026
+
+After approving the direction of T17/T19, the user explicitly requested starting the remaining POC work. This authorizes T13, T18, T20, T21, T22 and T23 as isolated manual laboratory candidates. It supersedes earlier backlog-only/review-only timing statements for those cards, without promoting experiments into normal play. See docs/validation/lab-experiments.md for exact dimensions and evidence.
+
+The integration owner selected minimal bounded comparison rules: widths9/8/7, twelve versus20, the raised fixed-support layout, intensity.5–1.5 with.24-second pulses (fixed/levels immediate, charge/hardware on release, keyboard/unsupported pressure uses explicit fallback), manual scripted one-ring assists, and one manual enemy encounter adding1 or2 rings atomically to a maximum14. Helpers do not directly award progress; normal contact rules still decide. The thread-assist candidate conservatively needs a clear peg, while above-assist can release over an occupied stack if the target is clear. Scripted motion is explicitly labeled as assistance, separate from natural physics validation.
+
+No automatic enemy timing, powerup economy, new default width/count/peg configuration, pressure hardware compatibility or subjective musical acceptance is inferred from implementation. All current candidates are available for user comparison. Normal defaults and decorative reward eligibility remain unchanged.

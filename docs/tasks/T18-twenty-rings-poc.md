@@ -2,7 +2,7 @@
 
 Dependencies: T04, T03, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -21,3 +21,8 @@ Test whether about twenty rings improve activity and enjoyment. Own a bounded la
 Test initial count, collection invariants, once-per-round victory/restart and physical stacking/extraction for viable counts. Run a ten-minute simulated stress comparison and inspect drawn play in browser. Run code checks and record real-device FPS only if hardware is available.
 
 Coverage: BL-03 (existing backlog, not a duplicate); requirements section 16; RF-04–RF-05 and classic criteria remain the twelve-ring baseline.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.

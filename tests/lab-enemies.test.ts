@@ -101,13 +101,13 @@ test('explicit lab width, count and peg layout settings isolate villain encounte
     { width: 8, ringCount: 12, pegLayout: 'floor' },
     { width: 9, ringCount: 20, pegLayout: 'floor' },
     { width: 9, ringCount: 12, pegLayout: 'raised' },
-  ]) {
-    const session = new GameSession({ scene: 'free', mode: 'classic' });
-    Object.assign(session.simulation, { layout });
+  ] as const) {
+    const session = new GameSession({ scene: 'free', mode: 'classic', lab:layout });
+    const startingTotal=session.snapshot().total;
     const enemies = new VillainEncounterController(session);
     assert.equal(enemies.request(1).accepted, true);
     assert.equal(enemies.beforeStep()?.reason, 'unsupported-round');
-    assert.equal(session.snapshot().total, 12);
+    assert.equal(session.snapshot().total, startingTotal);
     session.dispose();
   }
 });

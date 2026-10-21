@@ -51,6 +51,8 @@ export async function startLab() {
  const listen = (target: EventTarget, type: string, handler: EventListener) => {
   target.addEventListener(type, handler); cleanup.push(() => target.removeEventListener(type, handler));
  };
+ const revealToy=()=>{if(innerWidth<=980)viewport.closest('.lab')?.scrollIntoView({behavior:'smooth',block:'start'});};
+ listen($('experiment-view'),'click',()=>viewport.closest('.lab')?.scrollIntoView({behavior:'smooth',block:'start'}));
  function resetClock() { accumulator = 0; last = performance.now(); }
  function syncPauseView() {
   const manual = session.pauseReasons.includes('manual');
@@ -58,7 +60,7 @@ export async function startLab() {
   $('paused-label').hidden = !session.isPaused;
   $('status').textContent = session.isPaused ? 'Simulación en pausa' : 'Simulación en marcha';
   pressureInput?.syncPaused(); music.setPaused(session.isPaused);
-  if(session.isPaused){villainCue.stop();music.setDucked(false);}else activateAudio();
+  if(session.isPaused){const canceled=enemies.beforeStep();if(canceled)$('arcade-status').textContent='La aparición pendiente se canceló al pausar.';villainCue.stop();music.setDucked(false);}else activateAudio();
  }
  function pause() {
   session.dispatch({ type: 'pause', reason: 'manual', paused: !session.pauseReasons.includes('manual') });
@@ -83,8 +85,8 @@ export async function startLab() {
  }, {});
  function pump(pulse:PressurePulse){
   if(document.hidden||session.isPaused)return;
-  lastPump=pulse;activateAudio();session.dispatch({type:'pump',side:pulse.side,intensity:pulse.intensity});
-  $('pressure-readout').textContent=`${pulse.side}: fuerza ${(sim.strength*pulse.intensity).toFixed(1)} · ${pulse.durationSeconds.toFixed(2)} s · ${pulse.source==='hardware'?'presión variable detectada':pulse.source==='charge'?'duración al soltar':'nivel explícito'}`;
+  lastPump=pulse;$('lab-pump-readout').hidden=false;$('lab-pump-readout').textContent=`FUERZA ${(sim.strength*pulse.intensity).toFixed(1)} · 0.24 S`;activateAudio();session.dispatch({type:'pump',side:pulse.side,intensity:pulse.intensity});
+  $('pressure-readout').textContent=`${({left:'Izquierda',right:'Derecha',center:'Centro'})[pulse.side]}: fuerza ${(sim.strength*pulse.intensity).toFixed(1)} · ${pulse.durationSeconds.toFixed(2)} s · ${pulse.source==='hardware'?'presión variable detectada':pulse.source==='charge'?'duración al soltar':'nivel explícito'}`;
  }
  pressureInput=bindPressureInput({left:$('pump-left'),right:$('pump-right'),center:$('pump-center')},pressure,{paused:()=>session.isPaused||document.hidden,pulse:pump,status:message=>{$('pressure-readout').textContent=message;}});
  function center() { motion.center(); controls.resetTilt(0, 0, false); }
@@ -99,7 +101,7 @@ export async function startLab() {
   const model = toyModel(activeModel); lab.setLayout(sim.layout); lab.updateOutlets(activeModel);
   const settings=sim.layout;
   $('experiment-description').textContent=EXPERIMENTS[experiment].description;
-  $('experiment-dimensions').textContent=`Ancho ${settings.width} · fondo 1.8 · ${settings.ringCount} aros iniciales · bases ${settings.pegs.map(p=>p.baseY.toFixed(1)).join(' / ')}`;
+  $('experiment-dimensions').textContent=`Ancho ${settings.width} · fondo 1.8 · ${settings.ringCount} aros en Juego libre · bases ${settings.pegs.map(p=>p.baseY.toFixed(1)).join(' / ')}`;
   $('pressure-options').hidden=experiment!=='pressure';$('assist-options').hidden=experiment!=='assist';$('enemy-options').hidden=experiment!=='enemy';
   for(const id of ['strength','drag']) $<HTMLInputElement>(id).disabled=experiment!=='baseline';
   for(const id of ['enemy-one','enemy-two']) $<HTMLButtonElement>(id).disabled=experiment!=='enemy'||snapshot.scene!=='free'||snapshot.won||session.isPaused;
@@ -122,7 +124,7 @@ export async function startLab() {
  function reset(options: SessionOptions = {}) {
   assist.cancel(); lastAssistActive=false; lastAssistKind=null; pressureInput?.clear(); villainCue.stop(); music.setDucked(false); villainUntil=0;
   session.dispatch({ type: 'start', options });
-  $('arcade-status').textContent=''; $('lab-mascot').hidden=true;
+  $('arcade-status').textContent=''; $('lab-mascot').hidden=true; $('lab-pump-readout').hidden=true;
   center(); smoothGravity.copy(targetGravity); resetClock();
   clearTimeout(winTimer); clearTimeout(collectionFeedbackTimer);
   for (const [side, timer] of pumpTimers) { clearTimeout(timer); $('pump-' + side).classList.remove('pressed'); }
@@ -134,22 +136,23 @@ export async function startLab() {
   experiment=experimentId($<HTMLSelectElement>('experiment').value);
   sim.strength=75;sim.drag=.5;$<HTMLInputElement>('strength').value='75';$('strength-value').textContent='75';$<HTMLInputElement>('drag').value='.5';$('drag-value').textContent='0.50';
   pressure.setMode(experiment==='pressure'?$<HTMLSelectElement>('pressure-mode').value as PressureMode:'fixed');
-  reset({scene:'free',lab:EXPERIMENTS[experiment].settings});
+  reset({scene:'free',lab:EXPERIMENTS[experiment].settings}); revealToy();
  });
  listen($('pressure-mode'),'change',()=>{pressureInput?.clear();pressure.setMode($<HTMLSelectElement>('pressure-mode').value as PressureMode);$('pressure-readout').textContent='Nuevo modo listo. Un impulso por pulsación.';});
  listen($('pressure-level'),'change',()=>pressure.setLevel(Number($<HTMLSelectElement>('pressure-level').value) as PressureLevel));
  listen($('lab-theme'),'change',()=>{themeId=$<HTMLSelectElement>('lab-theme').value as ThemeId;lab.setTheme(themeId);music.setTheme(themeId);});
  listen($('lab-audio'),'change',()=>{music.setEnabled(audioEnabled());if(!audioEnabled()){villainCue.stop();music.setDucked(false);}else activateAudio();});
  const villainReasons:Record<string,string>={paused:'Reanuda antes de llamar al travieso.',won:'La ronda ya terminó.',duplicate:'Esa aparición ya fue procesada.',pending:'Ya hay una aparición pendiente.','unsupported-round':'Usa Juego libre: una aparición por ronda y máximo 14 aros.','no-safe-space':'No hay espacio libre para añadir esos aros.','stale-round':'La ronda cambió.',disposed:'Prueba cerrada.'};
+ listen($('assist-prepare'),'click',()=>{if(experiment==='assist'){reset({scene:'drop',mode:'collect'});revealToy();}});
  const assistReasons:Record<string,string>={busy:'La mascota ya está ayudando.',paused:'Reanuda antes de pedir ayuda.',won:'La ronda ya terminó.','blocked-destination':'Las estacas están ocupadas o la llegada está bloqueada. Mueve los aros e intenta otra vez.','no-eligible-ring':'Espera a que haya un aro libre en el piso.','unsupported-layout':'Usa la prueba de ayuda con geometría original.','stale-round':'La ronda cambió.',disposed:'Prueba cerrada.'};
  for(const [id,kind]of [['assist-thread','thread'],['assist-above','above']]as const)listen($(id),'click',()=>{
   if(experiment!=='assist'||session.isPaused||document.hidden)return;
-  const result=assist.request(kind);lastAssistKind=kind;
+  const result=assist.request(kind);lastAssistKind=kind;if(result.accepted)revealToy();
   $('arcade-status').textContent=result.accepted?`Ayuda programada: aro ${result.ringId}. ${kind==='thread'?'La mascota lo ensarta.':'Lo soltará sobre la punta.'}`:assistReasons[result.reason??'']??'No se pudo iniciar.';
  });
  for(const [id,count]of [['enemy-one',1],['enemy-two',2]] as const)listen($(id),'click',()=>{
   if(experiment!=='enemy'||session.isPaused||document.hidden)return;
-  activateAudio(); const result=enemies.request(count);
+  activateAudio(); const result=enemies.request(count);if(result.accepted)revealToy();
   $('arcade-status').textContent=result.accepted?'El travieso se acerca…':villainReasons[result.reason??'']??'No se pudo iniciar.';
  });
  document.querySelectorAll<HTMLButtonElement>('[data-scene]').forEach(b => listen(b, 'click', () => reset({ scene: b.dataset.scene as Scene })));
@@ -217,7 +220,7 @@ export async function startLab() {
     const t = performance.now();
     if(experiment==='enemy'){
      const result=enemies.beforeStep();if(result){
-      $('arcade-status').textContent=result.ok?`¡Travesura! +${result.spawned.length} aros · objetivo ${sim.totalRings}`:villainReasons[result.reason??'']??'No se añadieron aros.';
+      $('arcade-status').textContent=result.ok?`¡Travesura! +${result.spawned.length} ${result.spawned.length===1?'aro':'aros'} · objetivo ${sim.totalRings}`:villainReasons[result.reason??'']??'No se añadieron aros.';
       if(result.ok){villainUntil=sim.time+2.2;if(audioEnabled()){void villainCue.play();music.setDucked(true);}}
      }
     }
@@ -237,7 +240,7 @@ export async function startLab() {
   const mascot=$('lab-mascot');mascot.hidden=!villainActive&&!helpState.active;mascot.classList.toggle('villain',villainActive);
   if(villainActive||helpState.active){
    const position=helpState.position?{x:helpState.position.x+.7,y:helpState.position.y+.5,z:.75}:{x:Math.sin(sim.time*3)*.4,y:3.8,z:.75};
-   const point=lab.projectPoint(position);mascot.style.left=point.x+'px';mascot.style.top=point.y+'px';
+   const point=lab.projectPoint(position);mascot.style.left=Math.max(75,Math.min(viewport.clientWidth-75,point.x))+'px';mascot.style.top=Math.max(40,Math.min(viewport.clientHeight-45,point.y))+'px';
    $('lab-mascot-label').textContent=villainActive?'¡Más aros!':helpState.kind==='thread'?'Ayuda: ensartar':'Ayuda: sobre la punta';
   }
   for(const id of ['assist-thread','assist-above'])$<HTMLButtonElement>(id).disabled=experiment!=='assist'||session.isPaused||snapshot.won||helpState.active;

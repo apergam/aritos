@@ -2,7 +2,7 @@
 
 Dependencies: T04, T03, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -22,3 +22,8 @@ Explore pegs and bases at different heights/positions rather than only the floor
 Check aligned/offset/depth cases, containment, stacking/extraction and physical collection at the candidate bases. Inspect both modes/models in browser and capture variant dimensions/evidence. Run code checks and hand off a comparison, including rejected arrangements and any unresolved capacity constraints.
 
 Coverage: BL-13; requirements section 16; preserve RF-08–RF-10 and physical classic rules; collect contact remains explicit.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.

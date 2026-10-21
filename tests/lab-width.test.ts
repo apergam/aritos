@@ -86,3 +86,10 @@ test('both toy pump mappings and rule modes stay contained at each width',()=>{
   finally {session.dispose();}
  }
 });
+
+
+test('unimplemented combined geometry settings are rejected before creating invalid bodies',()=>{
+ assert.throws(()=>new Simulation({width:7,ringCount:20,pegLayout:'raised'}),RangeError);
+ assert.throws(()=>new Simulation({width:8,ringCount:20}),RangeError);
+ assert.throws(()=>new Simulation({width:7,pegLayout:'raised'}),RangeError);
+});

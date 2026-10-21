@@ -2,7 +2,7 @@
 
 Dependencies: T04, T11. Unavailable physical devices do not block exploration; record those checks as not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. This card is planned; recording it does not start an agent or implementation.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 16](../requirements.md#16-first-version-feedback-and-polish-backlog--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md) before assignment. The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -23,3 +23,8 @@ Own a bounded lab variant and focused geometry/physics checks. Coordinate change
 Run focused containment, valid spawning, pump locality, threading and stacking/extraction checks for each viable width. Build/typecheck/test code changes, inspect portrait/landscape in the browser, and distinguish measured behavior from subjective play feedback. Hand off a comparison and recommendation, including candidates rejected for jams or insufficient capacity.
 
 Coverage: BL-07; requirements section 16; preserve RF-06–RF-16 and CA-01–CA-07.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.

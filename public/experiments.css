@@ -11,3 +11,5 @@
 .lab-top { gap: 12px; align-items: center; }
 #scene-label { line-height:1.5; }
 @media(max-width:980px) { .lab { position:relative; top:auto; } }
+
+.lab-mascot span { position:relative; left:50%; transform:translateX(-50%); margin:0; }

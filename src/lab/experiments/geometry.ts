@@ -36,6 +36,9 @@ const sideRise = Math.sqrt(1 - sideSlope ** 2);
 /** Builds a per-simulation immutable layout; shared accepted constants are never modified. */
 export function createLabLayout(settings: LabSimulationSettings = {}): LabLayout {
   const width = settings.width ?? 9;
+  const count = settings.ringCount ?? 12, arrangement = settings.pegLayout ?? 'floor';
+  if (![9,8,7].includes(width) || ![12,20].includes(count) || !['floor','raised'].includes(arrangement)) throw new RangeError('Unknown laboratory settings.');
+  if ((count===20 && (width!==9 || arrangement!=='floor')) || (arrangement==='raised' && width!==9)) throw new RangeError('Compare one laboratory geometry variable at a time.');
   const xHalf = width / 2;
   const tank = Object.freeze({ x: xHalf, y: TOY_PHYSICS.tank.y, z: TOY_PHYSICS.tank.z });
   const baseY = TOY_PHYSICS.base.topY;

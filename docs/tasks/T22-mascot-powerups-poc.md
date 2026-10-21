@@ -2,7 +2,7 @@
 
 Dependencies: T03, T08, T10, T11. Free lab/browser evidence is sufficient for exploration; unavailable hardware checks remain not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). Planned only: recording this card starts no implementation or agents.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -24,3 +24,8 @@ Own a small lab-only assist controller/scene and mascot feedback. Coordinate phy
 Test both variants, actual versus unearned progress, no-target/blocked-target cases, duplicate triggers, round restart, pause and disposal. Inspect the mascot and release in browser; record whether each movement was physical or scripted. Run code checks and collect player feedback on whether the help reduces frustration without removing the challenge.
 
 Coverage: BL-15; requirements section 17; experimental extension to RF-15, RF-25–RF-31 and section 13; baseline rules unchanged.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.

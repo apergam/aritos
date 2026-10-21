@@ -2,7 +2,7 @@
 
 Dependencies: T02, T04, T11. Free lab/browser evidence is sufficient for exploration; unavailable hardware checks remain not run.
 
-Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). Planned only: recording this card starts no implementation or agents.
+Read [AGENTS.md](../../AGENTS.md), [requirements section 17](../requirements.md#17-variable-pressure-and-arcade-experiments--october-20-2026), the [implementation guide](../implementation-guide.md), [module contracts](../module-contracts.md), and [task board](README.md). The user subsequently selected this laboratory implementation; see current evidence below.
 
 ## Outcome and ownership
 
@@ -24,3 +24,8 @@ Own a bounded input-to-pump-intensity experiment and focused input/physics check
 Test intensity bounds, weak-versus-strong response in a controlled fixture, input duplication/cancellation, two independent pumps, pause/restart and equal physical outcomes under differing frame schedules. Run containment/stress checks at the strongest candidate plus typecheck/tests/build. Record browser/input device and whether pressure was real, emulated or approximated; capture lab settings and player feedback.
 
 Coverage: BL-14; requirements section 17; RF-11–RF-14, RF-21–RF-24; CA-04–CA-05.
+
+
+## Implemented laboratory candidate — October 20
+
+The user subsequently authorized remaining POC implementation. This card is integrated in /lab.html, build2005c319; see [the comparison and evidence](../validation/lab-experiments.md). Status is review pending player comparison, not a new normal-game default. The report records bounded choices, physical checks, fixes and unavailable device/acoustic acceptance.
