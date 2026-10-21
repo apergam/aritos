@@ -68,7 +68,9 @@ export class RingAssistController {
     if (this.session.isPaused) return { accepted: false, reason: 'paused' };
     const simulation = this.session.simulation;
     if (simulation.won) return { accepted: false, reason: 'won' };
-    if (simulation.layout.width !== 9 || simulation.layout.ringCount !== 12 || simulation.layout.pegLayout !== 'floor') {
+    const supportedLayout = (simulation.layout.width === 9 && simulation.layout.pegLayout === 'floor') ||
+      (simulation.layout.width === 8 && simulation.layout.pegLayout === 'raised');
+    if (!supportedLayout || simulation.layout.ringCount !== 12) {
       return { accepted: false, reason: 'unsupported-layout' };
     }
 

@@ -4,6 +4,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { DT, initPhysics, type Ring } from '../src/physics.ts';
 import { GameSession } from '../src/game/session.ts';
 import { RingAssistController } from '../src/lab/experiments/assist.ts';
+import { createLabLayout } from '../src/lab/experiments/geometry.ts';
 await initPhysics();
 
 function clearRings(session:GameSession){
@@ -11,9 +12,21 @@ function clearRings(session:GameSession){
  for(const ring of simulation.rings)simulation.world.removeRigidBody(ring.body);
  simulation.rings=[];simulation.totalRings=0;simulation.collected=0;simulation.won=false;
 }
-function setup(mode:'classic'|'collect'='collect'){
- const session=new GameSession({scene:'depth',mode});clearRings(session);
- const ring=session.simulation.addRing(-3.7,-5.2,0);
+type LayoutCase='baseline'|'raised8';
+function useRaised8Physics(session:GameSession){
+ const sim=session.simulation,raised=createLabLayout({pegLayout:'raised'});
+ const outlet=(jet:typeof raised.jets.left,x:number)=>Object.freeze({...jet,origin:Object.freeze({...jet.origin,x})});
+ sim.layout=Object.freeze({...raised,width:8,tank:Object.freeze({...raised.tank,x:4}),jets:Object.freeze({
+  ...raised.jets,left:outlet(raised.jets.left,-3.7),right:outlet(raised.jets.right,3.7),
+ })});
+ sim.reset('depth');
+}
+function setup(mode:'classic'|'collect'='collect',layout:LayoutCase='baseline',model:'single-button'|'two-button'='two-button'){
+ const session=new GameSession({scene:'depth',mode,model});
+ if(layout==='raised8')useRaised8Physics(session);
+ clearRings(session);
+ const x=-session.simulation.layout.tank.x+.75;
+ const ring=session.simulation.addRing(x,-5.2,0);
  return {session,ring,assist:new RingAssistController(session)};
 }
 function tick(session:GameSession,assist:RingAssistController,count=1){
@@ -21,32 +34,41 @@ function tick(session:GameSession,assist:RingAssistController,count=1){
 }
 const bodyType=(ring:Ring)=>ring.body.bodyType();
 
-test('thread assist scripts one stable ring to a real peg/base collection',()=>{
- const {session,ring,assist}=setup('collect');
+test('thread assist scripts one stable ring to real base contact on both supported layouts',()=>{
+ for(const layout of ['baseline','raised8'] as const)for(const model of ['single-button','two-button'] as const){
+ const {session,ring,assist}=setup('collect',layout,model);
  try {
   const accepted=assist.request('thread');assert.equal(accepted.accepted,true);assert.equal(accepted.ringId,ring.id);
   assert.equal(assist.state.movement,'scripted');assert.equal(assist.state.phase,'approach');
   assert.equal(assist.scriptedCount,1);
+  for(let i=0;i<240;i++)assist.beforeStep();
+  assert.equal(session.simulation.collected,0,'scripted placement cannot award progress directly');
+  const targetPeg=session.simulation.layout.pegs.find(peg=>Math.abs(peg.x-ring.body.translation().x)<.01)!;
+  assert.ok(Math.abs(ring.body.translation().y-(targetPeg.baseY+.2))<1e-6,`y=${ring.body.translation().y}, base=${targetPeg.baseY}, x=${ring.body.translation().x}`);
+  assert.equal(session.simulation.isThreaded(ring),true);
   for(let i=0;i<4/DT&&session.simulation.collected===0;i++)tick(session,assist);
-  assert.equal(session.simulation.collected,1);
+  assert.equal(session.simulation.collected,1,layout);
   assert.equal(session.simulation.totalRings,1);
   assert.equal(session.simulation.rings.length,0);
   assert.equal(session.simulation.won,true);
   assert.equal(assist.state.active,false);
  } finally {assist.dispose();session.dispose();}
+ }
 });
 
-test('above assist releases above the tip and does not award progress itself',()=>{
- const {session,ring,assist}=setup('collect');
+test('above assist releases above the tip without direct progress on both layouts',()=>{
+ for(const layout of ['baseline','raised8'] as const){
+ const {session,ring,assist}=setup('collect',layout);
  try {
   assert.equal(assist.request('above').accepted,true);
   tick(session,assist,240);
   assert.equal(assist.state.active,false);
   assert.equal(session.simulation.collected,0);
   assert.equal(session.simulation.count,0);
-  assert.ok(ring.body.translation().y>session.simulation.layout.pegs[0].tipY);
+  assert.ok(ring.body.translation().y>session.simulation.layout.pegs[0].tipY,layout);
   assert.equal(bodyType(ring),RAPIER.RigidBodyType.Dynamic);
  } finally {assist.dispose();session.dispose();}
+ }
 });
 
 test('no floor target, a blocked destination, and duplicate requests are rejected',()=>{
@@ -104,10 +126,9 @@ test('stale IDs and disposal never leave a kinematic body behind',()=>{
 });
 
 
-test('both models and rule modes use the same one-ring scripted assist',()=>{
- for(const model of ['single-button','two-button'] as const)for(const mode of ['classic','collect'] as const){
-  const session=new GameSession({scene:'depth',model,mode});clearRings(session);
-  const ring=session.simulation.addRing(-3.7,-5.2,0),assist=new RingAssistController(session);
+test('both models and rule modes use the same one-ring scripted assist on both layouts',()=>{
+ for(const layout of ['baseline','raised8'] as const)for(const model of ['single-button','two-button'] as const)for(const mode of ['classic','collect'] as const){
+  const {session,ring,assist}=setup(mode,layout,model);
   try {
    const accepted=assist.request('above');assert.equal(accepted.accepted,true,`${model}/${mode}`);
    assert.equal(accepted.ringId,ring.id);tick(session,assist,240);
