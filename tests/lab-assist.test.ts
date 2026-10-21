@@ -126,3 +126,27 @@ test('controller disposal after the session frees its world safely',()=>{
  assert.equal(assist.state.active,false);
  assist.dispose();
 });
+
+test('above assist remains available with both pegs occupied and resets usage on the next round',()=>{
+ const session=new GameSession({scene:'depth',mode:'classic'});clearRings(session);
+ const simulation=session.simulation;
+ for(const peg of simulation.layout.pegs)simulation.addRing(peg.x,peg.baseY+1,peg.z);
+ const loose=simulation.addRing(-3.7,-5.2,0),assist=new RingAssistController(session);
+ try {
+  const accepted=assist.request('above');assert.equal(accepted.accepted,true);assert.equal(accepted.ringId,loose.id);
+  tick(session,assist,240);
+  assert.equal(simulation.collected,0);assert.equal(simulation.won,false);assert.equal(assist.scriptedCount,1);
+  session.startRound({scene:'depth'});
+  assert.equal(assist.scriptedCount,0);
+ } finally {assist.dispose();session.dispose();}
+});
+
+test('above assist rejects destinations occupied by other ring bodies',()=>{
+ const session=new GameSession({scene:'depth',mode:'collect'});clearRings(session);
+ const simulation=session.simulation;
+ for(const peg of simulation.layout.pegs)simulation.addRing(peg.x,peg.tipY+.8,peg.z);
+ simulation.addRing(-3.7,-5.2,0);
+ const assist=new RingAssistController(session);
+ try {assert.deepEqual(assist.request('above'),{accepted:false,reason:'blocked-destination'});}
+ finally {assist.dispose();session.dispose();}
+});

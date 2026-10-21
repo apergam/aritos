@@ -1,4 +1,5 @@
 import RAPIER from '@dimforge/rapier3d-compat';
+import { Quaternion, Vector3 } from 'three';
 import { DT, horizontal, RING, type Ring, type Vec } from '../../physics';
 import type { GameSession } from '../../game/session';
 
@@ -39,10 +40,11 @@ export class RingAssistController {
   private active: ActiveAssist | undefined;
   private disposed = false;
   private completed = 0;
+  private countRoundId: number;
 
-  constructor(private readonly session: GameSession) {}
+  constructor(private readonly session: GameSession) { this.countRoundId = session.snapshot().roundId; }
 
-  get scriptedCount(): number { return this.completed; }
+  get scriptedCount(): number { this.reconcileRound(); return this.completed; }
 
   get state(): RingAssistState {
     this.reconcileRound();
@@ -153,12 +155,22 @@ export class RingAssistController {
       const peg = simulation.layout.pegs[index];
       const occupied = simulation.rings.some(other => other !== ring && simulation.isThreaded(other) &&
         Math.abs(other.body.translation().x - peg.x) < .35 && Math.abs(other.body.translation().z - peg.z) < .35);
-      if (occupied) continue;
+      if (kind === 'thread' && occupied) continue;
       const y = kind === 'thread' ? peg.baseY + .2 : peg.tipY + .8;
+      const targetExtents = { x: RING.radius + RING.tube, y: RING.tube, z: RING.radius + RING.tube };
       const blocked = simulation.rings.some(other => {
         if (other === ring) return false;
         const p = other.body.translation();
-        return Math.hypot(p.x - peg.x, p.y - y, p.z - peg.z) < 2 * (RING.radius + RING.tube);
+        const q = other.body.rotation();
+        const normal = new Vector3(0, 0, 1).applyQuaternion(new Quaternion(q.x, q.y, q.z, q.w));
+        const extents = {
+          x: RING.radius * Math.sqrt(Math.max(0, 1 - normal.x * normal.x)) + RING.tube,
+          y: RING.radius * Math.sqrt(Math.max(0, 1 - normal.y * normal.y)) + RING.tube,
+          z: RING.radius * Math.sqrt(Math.max(0, 1 - normal.z * normal.z)) + RING.tube,
+        };
+        return Math.abs(p.x - peg.x) < targetExtents.x + extents.x &&
+          Math.abs(p.y - y) < targetExtents.y + extents.y &&
+          Math.abs(p.z - peg.z) < targetExtents.z + extents.z;
       });
       if (blocked) continue;
       const wallClear = Math.abs(peg.x) + RING.radius + RING.tube < simulation.layout.tank.x &&
@@ -189,14 +201,17 @@ export class RingAssistController {
   }
 
   private reconcileRound(): void {
-    if (!this.active) return;
     const currentRound = this.currentRoundId();
     if (currentRound === undefined) {
       this.active = undefined;
       this.disposed = true;
       return;
     }
-    if (this.active.roundId !== currentRound || !this.isLive(this.active)) this.active = undefined;
+    if (this.countRoundId !== currentRound) {
+      this.completed = 0;
+      this.countRoundId = currentRound;
+    }
+    if (this.active && (this.active.roundId !== currentRound || !this.isLive(this.active))) this.active = undefined;
   }
 
   private isLive(active: ActiveAssist): boolean {
