@@ -222,6 +222,7 @@ Reviewing library documentation does not replace these tests. No criterion is co
 | BL-14 | Variable pump pressure/intensity POC, with honest hardware capability detection and practical fallback (T21). |
 | BL-15 | Aquatic mascot powerups: thread a floor ring, or position it above a peg without insertion (T22). |
 | BL-16 | Villain encounter adding one or two red/bright physical rings, accompanied by villain music (T23). |
+| BL-17 | Separate endless mode with recurring villain visits, dropping one physical chain of two to five rings per visit (T25). |
 
 The first release excludes a custom physics engine, accounts, multiplayer, and a game-session server. A scientific fluid simulation is not part of the defined product requirements either. Section 13 records the subsequent promotion of BL-02 into the POC.
 
@@ -393,3 +394,10 @@ The user now authorizes the villain to appear randomly when one to five rings re
 ## 24. Mobile-first screen use — October 21, 2026
 
 After supplying Pixel screenshots, the user requested a mobile interface redesign that uses the available screen. Compact play should prioritize the toy, keep pumps below it and within thumb reach, and move secondary inclination/mascot UI into an on-demand nonmodal panel. Keep manual tilt usable together with pumping, explicit motion activation, both models/rules, settings pause/cancel behavior and the persistent new-round result. Portrait/landscape resizing must preserve the round. Compact setup should show model, illustrated theme and mode choices with an accessible start action. Respect dynamic viewport height, safe areas and adequate touch targets. Camera framing may reduce visual margins without changing the accepted fixed front elevation or physics. Desktop emulation supplies implementation evidence; physical Pixel/sensor/multitouch/FPS acceptance still requires device feedback. See [the candidate and checks](validation/mobile-interface.md).
+
+
+## 25. Endless linked-chain mode backlog — October 21, 2026
+
+The user praised the current mischievous mascot and requested recording a separate endless mode: the villain returns repeatedly and drops **one chain of two to five linked rings per appearance**. This is planned backlog work (BL-17 / T25), not a request to implement or launch agents now. A five-ring chain means five rings physically linked in one chain, not five loose rings or several disconnected pairs.
+
+Keep the current finite collect/classic rounds and their one-encounter/two-ring/maximum-fourteen rules unchanged. Before implementing the separate mode, decide the starting ring count, encounter cadence and trigger, chain-length selection, progress display, collection/empty-tank behavior, player exit/restart and maximum simultaneous physical load. Endless play means recurring encounters, not unbounded body or memory growth. No lives, timer, purchases, leaderboard or new reward economy were requested. Preserve safe spawning, real ring holes/contact rules, active-time pause/background behavior and individually collectable linked members. The exact balancing and lifecycle choices remain open; see [T25](tasks/T25-endless-linked-chains.md).

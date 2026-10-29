@@ -40,15 +40,15 @@ The older deferred ideas also remain: BL-01 time trial, BL-04 broader customizat
 
 ## Pressure and arcade backlog — recorded October 20
 
-The original three laboratory experiments are implemented. After user review, T21 returns to the planned backlog for further input-design work; its historical POC remains available. T22 and T23 are selected for normal play with explicit manual activation and no economy. T23 changes totals only after a successful bounded encounter. All three need integration-owner coordination across inputs/physics/session/rendering; do not assign overlapping shared-file ownership in parallel.
+The original three laboratory experiments are implemented. After user review, T21 returns to the planned backlog for further input-design work; its historical POC remains available. T22 is integrated in normal play with manual helpers. T23 now uses the automatic linked encounter in requirements §23, superseding its earlier manual-only timing; no economy was added. T23 changes totals only after a successful bounded encounter. All three need integration-owner coordination across inputs/physics/session/rendering; do not assign overlapping shared-file ownership in parallel.
 
 | ID | Task | Dependencies | Status | Owner | Evidence / next decision |
 | --- | --- | --- | --- | --- | --- |
 | T21 | [Prototype variable pump pressure](T21-variable-pressure-poc.md) | T02, T04, T11 | planned | Unassigned | `29954f0`, `6652b0c`, `a119446`; four lab input modes/per-pulse force; [evidence](../validation/lab-experiments.md); fixed 75 remains normal |
 | T22 | [Explore mascot powerups](T22-mascot-powerups-poc.md) | T03, T08, T10, T11 | review | /root/t13_width + Parent | `bbdce98`, `2288b2c`; both manual scripted assists selected for normal play; [normal integration · 145 tests](../validation/selected-toy-integration.md); lab evidence: [report](../validation/lab-experiments.md) |
-| T23 | [Explore villain encounters](T23-villain-extra-rings-poc.md) | T03, T04, T08, T09 implementation, T11; coordinate T15 | review | /root/t23_enemies + Parent | `6bb58f4`, `4b3584b`, `a119446`; one manual encounter per round selected, +1/+2 physical rings, max14; [normal integration · 145 tests](../validation/selected-toy-integration.md) |
+| T23 | [Explore villain encounters](T23-villain-extra-rings-poc.md) | T03, T04, T08, T09 implementation, T11; coordinate T15 | review | /root/t23_enemies + Parent | `4d6081f`; automatic late-round linked pair, once per round, max14; [current evidence · 158 tests](../validation/automatic-linked-villain.md); user praised its feel on October21; endless expansion is separate T25 |
 
-## Next review
+## October20 review checkpoint (historical)
 
 POCs T13/T18/T20/T21/T22/T23 are integrated in laboratory build **2005c319**, with [comparison and evidence](../validation/lab-experiments.md). The user has since selected width8, raised pegs, both manual mascot assists, and one manual villain encounter per round for normal play; the selected integration validation is [recorded](../validation/selected-toy-integration.md). T18's twenty-ring count and T21's variable-pressure controls remain deferred from normal play. Keep production count at12 and strength at75; do not add pressure sliders. The width9 floor arrangement remains the historical comparison baseline.
 
@@ -67,3 +67,16 @@ The user supplied Pixel screenshots and selected an implementation pass to maxim
 | ID | Task | Dependencies | Status | Owner | Evidence / next decision |
 | --- | --- | --- | --- | --- | --- |
 | T24 | [Redesign the mobile interface](T24-mobile-interface.md) | T07, T08, T11; preserve T17/T19/T22/T23 | review | Parent | Build 019e6188, 160 tests, ten viewport checks; [candidate/evidence](../validation/mobile-interface.md); Pixel user review remains pending |
+
+
+## Endless mode backlog — October21
+
+The user liked the current mischievous mascot and requested an endless-mode backlog card. This records future work only; the existing finite mode remains unchanged.
+
+| ID | Task | Dependencies | Status | Owner | Evidence / next decision |
+| --- | --- | --- | --- | --- | --- |
+| T25 | [Explore endless linked chains](T25-endless-linked-chains.md) | Integrated T03, T11, T23; coordinate T24 | planned | Unassigned | Recurring villain visits, one continuous chain of 2–5 rings per visit; decide cadence, progress/lifecycle and simultaneous-load cap before implementation |
+
+Current work still awaiting exploration: T25 endless mode, T21 pressure-input redesign and T18 reconsideration of twenty starting rings (the latter two remain user-deferred laboratory comparisons). Older unassigned ideas remain BL-01 time trial, BL-04 broader customization, BL-05 device shaking and BL-06 installable/cold-offline play.
+
+Implemented candidates still carry review follow-ups: T24 physical Pixel layout/control feedback and the existing sensor/multitouch/FPS gaps; T09/T14/T15 subjective audio/music/mix review; T16 space-art confirmation; T17 ring-finish feedback; T19 sticker reward cadence/placement feedback. Width8, raised pegs and manual helpers are already adopted in normal play; the user's positive feedback on the current automatic villain is recorded above. These are not new implementation tasks merely because their historical rows remain in review.

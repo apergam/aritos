@@ -1,67 +1,219 @@
-# Aritos — instrucciones para Codex
+# Aritos — project context and working agreement
 
-Lee primero README.md, docs/requirements.md y docs/POC_REPORT.md.
+Last consolidated: **October 28, 2026**. This file is the entry point for an agent joining or resuming the project. It describes current decisions; dated reports preserve earlier experiments and measurements.
 
-## Objetivo actual
-El usuario aceptó el POC de física del juguete de agua el 19 de octubre de 2026. El usuario reanudó los pendientes el 20 de octubre de 2026. Conservar el setup y las dos reglas al evolucionar el jugador y su laboratorio; consultar el tablero y el informe actual antes de repetir trabajo. TypeScript, Rapier 3D y Three.js. Usar motor existente; crear uno propio queda fuera del alcance.
+## Read first and resolve context
 
-## Reglas del producto
-- El agujero del aro debe existir en la colisión; ensartado y extracción físicos, sin teletransporte ni fijación artificial.
-- Bombeo de un impulso por pulsación, botones simultáneos e inclinación 3D completa con inversión.
-- Celulares y tablets, horizontal y vertical; sensores con calibración y alternativa manual.
-- La configuración de botones pertenece al modelo del juguete. Los temas se separan de la mecánica.
-- Conservar la física aceptada. Por decisión del usuario del 19 de octubre de 2026, T06 usa herramientas gratuitas y se ejecuta en paralelo: no bloquea interfaz, temas, audio, mascotas ni integración. Mantener explícitas las comprobaciones móviles reales pendientes.
+1. Read this file and [README.md](README.md) for the product and local commands.
+2. Read [the requirements](docs/requirements.md), especially the later amendments: §13 collection, §15 free validation, §21 selected geometry/helpers, §22 completed-round UI, §23 automatic linked villain, §24 mobile UI and §25 endless backlog.
+3. Check [the task board](docs/tasks/README.md) and read the exact card selected by the user. The board owns task status; requirements own product decisions.
+4. Read [the implementation guide](docs/implementation-guide.md), [module contracts](docs/module-contracts.md), and the relevant [validation report](docs/validation/). Inspect current source signatures before changing a contract: these documents include historical integration stages.
+5. Read [the POC report](docs/POC_REPORT.md) when touching physics or interpreting its historical acceptance.
 
-## Setup aceptado
-- Fuerza de bombeo 75 y resistencia del agua 0.50 como valores iniciales.
-- Depósito con fondo interior 1.8, bases apoyadas en el piso y chorros laterales bajos.
-- Modo inicial Guardar: retirar el aro tras ensartado y contacto con la base durante 0.12 s activos; progreso acumulado. Mantener el clásico separado y disponible.
-- Los botones de bombeo quedan bajo el depósito. Los controles de cámara pertenecen solo al POC.
+The user's latest explicit decision takes precedence over earlier project notes. Later requirements amendments supersede their earlier scope restrictions. Some historical sections still describe floor-mounted pegs, manual-only enemies, no music or an unfinished player; none is the current production rule. Preserve history as history, and update the current decision/evidence rather than appending contradictory instructions here.
 
-## Verificación
-Node.js 22+ y pnpm 11.25.0. Ejecutar pnpm install, pnpm typecheck, pnpm test y pnpm build.
-El informe conserva las seis pruebas históricas del 18 de octubre y las iteraciones del 19. Las 16 pruebas originales preservan el setup aceptado. La primera integración del 20 de octubre superó 53 pruebas (docs/validation/release.md). La integración tras la corrección de contraste musical tuvo 66 pruebas superadas (histórico); la suite actual tiene 130; ver docs/validation/polish-audio-art.md. El informe T01–T05 conserva la evidencia histórica de sus 42 pruebas. Distinguir siempre los resultados actuales de los históricos. Para servir localmente, usar `pnpm serve`: evita caché y muestra la revisión de compilación.
-No afirmar que se validaron sensores, controles táctiles, FPS o apariencia sin probarlos en navegador/dispositivo real.
+## Product and current state
 
-## Backlog de pulido registrado
-El 20 de octubre el usuario celebró la primera versión y pidió agregar sus ideas al backlog, sin iniciar su implementación: T13–T20 en `docs/tasks/README.md`, con decisiones en `docs/requirements.md` sección 16. Separar efectos de recompensa y música por tema. Ancho, veinte aros y posiciones de estacas son comparaciones de laboratorio; no cambiar defaults sin elegir un candidato. La música amplía la restricción histórica de solo efectos y los stickers amplían de forma acotada la personalización. No lanzar agentes por el solo registro de tareas; conservar explícitos T09 auditivo y dispositivos reales pendientes.
+Aritos recreates a physical water-ring toy: pump water, tilt an enclosed transparent tank and thread freely moving rings onto pegs. It is a single-player static browser game, primarily for phones/tablets, with desktop and both screen orientations supported. The normal finite game has no clock or lives. There are no accounts, multiplayer or game-session backend. Use the existing physics engine; a custom engine and scientific fluid solver are outside scope.
 
-T21–T23 agregan POCs planeados de presión variable, powerups con mascota y enemigos que añaden aros; ver sección 17. La medición de fuerza real no se presupone. Asistencia guiada/programada y objetivos dinámicos son excepciones experimentales explícitas; no relajar las reglas físicas ni el conteo de la versión normal. Mantener los dos powerups diferenciados y conservar el progreso ya guardado al añadir aros. Ningún agente ni implementación se inicia por este registro.
+- Stack: TypeScript, **Rapier 3D 0.19.3**, **Three.js 0.180.0**, esbuild. Keep the pinned dependencies and lockfile.
+- Player-facing copy is **Spanish**. Requirements, task cards and technical documentation are **English**.
+- Last gameplay commit: **`82c08fc`** (mobile redesign); compiled revision **`019e6188`**. A content build revision is not a Git commit ID. Documentation-only commits do not change that compiled behavior.
+- Last recorded full verification: **160/160 tests**, TypeScript/build/diff checks and ten desktop-browser viewport checks, recorded in [mobile interface evidence](docs/validation/mobile-interface.md). This is the latest recorded checkpoint, not a claim that every future checkout has been retested.
+- The user accepted the physics POC on October 19, selected width 8/raised pegs/helpers for normal play, and praised the automatic mischievous mascot. The new mobile layout still awaits physical Pixel feedback; endless mode is backlog only.
 
-El usuario después seleccionó T14/T15/T16 para esta tanda, con POCs pospuestos: las tres implementaciones están integradas (build a3889036, 66 pruebas); T14/T15 siguen en revisión auditiva y T16 vuelve a revisión tras reemplazar los fondos de océano/capibaras que el usuario rechazó. Ver docs/validation/art-refresh.md; las ilustraciones PNG están empaquetadas localmente y los prompts están en docs/art/. La música y los fondos son originales/locales. Preservar silencio global y el toggle de música independiente, y no confundir activación de una muestra con aceptación acústica.
+### Entry points
 
-El usuario reportó que la música de los temas se percibía igual. Se verificó el cambio correcto de buffer y se reprodujo un inicio PCM idéntico entre océano/espacio. La corrección 76c890a diferencia tempo, compás, registro e instrumento, y cada tema nuevo empieza su frase; pausa/mute/reinicio conservan posición. Revisión acústica del nuevo candidato sigue pendiente.
+| Entry | Purpose |
+| --- | --- |
+| `/` | Normal Spanish player: setup, model/theme/mode choice, Jugar, gameplay and settings. |
+| `/lab.html` | Preserved physics POC and isolated experimental comparisons. Camera/tuning/debug/diagnostic controls belong here. |
+| `/preview.html?scene=stack` | Controlled physical player preview for repeatable collection/classic victory checks. Also supports `free`, `drop`, `depth`. |
 
-El usuario aprobó los fondos ilustrados de océano y capibaras y pidió equiparar espacio. Los tres fondos son ahora PNG locales generados, con prompts en docs/art/rear-scenes-v2-prompts.json. Mantener ese acabado y la zona central despejada; no reemplazarlos por placeholders geométricos. Espacio queda listo para revisión visual del usuario.
+Scene query parameters on `/` must not change normal play. Preview sticker rewards use an isolated, nonpersistent sandbox and never read/write normal sticker data. Preview model/theme/audio choices still use normal preferences: restore user preferences after tests. Do not manufacture player progress or permanent rewards to make a validation screenshot.
 
-## Pendientes prioritarios
-El jugador normal está en `/`; el POC está en `/lab.html` y la vista de pruebas en `/preview.html?scene=stack`. T01–T08 y T10–T12 tienen implementación/evidencia integradas. T09 está integrado y probado automáticamente; queda revisión auditiva subjetiva. T06 terminó su baseline gratuito; la aceptación en dispositivos reales sigue pendiente. Usar pruebas automatizadas, DevTools y emuladores disponibles; acceso físico gratuito o prestado es opcional. No contratar servicios ni activar facturación. La falta de dispositivos deja evidencia pendiente, sin impedir el desarrollo ni el informe de pruebas; no declarar superada la aceptación móvil real. Sensores y calibración en Android/iOS; multitáctil; cambio de orientación; FPS y sesiones en dispositivos de referencia. El usuario ya aceptó la sensación de juego del POC con el setup indicado; no confundir esa aceptación con validación móvil completa. Seguir el protocolo manual de docs/POC_REPORT.md y usar el diagnóstico exportado.
+## Accepted gameplay: preserve these decisions
 
-Esta es una copia portátil del fuente. No contiene credenciales ni la identidad del alojamiento original. No publicar ni reemplazar el sitio alojado como parte de la validación local.
+### Geometry and pumping
 
+| Setting | Current normal player |
+| --- | --- |
+| Starting rings / pegs | 12 rings, 2 pegs |
+| Tank | Full interior width **8**, height **12**, depth **1.8** |
+| Ring | Outer diameter **1.3**; real hole, compound collider of 20 capsules |
+| Peg arrangement | **Raised**, staggered bases, with fixed physical supports connecting to the rear plastic |
+| Pump strength / water drag | **75 / 0.50** |
+| Pulse / physics step | **0.24s**, fixed **120Hz**, bounded catch-up (maximum 12 steps/frame) |
+| Models | Two independent side buttons, or one central button; button count/outlets belong to the model |
+| Side jets | Low on the sides, aimed inward/upward, with a weak bottom return influence during the pulse |
 
-## Implementation planning
+Use `PLAYER_TOY_SETTINGS` / `PLAYER_TOY_LAYOUT` from [selected-toy.ts](src/models/selected-toy.ts) in normal composition and rendering. Use `Simulation.layout` for per-instance physical bounds, pegs, bases, supports and jets. The exported width 9/floor `TOY_PHYSICS` and compatibility constants remain the **historical POC baseline**; do not use them to restore width 9/floor geometry in the player.
 
-The English product specification is `docs/requirements.md`; player-facing copy remains Spanish. For future implementation assignments, read `docs/implementation-guide.md` and exactly the assigned card under `docs/tasks/`. Track ownership and status in `docs/tasks/README.md`. Preserve the accepted POC and follow the updated dependencies. T06 is a parallel, no-cost validation task, not a prerequisite for other implementation tasks; see requirements section 15. A prepared plan is not authorization to start tasks or agents, and completing one assigned card does not authorize taking another.
+One intentional press produces one pulse. Holding does not repeat. Preserve simultaneous side input, keyboard equivalents and pointer/keyboard cancellation on release, blur, hiding and teardown. Themes must not affect mechanics. Variable pressure and twenty starting rings are not production defaults.
 
-User-selected worker configuration: `gpt-6-luna`, reasoning effort `high`. Use it for assigned subagents; do not substitute models silently.
+### Physical rules and the two finite modes
 
+- Rings translate/rotate in 3D, collide with one another and all fixtures, and remain enclosed even when inverted. A screen-space overlap with a peg is not threading.
+- Do not fake insertion using teleportation, invisible locks, collider filtering or artificial joints. The explicitly selected helper route is the limited scripted-assistance exception described below; normal threading/collection still decides progress.
+- **Guardar al llegar** (`collect`) is the initial mode. A ring must physically thread and contact a pedestal for **0.12 continuous active seconds**. Only then remove its body/colliders/mesh and increase accumulated progress. Floor contact elsewhere does not count. Pumping cannot lose already collected progress.
+- **Modo clásico** retains all rings as dynamic bodies. All current rings must remain threaded for **two continuous active seconds**. Losing a ring resets that interval. Paused time never counts.
+- Track dynamic targets correctly after successful villain additions. Preserve collected progress and `active + collected = total`; never hard-code the completed objective to 12 when the actual target is 14.
+- Victory is once per round. Keep a persistent result with **Nueva partida** after transient celebration effects expire. Reconcile visual celebration idempotently from `snapshot.won`; do not rely solely on receiving a transient event.
+- Nueva partida restores twelve rings, keeps the current model/mode/theme and earned stickers/preferences, resets mascots and clears manual pause. Ordinary restart retains the existing manual-pause behavior; canceling confirmation must preserve the round. Reload restores preferences, not physics, progress, mode or pause state.
 
-T17/T19 were selected next and are integrated in review: build a23155cf, 78 tests, docs/validation/themed-rings-stickers.md. Preserve appearance-only ring finishes and the requirements §19 first-victory-per-theme sticker rule. Decorative saves are global within this browser; preview uses a completely isolated nonpersistent sandbox. Editing has its own decoration pause and separate preloaded thumbnail/placed image nodes. User visual/reward feedback remains pending. T23 initially received feasibility review only; the later bounded manual encounter selection is recorded below and in requirements §21. Automatic enemy timing remains unauthorized.
+### Tilt, lifecycle and mobile interface
 
+- Preserve full 3D tilt, both sideways and forward/back axes, including complete inversion, calibration/recenter and a manual fallback.
+- Sensor activation/permission is explicit. A saved motion preference never authorizes an automatic prompt. Denied/missing/invalid/silent sensor data must leave a usable manual path.
+- Model changes go through setup and start a new round. Theme/sound changes preserve the current round. Changing screen orientation preserves state and gravity mapping without introducing a pump impulse.
+- Keep independent pause reasons (`menu`, `manual`, `document-hidden`, `restart-confirmation`, `decoration`). Removing one must not resume through another. Reset frame accumulation on pause/round/visibility transitions; returning from a hidden page must not replay elapsed hidden time. Preserve bfcache/disposal cleanup.
+- Pumps remain **below** the toy and reachable without scrolling during compact play. Current compact layout covers widths ≤1100px or heights ≤600px, uses dynamic viewport height/safe areas, and keeps tilt/mascot tools in a nonmodal, on-demand panel. Opening tools does not pause or remove pump access.
+- Preserve both manual axes, invert/recenter and explicit motion activation inside the panel. Keep Escape/focus return and a sticky close action when the panel scrolls. Essential compact actions target at least 44px.
+- Landscape shares progress with the header and uses side space for tools when possible. Setup uses compact choices and illustrated theme previews. Do not restore permanently expanded mobile panels or fixed-height scenery that shrinks the toy.
+- Player camera elevation remains **0.7 degrees**, not radians. `fitToyCameraDistance` fits the complete acrylic shell with edge margins; resize/ResizeObserver also refreshes sticker projection. Camera experimentation remains lab-only.
 
-The user then authorized all remaining POCs T13/T18/T20/T21/T22/T23. They are integrated in review in /lab.html, build2005c319 with130 passing tests: docs/validation/lab-experiments.md and requirements§20 supersede older planned/review-only timing. Use the mutually exclusive experiment selector for lab-only alternatives. Simulation.layout is per-instance; exported constants remain historical baseline. Normal pump strength is75; lab pulses clamp.5–1.5 and snapshot strength for.24s. Twenty-ring physical stack scene uses.35 spacing. Helpers are explicitly scripted with no direct scoring; thread needs clear peg, above may release over a pile. At this stage these were lab candidates, before the user's later normal-game selection below. Keep unavailable real-pressure/sensor/mobile/acoustic acceptance explicit.
+## Mascots and linked rings
 
-El usuario seleccionó después la configuración normal de ancho 8 con estacas elevadas, las dos ayudas manuales de mascota y un encuentro manual con villano por ronda. Este cambio supersede las notas anteriores que mantenían estos candidatos solo en el laboratorio o preservaban el ancho 9 como default. Mantener doce aros iniciales, fuerza 75 y resistencia 0.50; no añadir controles normales de presión ni cambiar T18 a veinte aros. El villano añade físicamente uno o dos aros por ronda y el total no supera 14. Las ayudas no otorgan progreso directamente; el contacto físico normal decide. Ver requisitos §21 y docs/validation/selected-toy-integration.md (evidencia de integración pendiente; no declarar pruebas completadas). El ancho 9 con estacas al piso se conserva como referencia histórica del POC.
+### Manual helper
 
+The two normal helper actions are **Ensartar un aro** and **Soltar sobre estaca**. The first guides a floor ring toward physical base contact; the second releases above a peg without directly awarding progress. Clearly treat their route as scripted assistance. Reject ineligible targets or blocked destinations. Serialize helper/villain activity, freeze a carried ring correctly during pause, and restore its dynamic state before replacing/freeing a world.
 
-Normal integration is now recorded in `docs/validation/selected-toy-integration.md`, build20eb133f with145/145 passing tests. Use `PLAYER_TOY_SETTINGS` and `PLAYER_TOY_LAYOUT` in normal composition/rendering. The villain checks per-instance spawn and gravity fall corridors against walls, pegs, bases and supports; never restore peg-aligned fallback candidates. T18/T21 have returned to planned/deferred backlog after user review, with historical POCs retained. Normal manual mascots serialize; pause cancels pending encounters and freezes carried rings; restart restores12 and clears mascot state. The normal player controls are below the toy. Existing real-device/acoustic limitations remain.
+### Automatic mischievous mascot: current finite game
 
+Normal `PlayerMascots` opts into the automatic schedule; historical manual/lab callers remain distinct.
 
-October21 round-completion fix: build08cfeebd,147/147 tests, `docs/validation/round-completion.md`. `mountRoundResult` derives a persistent result and Nueva partida action from `snapshot.won`; transient celebration expiry must never remove the only completion/new-round UI. Reconcile visual celebration idempotently from won state, retain once-per-round effects, use actual dynamic targets, preserve stickers/preferences and reset mascots when starting again. Keep compact action fully visible and keyboard accessible. The earlier missing-celebration user report reproduced as four-second feedback expiry, not proven event loss.
+- Once eligible, choose a per-round remaining-count threshold **1–5**, then a **1–3 active-second** wait after reaching/crossing it. Skipped counts still qualify. Collect counts active rings; classic counts unthreaded rings. This is not a render-frame lottery or wall-clock timer.
+- At most **one successful appearance per finite round**, adding exactly **two already-linked physical rings**, increasing 12 to a maximum 14. Preserve previously collected progress. Never spawn at zero remaining, after victory, during pause/hidden time or over an active helper.
+- Validate both poses and projected gravity fall corridors against walls, pegs, bases, supports and active bodies. Add atomically at a safe fixed-step boundary. No peg-aligned fallback or free insertion. An unsafe automatic attempt retries after one active second without consuming the encounter or playing its success cue.
+- The deliberately linked pair starts with disjoint collider material and no joint/glue/runtime pose constraint. Contact physics couples them; collecting one removes only that member and leaves the survivor dynamic.
+- User gestures unlock cue audio. Respect global/music gates, music ducking and cancellation on pause/mute/reset/dispose. Restart clears schedule, pending encounter, linked additions and presentation.
+- Lab +1/+2 triggers remain manual and unlinked. Do not restore them as the normal player interface.
 
+See [the automatic encounter report](docs/validation/automatic-linked-villain.md) and source in [player-mascots.ts](src/game/mascots/player-mascots.ts), [villain-schedule.ts](src/game/mascots/villain-schedule.ts), [enemies.ts](src/lab/experiments/enemies.ts) and [linked-rings.ts](src/physics/linked-rings.ts).
 
-October21 automatic linked villain supersedes older manual-only restrictions: normal play uses a random remaining-count threshold1–5, then a1–3 active-second delay, one successful appearance per round, exactly two already-linked physical rings (max14). Collect counts active rings; classic counts unthreaded. No late spawn at0/win, helper overlap or paused time. Keep per-member external safety/atomicity, silent one-second unsafe retries, real collection that frees the partner, and no artificial joint. Historical lab +1/+2 remain manual/unlinked. `docs/validation/automatic-linked-villain.md`, build004a48ef,158/158 tests.
+### Emergent chain investigation
 
+The user also observed and liked two normally pumped rings becoming linked, then separating when one was collected. A high-speed diagnostic demonstrates a numerical collision-crossing mechanism consistent with it; the exact user session was **not** reproduced. Do not report the stress fixture's prescribed speed as measured player input or silently change solver/substeps to remove the interaction. The intentional villain pair does not require tunneling.
 
-October21 mobile redesign: requirements§24 and T24 authorize the compact normal-game UI. Build 019e6188, 160/160 tests; `docs/validation/mobile-interface.md` records ten desktop viewport checks and actual interactions. Compact play uses dynamic viewport height, pumps below the stage, and nonmodal tilt/mascot panels. Preserve both manual tilt axes and explicit sensor activation, sticky panel dismissal, round state across resize, persistent victory/new-game UI and the existing accepted physics. `fitToyCameraDistance` fits the acrylic shell while retaining 0.7° elevation. Do not restore permanently expanded mobile panels or fixed-height scenic margins. Physical Pixel acceptance and sensor/multitouch/FPS checks remain pending; the subsequent user request authorizes commit/push for dev-lab testing; deployment and physical Pixel review remain user follow-up.
+[Ring-chain investigation](docs/validation/ring-chain-investigation.md) documents the fixture and limitations. `node --import tsx scripts/diagnostics/ring-links/probe.ts` runs the diagnostic. Its opt-in `--assert-unlinked` mode **intentionally fails** on retained behavior and is outside the normal release suite; do not count it as an unexplained failing release test.
+
+## Themes, audio and earned decorations
+
+- Themes: **Océano, Espacio, Capibaras**, independent of model/mechanics. Ring appearances use theme colors/material finishes with unchanged physical hole/dimensions. Reduced graphics quality also preserves physics.
+- The rear plastic has three locally bundled **illustrated PNG scenes**, with an open/readable center. The user rejected the earlier geometric/procedural ocean/capybara backgrounds, approved their illustrated replacements and requested matching space quality. Preserve this art direction; do not replace it with placeholders. Prompts/provenance: [docs/art/](docs/art/), [assets](docs/assets.md), [art report](docs/validation/art-refresh.md).
+- Audio uses local Web Audio synthesis: collection **Monedita/Chispas**, distinct original looping music for each theme, and the villain cue. No third-party music service is needed. Do not add unverified rights/cost dependencies.
+- Preserve global mute plus an independent saved music toggle. Music starts through a user gesture. Pause/mute/round restart preserve loop position; selecting another theme starts its own phrase. Keep tempo/instrument/register contrast: an earlier ocean/space opening sounded identical and was corrected.
+- Settings **Escuchar** auditions a cue without scoring or resuming physics and cancels correctly on hiding/closing/teardown. An activated audio context is not proof that a person audited the mix. Subjective listening remains pending.
+- The first genuine completed normal-player round per theme unlocks its one sticker. Rewards/placements are global within that browser, usable across themes/models, with at most one placed instance per design (three total). Repeated victory/theme changes must not create duplicate rewards.
+- Decoration editing has its own pause, prevents pumping, and allows placement/move/removal on the toy front. Store normalized toy-relative coordinates and validated catalog IDs, separately from allowlisted preferences. Resize/orientation must not drift placement. Keep separate preloaded thumbnail and placed-image nodes; handle malformed/unavailable storage safely.
+- Preferences persist model, theme, sound, music, collection cue and control choice. Never persist the physical round. Preview rewards are sandboxed as noted above. There is no currency, shop, account or new economy.
+
+## Source map and module boundaries
+
+| Path | Responsibility |
+| --- | --- |
+| `src/main.ts` | Select explicit player/lab/preview entry; keep it thin. |
+| `src/app/player-app.ts` | Normal composition, event wiring, preferences, fixed-step frame loop, pause/visibility and teardown. |
+| `src/game/session.ts` | Round lifecycle, commands, snapshots, actual objective/victory and independent pause reasons. |
+| `src/physics/simulation.ts`, `src/physics.ts` | Rapier bodies, collision/threading/contact rules, pumping and compatibility facade. |
+| `src/models/selected-toy.ts`, `toy-model.ts` | Selected production geometry and fixed model mechanics; no theme data. |
+| `src/input/poc-controls.ts` | Pump press edges, keyboard tilt, motion permission/calibration/fallback and listener cleanup. |
+| `src/game/mascots/` | Normal helper/villain orchestration and active-time schedule. |
+| `src/lab/experiments/` | Per-instance geometry/count/pressure/helpers/enemy primitives; reuse selected pieces without promoting every lab variant. |
+| `src/rendering/player-renderer.ts`, `src/themes/` | Three-only visuals, current framing/projection and theme definitions/assets. No Rapier body references in the player renderer. |
+| `src/ui/player-view.ts`, `round-result.ts`, `public/player.css` | Spanish setup, compact player/tools/dialogs and persistent completed-round action. |
+| `src/audio/`, `src/celebration/` | Round-scoped effects/music/visual celebration, deduplication, timing and resource cleanup. |
+| `src/stickers/`, `src/platform/preferences.ts` | Validated decorative saves and separate allowlisted preferences. |
+| `src/lab/start-lab.ts`, `poc-lab.ts`, `public/style.css` | Laboratory composition/rendering, camera experiments, collision debug and diagnostics. |
+| `tests/`, `scripts/diagnostics/`, `docs/validation/` | Automated checks, explicit diagnostics and qualified evidence. |
+
+Snapshots carry values and stable ring IDs scoped by `roundId`; discard stale events/effects after restart. Keep no old body/world references: a reset recreates the Rapier world. Helpers run immediately before the fixed session step; actual collection/scoring remains session-owned. Coordinate contract changes at the composition boundary instead of independently inventing conflicting APIs.
+
+## Backlog and acceptance status
+
+Use [the board](docs/tasks/README.md) for ownership/status. `review` can mean implemented and awaiting user/device feedback; it does not mean the feature is absent. Do not restart accepted work because an old row remains in review.
+
+| Item | Current decision |
+| --- | --- |
+| T13 width / T20 pegs | Width8 and raised supported pegs already adopted in normal play; width 9/floor stays a historical lab comparison. |
+| T22 helpers / T23 villain | Manual helpers and the bounded automatic linked pair are implemented. User praised the villain; endless expansion is separate. |
+| T24 mobile UI | Implemented/pushed in `82c08fc`; new Pixel feedback, physical sensor/calibration, independent multitouch and sustained rendered FPS remain pending. |
+| T09 / T14 / T15 audio | Implemented; subjective effects/music/mix review remains pending. |
+| T16 / T17 visuals | Illustrated panels and ring finishes implemented; space confirmation and ring-finish feedback remain open on the board. |
+| T19 stickers | Implemented; reward cadence, placement comfort and user feedback remain open. |
+| T18 twenty rings | User-deferred after POC review. Historical candidate remains lab-only; its width 9/floor capacity evidence does not prove width 8/raised capacity. |
+| T21 pressure | User-deferred; rethink input/interaction. Current normal pump stays fixed 75, with no pressure slider. Do not assume a phone measures finger force. |
+| T25 / BL-17 endless | **Planned/unassigned only**: recurring villain visits dropping one continuous physical chain of **2–5 rings per appearance**. See [T25](docs/tasks/T25-endless-linked-chains.md). |
+| Older unassigned ideas | BL-01 time trial; BL-04 broader customization editor; BL-05 physically shake the phone; BL-06 installation and cold offline launch/PWA. |
+
+T25 has not been implemented or dispatched to agents. Starting count, cadence/trigger, chain-length distribution, cumulative progress/empty-tank/end-of-session behavior, rewards and simultaneous-load cap remain open design choices. A five-ring chain means one connected chain, not five loose rings or disconnected pairs. Endless recurrence must not imply unbounded bodies/memory. Keep finite rules unchanged until a separate implementation selection.
+
+Lab comparisons remain opt-in and isolated: widths 9/8/7, twelve/twenty, floor/raised, variable pressure, two helpers and manual enemy encounters. The selector restarts each candidate. Its pressure intensity 0.5–1.5 is snapshotted per 0.24s pulse; distinguish genuine force input from level/charge fallback. Do not combine previously unsupported geometry variants or export lab defaults into normal play without a user decision.
+
+## Working with the user and agents
+
+- Talk to the user in concise, friendly Spanish, matching their casual tone. Lead with the outcome, keep progress updates during sustained work, and report meaningful findings/remaining uncertainty. Ask only for decisions actually needed; proceed with routine reversible work already authorized.
+- A backlog addition or prepared implementation guide is **not** authorization to implement the feature, create workers or continue into another card. A later explicit implementation request selects that work. Do not proactively dispatch agents without user/applicable instruction authorization.
+- When delegation is authorized, the user's worker configuration is **`gpt-6-luna` with `high` reasoning effort**. If unavailable, report that rather than silently substituting. The orchestrator coordinates assignments, integration, evidence and updates.
+- Assign one scoped card per worker, record ownership on the board, and agree on shared contracts first. Use isolated branches/worktrees for authorized parallel work; do not concurrently edit the same checkout/shared composition. Finishing one task does not authorize another.
+- Inspect Git state first and preserve other work. Make narrow changes; do not reset/delete unrelated files or upgrade pinned dependencies incidentally. Update the task card/requirements when a decision changes rather than keeping competing lists.
+- Report implementation, automated verification, browser observations, physical-device testing and user acceptance separately. Never claim unseen screenshots, audible quality, real multitouch/sensors or mobile FPS from Node tests or desktop emulation.
+- Browser QA should use disposable tabs/controlled previews, preserve live user rounds, restore changed preferences and viewport overrides, and retain honest screenshots/measurements. Do not reload an active user round just to show a newer build without authorization.
+
+## Verification and local development
+
+Requirements: **Node.js 22+**, **pnpm 11.25.0**, and Python 3 for the no-cache local server. Install dependencies when needed, preserving `pnpm-lock.yaml`:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm serve
+```
+
+If the package-manager wrapper is unavailable but dependencies are installed, equivalent checks are:
+
+```sh
+node node_modules/typescript/bin/tsc --noEmit
+node --import tsx --test tests/*.test.ts
+node build.mjs
+python3 serve-local.py
+```
+
+Run from the repository root. Code changes require the appropriate checks above, meaningful regression tests where needed, and browser verification for UI changes. Do not add tests that merely restate styling/constants. Documentation-only changes require link/decision consistency and `git diff --check`; do not rerun the physics soak merely to edit Markdown.
+
+`build.mjs` writes static `dist/`, copies bundled art and versions HTML/JS/CSS against a common content hash in `dist/build.json`. `pnpm serve` binds **127.0.0.1:8000**, serves `dist/` with `Cache-Control: no-store` and requires an existing build. Rebuild after source changes, then reload an appropriate test page and verify the actual loaded revision; a running server does not rebuild itself. `dist/` and `node_modules/` are ignored and are not committed.
+
+For UI checks cover both models/rules, themes as relevant, small portrait/landscape/tablet layouts, dynamic resize, pumps/manual controls, dialogs/cancel paths, focus and won/new-game state. Record viewport/browser/build and whether input was synthetic. Use actual physical contact in controlled scenes to validate scoring. New full-suite totals belong with their revision/report; do not present earlier counts 6/16/42/53/66/78/130/145/147/158 as current 160 or future results.
+
+### Free mobile validation, costs and hosting
+
+The user declined a paid BrowserStack subscription. T06's free baseline is complete and **non-blocking**; missing physical hardware must not block unrelated development. Use existing automated checks, browser emulation and available free/user-owned/borrowed devices. No paid subscription, billing activation or overage is authorized; do not make a large emulator installation or account a prerequisite.
+
+Physical Android/iOS sensor permission/calibration/inversion, two independent fingers, orientation changes, browser chrome/safe areas, thumb comfort and sustained rendered FPS still need real-device evidence. Pixel screenshots established a problem in the old layout, not acceptance of the new one. Use the protocol in [POC_REPORT.md](docs/POC_REPORT.md) and [mobile access](docs/validation/mobile-access.md); label unavailable tests as not run.
+
+Assets/dependencies are bundled for theme switching and continued play **after complete loading** without a network. Installation and cold offline startup are a separate unimplemented backlog item. Do not claim a PWA/service worker exists. Never publish a site, replace hosting, open a public tunnel or change an account as an incidental local validation step.
+
+### Git and delivery
+
+- Repository: **`https://github.com/apergam/aritos.git`**, primary branch **`main`**. The user updates their dev lab from GitHub and tests on their phone. A successful push does not establish that their hosted build deployed.
+- When asked to commit/push, include the authorized source/docs/backlog/evidence, inspect the staged diff, commit, push normally and verify local/remote branch equality plus remaining working-tree changes. Do not force-push or commit credentials, machine-specific paths, generated `dist/` or unrelated edits.
+- For multiline commit/PR text use a real file/structured argument. Do not treat shell-interpolated text as harmless data.
+- Finish with what changed, the relevant checks/limitations and the real commit/push result when requested. Provide a content revision for dev-lab cache/build verification when useful; never invent a deployment result.
+
+## Decision history and evidence map
+
+| Milestone | Decision / evidence |
+| --- | --- |
+| October 18 physics investigation | Six original Node tests established a feasible Rapier candidate; no physical-device/FPS acceptance. [POC report](docs/POC_REPORT.md). |
+| October 19 accepted POC | Depth reduced 3.3→1.8, bases moved to floor, jets moved to low sides, pumps below tank, collect-at-base selected; user chose strength 75/drag 0.50. Sixteen tests at that checkpoint. |
+| October 19–20 foundations/player | Modules, inputs, session/preferences/models, Spanish UI, three themes, audio and celebration integrated. [Foundation evidence](docs/validation/integration-t01-t05.md), [qualified release](docs/validation/release.md). |
+| October 20 art/music polish | Replaced rejected ocean/capybara backgrounds with generated illustrations; matched space. Corrected indistinguishable ocean/space music openings. [Art](docs/validation/art-refresh.md), [audio](docs/validation/polish-audio-art.md). |
+| October 20 rings/stickers/POCs | Appearance-only finishes and bounded earned decorations; isolated width/count/peg/pressure/helper/enemy comparisons. [Stickers](docs/validation/themed-rings-stickers.md), [lab comparisons](docs/validation/lab-experiments.md). |
+| Later selected normal integration | Width8, raised pegs and helpers superseded floor/width 9 normal defaults; manual villain was an intermediate stage. [Integration](docs/validation/selected-toy-integration.md), commit `da06f12`, 145 tests. |
+| October 21 completed rounds | Fixed the dead end after four-second feedback expiry with persistent victory/new-game UI; event loss was not proven. [Report](docs/validation/round-completion.md),`6c03688`, 147 tests. |
+| October 21 linked villain | Automatic late-round pair superseded manual-only timing; exact user chain formation remains unreplayed. [Chain investigation](docs/validation/ring-chain-investigation.md), [automatic encounter](docs/validation/automatic-linked-villain.md),`4d6081f`, 158 tests. |
+| October 21 mobile | Larger toy, compact setup and nonmodal tools; ten emulated viewport checks. [Report](docs/validation/mobile-interface.md),`82c08fc`, 160 tests, build `019e6188`; physical Pixel acceptance pending. |
+| Endless backlog | User liked the villain and requested recurring 2–5-ring chains; recorded in §25/T25 only. No endless implementation or new economy. |
+| October 28 context consolidation | This document replaces accumulated contradictory notes with the current working agreement. Historical reports remain intact; the endless backlog is included in the requested documentation delivery. |
